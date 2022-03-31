@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{7a5147bb-cd13-4f9f-923b-3961e4c5683e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\arch">
+      <UniqueIdentifier>{28715d54-1cdd-4441-8369-970bcd73f523}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\arch\x86_64">
+      <UniqueIdentifier>{96891a8f-b6aa-4a85-8035-da8f31b0f962}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="arch">
+      <UniqueIdentifier>{cd1457ac-3efb-423b-9f0c-07a154f219b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="arch\x86_64">
+      <UniqueIdentifier>{d258e422-478d-42d9-a37f-082647b4bd94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="arch\aarch64">
+      <UniqueIdentifier>{e810e0bc-8180-4f11-bde9-2b8e62cc19f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\arch\aarch64">
+      <UniqueIdentifier>{e841650c-cd5e-4460-a975-7842899d7d14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\kdrivers">
+      <UniqueIdentifier>{1ffa8155-0231-4b94-a8f0-da74327b4bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kdrivers">
+      <UniqueIdentifier>{149c0a4b-26da-489c-bf23-135c499eb49a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\stdint.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\auinfo.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_lowlevel.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_efi.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\string.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\limits.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\_null.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_cpu.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\console.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_exception.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_paging.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kdrivers\au_video.h">
+      <Filter>include\kdrivers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\kdrivers\serial.h">
+      <Filter>include\kdrivers</Filter>
+    </ClInclude>
+    <ClInclude Include="include\va_list.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdarg.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdlib.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\aarch64\start.c">
+      <Filter>arch\aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="string.cpp">
+      <Filter>arch</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_cpu.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="console.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_exception.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_paging.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="kdrivers\au_video.cpp">
+      <Filter>kdrivers</Filter>
+    </ClCompile>
+    <ClCompile Include="kdrivers\serial.cpp">
+      <Filter>kdrivers</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="arch\aarch64\bootstub.s">
+      <Filter>arch\aarch64</Filter>
+    </None>
+    <None Include="arch\aarch64\linker.ld">
+      <Filter>arch\aarch64</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="arch\x86_64\x86_64_lowlevel.asm">
+      <Filter>arch\x86_64</Filter>
+    </NASM>
+    <NASM Include="arch\x86_64\x86_64_interrupt.asm">
+      <Filter>arch\x86_64</Filter>
+    </NASM>
+    <NASM Include="_fastcpy.asm" />
+  </ItemGroup>
+</Project>

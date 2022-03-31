@@ -1,0 +1,6 @@
+^_fastcpy.asm
+E:\Aurora Kernel\kernel\x64\Debug\_fastcpy.obj
+^arch\x86_64\x86_64_interrupt.asm
+E:\Aurora Kernel\kernel\x64\Debug\x86_64_interrupt.obj
+^arch\x86_64\x86_64_lowlevel.asm
+E:\Aurora Kernel\kernel\x64\Debug\x86_64_lowlevel.obj

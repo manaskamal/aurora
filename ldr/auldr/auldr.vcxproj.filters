@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="string.cpp" />
+    <ClCompile Include="type.cpp" />
+    <ClCompile Include="aulib.cpp" />
+    <ClCompile Include="print.cpp" />
+    <ClCompile Include="au_mm.cpp" />
+    <ClCompile Include="graphics.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aulib.h" />
+    <ClInclude Include="stdint.h" />
+    <ClInclude Include="va_list.h" />
+    <ClInclude Include="string.h" />
+    <ClInclude Include="type.h" />
+    <ClInclude Include="print.h" />
+    <ClInclude Include="auinfo.h" />
+    <ClInclude Include="au_mm.h" />
+    <ClInclude Include="font.h" />
+    <ClInclude Include="graphics.h" />
+    <ClInclude Include="stdarg.h" />
+    <ClInclude Include="lowlevel.h" />
+    <ClInclude Include="pe.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <NASM Include="lowlevel.asm" />
+  </ItemGroup>
+</Project>
