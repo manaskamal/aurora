@@ -81,6 +81,9 @@
     <ClInclude Include="include\stdlib.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\kdrivers\au_acpi.h">
+      <Filter>include\kdrivers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -110,6 +113,9 @@
       <Filter>kdrivers</Filter>
     </ClCompile>
     <ClCompile Include="stdlib.cpp" />
+    <ClCompile Include="kdrivers\au_acpi.cpp">
+      <Filter>kdrivers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="arch\aarch64\bootstub.s">

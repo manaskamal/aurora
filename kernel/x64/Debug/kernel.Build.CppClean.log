@@ -13,6 +13,8 @@ e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.asm
 e:\aurora kernel\kernel\x64\debug\console.obj
 e:\aurora kernel\kernel\x64\debug\console.asm
+e:\aurora kernel\kernel\x64\debug\au_acpi.obj
+e:\aurora kernel\kernel\x64\debug\au_acpi.asm
 e:\aurora kernel\kernel\x64\debug\au_video.obj
 e:\aurora kernel\kernel\x64\debug\au_video.asm
 e:\aurora kernel\kernel\x64\debug\serial.obj

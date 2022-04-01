@@ -196,6 +196,55 @@ void x86_64_idt_initialize() {
 
 }
 
+void x86_64_cpu_feature_enable() {
+
+	size_t a, b, c, d;
+	x64_cpuid(1, &a, &b, &c, &d);
+
+	if ((c & (1 << 26)) != 0) {
+		au_get_boot_info()->auprint("[aurora]: xcr0 supported\n");
+		/* Enable XCR0 register */
+		uint64_t cr4 = x64_read_cr4();
+		cr4 |= (1 << 18);
+		x64_write_cr4(cr4);
+	}
+
+	if ((d & (1 << 25)) != 0){
+		au_get_boot_info()->auprint("[aurora]: SSE is supported \n");
+		size_t cr4 = x64_read_cr4();
+		cr4 |= (1 << 10);
+
+		if ((d & (1 << 24)) != 0) {
+			au_get_boot_info()->auprint("[aurora]: fxsave supported \n");
+			cr4 |= (1 << 9);
+		}
+
+		x64_write_cr4(cr4);
+	}
+	else if ((d & (1 << 26)) != 0) {
+		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
+	}
+	else if ((c & (1 << 0)) != 0)
+		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
+
+#ifdef AVX_ENABLED
+	if ((c & (1 << 28)) != 0) {
+		size_t xcr0 = x64_read_xcr0();
+		xcr0 |= 7;
+		x64_write_xcr0(xcr0);
+		au_get_boot_info()->auprint("[aurora]: AVX enabled\n");
+	}
+	x64_cpuid(0xD, &a, &b, &c, &d);
+	if ((a & (7 << 5)) != 0) {
+		size_t ax, bx, cx, dx;
+		x64_cpuid(0xD, &ax, &bx, &cx, &dx, 0);
+		size_t xcr0 = x64_read_xcr0();
+		xcr0 |= (ax&(7<<5));
+		x64_write_xcr0(xcr0);
+		au_get_boot_info()->auprint("[aurora]: AVX-512 enabled %d bytes\n",bx);
+	}
+#endif
+}
 
 /*
  * x86_64_cpu_initialize -- initialize the cpu
@@ -205,5 +254,14 @@ void x86_64_cpu_initialize() {
 	x86_64_gdt_initialize();
 	x86_64_idt_initialize();
 	x86_64_exception_init();
+	x86_64_cpu_feature_enable();
+
+	/* Enable SYSCALL extension */
+	size_t efer = x64_read_msr(IA32_EFER);
+	efer |= (1 << 11);
+	efer |= 1;
+	efer |= (1 << 0);
+	efer |= 1;
+	x64_write_msr(IA32_EFER, efer);
 	x64_sti();
 }

@@ -59,6 +59,7 @@ x64_read_msr:
     rdmsr
 	shl rdx, 32
 	or rax, rdx
+	ret
 
 
 global x64_write_msr
@@ -101,6 +102,11 @@ x64_read_cr4:
 global x64_write_cr3
 x64_write_cr3:
       mov cr3, rcx
+	  ret
+
+global x64_write_cr4
+x64_write_cr4:
+      mov cr4, rcx
 	  ret
 
 ;----------------------------------------------------------
@@ -288,5 +294,51 @@ x64_hlt:
      hlt
 	 ret
 
+;======================================
+; SSE & AVX
+;======================================
+global x64_activate_sse
+x64_activate_sse:
+      mov rax, cr0
+	  and ax, 0xFFFB
+	  or  ax, 0x2
+	  mov cr0,rax
+	  mov rax,cr4
+	  or  ax, 3 << 9
+	  mov cr4, rax
+	  ret
+
+global x64_activate_avx
+x64_activate_avx:
+      push rax
+	  push rcx
+	  push rdx
+
+      xor rcx, rcx
+	  xgetbv
+	  or  eax, 7
+	  xsetbv
+
+	  pop rdx
+	  pop rcx
+	  pop rax
+	  ret
+
+global x64_read_xcr0
+x64_read_xcr0:
+      xor rcx, rcx
+	  xgetbv
+	  shl rdx, 32
+	  or rax, rdx
+	  ret
+
+global x64_write_xcr0
+x64_write_xcr0:
+      mov rax, rcx
+	  mov rdx, rcx
+	  xor rcx, rcx
+	  shr rdx, 32
+	  xsetbv
+	  ret
 
 

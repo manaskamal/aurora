@@ -10,7 +10,21 @@ _BSS	SEGMENT
 ?idtr@@3U_idtr@@A DB 0aH DUP (?)			; idtr
 _BSS	ENDS
 CONST	SEGMENT
-$SG2846	DB	'[aurora]: Default interrupt++', 0aH, 00H
+$SG2853	DB	'[aurora]: Default interrupt++', 0aH, 00H
+	ORG $+1
+$SG2889	DB	'[aurora]: xcr0 supported', 0aH, 00H
+	ORG $+6
+$SG2892	DB	'[aurora]: SSE is supported ', 0aH, 00H
+	ORG $+3
+$SG2895	DB	'[aurora]: fxsave supported ', 0aH, 00H
+	ORG $+3
+$SG2898	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
+	ORG $+2
+$SG2901	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
+	ORG $+2
+$SG2904	DB	'[aurora]: AVX enabled', 0aH, 00H
+	ORG $+1
+$SG2911	DB	'[aurora]: AVX-512 enabled %d bytes', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_cpu_initialize@@YAXXZ			; x86_64_cpu_initialize
 PUBLIC	?setvect@@YAX_KP6AX0PEAX@Z@Z			; setvect
@@ -21,10 +35,19 @@ PUBLIC	?x86_64_gdt_initialize@@YAXXZ			; x86_64_gdt_initialize
 PUBLIC	interrupt_dispatcher
 PUBLIC	?default_irq@@YAX_KPEAX@Z			; default_irq
 PUBLIC	?x86_64_idt_initialize@@YAXXZ			; x86_64_idt_initialize
+PUBLIC	?x86_64_cpu_feature_enable@@YAXXZ		; x86_64_cpu_feature_enable
 EXTRN	x64_cli:PROC
 EXTRN	x64_sti:PROC
+EXTRN	x64_read_msr:PROC
+EXTRN	x64_write_msr:PROC
+EXTRN	x64_cpuid:PROC
+EXTRN	x64_read_cr4:PROC
+EXTRN	x64_write_cr4:PROC
 EXTRN	x64_lgdt:PROC
 EXTRN	x64_sgdt:PROC
+EXTRN	x64_read_xcr0:PROC
+EXTRN	x64_write_xcr0:PROC
+EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?printf@@YAXPEBDZZ:PROC				; printf
 EXTRN	?x86_64_exception_init@@YAXXZ:PROC		; x86_64_exception_init
 EXTRN	x64_get_segment_register:PROC
@@ -48,7 +71,7 @@ the_idt	DB	01000H DUP (?)
 _BSS	ENDS
 pdata	SEGMENT
 $pdata$?x86_64_cpu_initialize@@YAXXZ DD imagerel $LN3
-	DD	imagerel $LN3+34
+	DD	imagerel $LN3+126
 	DD	imagerel $unwind$?x86_64_cpu_initialize@@YAXXZ
 $pdata$load_default_sregs DD imagerel $LN3
 	DD	imagerel $LN3+90
@@ -77,10 +100,13 @@ $pdata$?default_irq@@YAX_KPEAX@Z DD imagerel $LN5
 $pdata$?x86_64_idt_initialize@@YAXXZ DD imagerel $LN12
 	DD	imagerel $LN12+519
 	DD	imagerel $unwind$?x86_64_idt_initialize@@YAXXZ
+$pdata$?x86_64_cpu_feature_enable@@YAXXZ DD imagerel $LN12
+	DD	imagerel $LN12+543
+	DD	imagerel $unwind$?x86_64_cpu_feature_enable@@YAXXZ
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?x86_64_cpu_initialize@@YAXXZ DD 010401H
-	DD	04204H
+	DD	06204H
 $unwind$load_default_sregs DD 010401H
 	DD	04204H
 $unwind$?set_gdt_entry@@YAXAEAU_gdt@@EE@Z DD 011201H
@@ -99,7 +125,263 @@ $unwind$?default_irq@@YAX_KPEAX@Z DD 010e01H
 	DD	0420eH
 $unwind$?x86_64_idt_initialize@@YAXXZ DD 020701H
 	DD	0a10107H
+$unwind$?x86_64_cpu_feature_enable@@YAXXZ DD 020701H
+	DD	0130107H
 xdata	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
+_TEXT	SEGMENT
+cr4$1 = 48
+d$ = 56
+c$ = 64
+xcr0$2 = 72
+cr4$3 = 80
+xcr0$4 = 88
+a$ = 96
+b$ = 104
+bx$5 = 112
+ax$6 = 120
+dx$7 = 128
+cx$8 = 136
+?x86_64_cpu_feature_enable@@YAXXZ PROC			; x86_64_cpu_feature_enable
+
+; 199  : void x86_64_cpu_feature_enable() {
+
+$LN12:
+	sub	rsp, 152				; 00000098H
+
+; 200  : 
+; 201  : 	size_t a, b, c, d;
+; 202  : 	x64_cpuid(1, &a, &b, &c, &d);
+
+	mov	QWORD PTR [rsp+40], 0
+	lea	rax, QWORD PTR d$[rsp]
+	mov	QWORD PTR [rsp+32], rax
+	lea	r9, QWORD PTR c$[rsp]
+	lea	r8, QWORD PTR b$[rsp]
+	lea	rdx, QWORD PTR a$[rsp]
+	mov	ecx, 1
+	call	x64_cpuid
+
+; 203  : 
+; 204  : 	if ((c & (1 << 26)) != 0) {
+
+	mov	rax, QWORD PTR c$[rsp]
+	and	rax, 67108864				; 04000000H
+	test	rax, rax
+	je	SHORT $LN9@x86_64_cpu
+
+; 205  : 		au_get_boot_info()->auprint("[aurora]: xcr0 supported\n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2889
+	call	QWORD PTR [rax+82]
+
+; 206  : 		/* Enable XCR0 register */
+; 207  : 		uint64_t cr4 = x64_read_cr4();
+
+	call	x64_read_cr4
+	mov	QWORD PTR cr4$3[rsp], rax
+
+; 208  : 		cr4 |= (1 << 18);
+
+	mov	rax, QWORD PTR cr4$3[rsp]
+	bts	rax, 18
+	mov	QWORD PTR cr4$3[rsp], rax
+
+; 209  : 		x64_write_cr4(cr4);
+
+	mov	rcx, QWORD PTR cr4$3[rsp]
+	call	x64_write_cr4
+$LN9@x86_64_cpu:
+
+; 210  : 	}
+; 211  : 
+; 212  : 	if ((d & (1 << 25)) != 0){
+
+	mov	rax, QWORD PTR d$[rsp]
+	and	rax, 33554432				; 02000000H
+	test	rax, rax
+	je	SHORT $LN8@x86_64_cpu
+
+; 213  : 		au_get_boot_info()->auprint("[aurora]: SSE is supported \n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2892
+	call	QWORD PTR [rax+82]
+
+; 214  : 		size_t cr4 = x64_read_cr4();
+
+	call	x64_read_cr4
+	mov	QWORD PTR cr4$1[rsp], rax
+
+; 215  : 		cr4 |= (1 << 10);
+
+	mov	rax, QWORD PTR cr4$1[rsp]
+	bts	rax, 10
+	mov	QWORD PTR cr4$1[rsp], rax
+
+; 216  : 
+; 217  : 		if ((d & (1 << 24)) != 0) {
+
+	mov	rax, QWORD PTR d$[rsp]
+	and	rax, 16777216				; 01000000H
+	test	rax, rax
+	je	SHORT $LN7@x86_64_cpu
+
+; 218  : 			au_get_boot_info()->auprint("[aurora]: fxsave supported \n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2895
+	call	QWORD PTR [rax+82]
+
+; 219  : 			cr4 |= (1 << 9);
+
+	mov	rax, QWORD PTR cr4$1[rsp]
+	bts	rax, 9
+	mov	QWORD PTR cr4$1[rsp], rax
+$LN7@x86_64_cpu:
+
+; 220  : 		}
+; 221  : 
+; 222  : 		x64_write_cr4(cr4);
+
+	mov	rcx, QWORD PTR cr4$1[rsp]
+	call	x64_write_cr4
+	jmp	SHORT $LN6@x86_64_cpu
+$LN8@x86_64_cpu:
+
+; 223  : 	}
+; 224  : 	else if ((d & (1 << 26)) != 0) {
+
+	mov	rax, QWORD PTR d$[rsp]
+	and	rax, 67108864				; 04000000H
+	test	rax, rax
+	je	SHORT $LN5@x86_64_cpu
+
+; 225  : 		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2898
+	call	QWORD PTR [rax+82]
+	jmp	SHORT $LN4@x86_64_cpu
+$LN5@x86_64_cpu:
+
+; 226  : 	}
+; 227  : 	else if ((c & (1 << 0)) != 0)
+
+	mov	rax, QWORD PTR c$[rsp]
+	and	rax, 1
+	test	rax, rax
+	je	SHORT $LN3@x86_64_cpu
+
+; 228  : 		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2901
+	call	QWORD PTR [rax+82]
+$LN3@x86_64_cpu:
+$LN4@x86_64_cpu:
+$LN6@x86_64_cpu:
+
+; 229  : 
+; 230  : #ifdef AVX_ENABLED
+; 231  : 	if ((c & (1 << 28)) != 0) {
+
+	mov	rax, QWORD PTR c$[rsp]
+	and	rax, 268435456				; 10000000H
+	test	rax, rax
+	je	SHORT $LN2@x86_64_cpu
+
+; 232  : 		size_t xcr0 = x64_read_xcr0();
+
+	call	x64_read_xcr0
+	mov	QWORD PTR xcr0$4[rsp], rax
+
+; 233  : 		xcr0 |= 7;
+
+	mov	rax, QWORD PTR xcr0$4[rsp]
+	or	rax, 7
+	mov	QWORD PTR xcr0$4[rsp], rax
+
+; 234  : 		x64_write_xcr0(xcr0);
+
+	mov	rcx, QWORD PTR xcr0$4[rsp]
+	call	x64_write_xcr0
+
+; 235  : 		au_get_boot_info()->auprint("[aurora]: AVX enabled\n");
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	lea	rcx, OFFSET FLAT:$SG2904
+	call	QWORD PTR [rax+82]
+$LN2@x86_64_cpu:
+
+; 236  : 	}
+; 237  : 	x64_cpuid(0xD, &a, &b, &c, &d);
+
+	mov	QWORD PTR [rsp+40], 0
+	lea	rax, QWORD PTR d$[rsp]
+	mov	QWORD PTR [rsp+32], rax
+	lea	r9, QWORD PTR c$[rsp]
+	lea	r8, QWORD PTR b$[rsp]
+	lea	rdx, QWORD PTR a$[rsp]
+	mov	ecx, 13
+	call	x64_cpuid
+
+; 238  : 	if ((a & (7 << 5)) != 0) {
+
+	mov	rax, QWORD PTR a$[rsp]
+	and	rax, 224				; 000000e0H
+	test	rax, rax
+	je	SHORT $LN1@x86_64_cpu
+
+; 239  : 		size_t ax, bx, cx, dx;
+; 240  : 		x64_cpuid(0xD, &ax, &bx, &cx, &dx, 0);
+
+	mov	QWORD PTR [rsp+40], 0
+	lea	rax, QWORD PTR dx$7[rsp]
+	mov	QWORD PTR [rsp+32], rax
+	lea	r9, QWORD PTR cx$8[rsp]
+	lea	r8, QWORD PTR bx$5[rsp]
+	lea	rdx, QWORD PTR ax$6[rsp]
+	mov	ecx, 13
+	call	x64_cpuid
+
+; 241  : 		size_t xcr0 = x64_read_xcr0();
+
+	call	x64_read_xcr0
+	mov	QWORD PTR xcr0$2[rsp], rax
+
+; 242  : 		xcr0 |= (ax&(7<<5));
+
+	mov	rax, QWORD PTR ax$6[rsp]
+	and	rax, 224				; 000000e0H
+	mov	rcx, QWORD PTR xcr0$2[rsp]
+	or	rcx, rax
+	mov	rax, rcx
+	mov	QWORD PTR xcr0$2[rsp], rax
+
+; 243  : 		x64_write_xcr0(xcr0);
+
+	mov	rcx, QWORD PTR xcr0$2[rsp]
+	call	x64_write_xcr0
+
+; 244  : 		au_get_boot_info()->auprint("[aurora]: AVX-512 enabled %d bytes\n",bx);
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	mov	rdx, QWORD PTR bx$5[rsp]
+	lea	rcx, OFFSET FLAT:$SG2911
+	call	QWORD PTR [rax+82]
+$LN1@x86_64_cpu:
+
+; 245  : 	}
+; 246  : #endif
+; 247  : }
+
+	add	rsp, 152				; 00000098H
+	ret	0
+?x86_64_cpu_feature_enable@@YAXXZ ENDP			; x86_64_cpu_feature_enable
+_TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
 _TEXT	SEGMENT
@@ -333,7 +615,7 @@ $LN5:
 
 ; 158  : 	printf("[aurora]: Default interrupt++\n");
 
-	lea	rcx, OFFSET FLAT:$SG2846
+	lea	rcx, OFFSET FLAT:$SG2853
 	call	?printf@@YAXPEBDZZ			; printf
 $LN2@default_ir:
 
@@ -817,36 +1099,79 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
 _TEXT	SEGMENT
+efer$ = 32
 ?x86_64_cpu_initialize@@YAXXZ PROC			; x86_64_cpu_initialize
 
-; 203  : void x86_64_cpu_initialize() {
+; 252  : void x86_64_cpu_initialize() {
 
 $LN3:
-	sub	rsp, 40					; 00000028H
+	sub	rsp, 56					; 00000038H
 
-; 204  : 	x64_cli();
+; 253  : 	x64_cli();
 
 	call	x64_cli
 
-; 205  : 	x86_64_gdt_initialize();
+; 254  : 	x86_64_gdt_initialize();
 
 	call	?x86_64_gdt_initialize@@YAXXZ		; x86_64_gdt_initialize
 
-; 206  : 	x86_64_idt_initialize();
+; 255  : 	x86_64_idt_initialize();
 
 	call	?x86_64_idt_initialize@@YAXXZ		; x86_64_idt_initialize
 
-; 207  : 	x86_64_exception_init();
+; 256  : 	x86_64_exception_init();
 
 	call	?x86_64_exception_init@@YAXXZ		; x86_64_exception_init
 
-; 208  : 	x64_sti();
+; 257  : 	x86_64_cpu_feature_enable();
+
+	call	?x86_64_cpu_feature_enable@@YAXXZ	; x86_64_cpu_feature_enable
+
+; 258  : 
+; 259  : 	/* Enable SYSCALL extension */
+; 260  : 	size_t efer = x64_read_msr(IA32_EFER);
+
+	mov	ecx, -1073741696			; c0000080H
+	call	x64_read_msr
+	mov	QWORD PTR efer$[rsp], rax
+
+; 261  : 	efer |= (1 << 11);
+
+	mov	rax, QWORD PTR efer$[rsp]
+	bts	rax, 11
+	mov	QWORD PTR efer$[rsp], rax
+
+; 262  : 	efer |= 1;
+
+	mov	rax, QWORD PTR efer$[rsp]
+	or	rax, 1
+	mov	QWORD PTR efer$[rsp], rax
+
+; 263  : 	efer |= (1 << 0);
+
+	mov	rax, QWORD PTR efer$[rsp]
+	or	rax, 1
+	mov	QWORD PTR efer$[rsp], rax
+
+; 264  : 	efer |= 1;
+
+	mov	rax, QWORD PTR efer$[rsp]
+	or	rax, 1
+	mov	QWORD PTR efer$[rsp], rax
+
+; 265  : 	x64_write_msr(IA32_EFER, efer);
+
+	mov	rdx, QWORD PTR efer$[rsp]
+	mov	ecx, -1073741696			; c0000080H
+	call	x64_write_msr
+
+; 266  : 	x64_sti();
 
 	call	x64_sti
 
-; 209  : }
+; 267  : }
 
-	add	rsp, 40					; 00000028H
+	add	rsp, 56					; 00000038H
 	ret	0
 ?x86_64_cpu_initialize@@YAXXZ ENDP			; x86_64_cpu_initialize
 _TEXT	ENDS

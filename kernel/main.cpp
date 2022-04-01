@@ -37,6 +37,7 @@
 
 #include <kdrivers\au_video.h>
 #include <kdrivers\serial.h>
+#include <kdrivers\au_acpi.h>
 
 
 aurora_info_t info;
@@ -46,11 +47,15 @@ aurora_info_t * au_get_boot_info() {
 }
 
 
+extern "C" int _fltused = 1;
+
 int _kmain(aurora_info_t *bootinfo) {
 	bootinfo->auprint("Aurora Kernel \n");
 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
 	int au_status = 0;
+
+	
 
 	x86_64_pmmngr_init(bootinfo);
 	x86_64_cpu_initialize();
@@ -59,8 +64,18 @@ int _kmain(aurora_info_t *bootinfo) {
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
 	
-	au_status = au_initialize_serial();
 
+	au_status = au_initialize_serial();
+	au_status = au_initialize_acpi();
+
+
+	/* just for debug purpose */
+	for (int i = 0; i < 100; i++) {
+		for (int j = 0; j < 100; j++) {
+			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
+		}
+	}
+	
 	for (;;);
 	return 0;
 }

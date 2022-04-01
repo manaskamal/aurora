@@ -87,7 +87,7 @@
       </SDLCheck>
       <AdditionalIncludeDirectories>E:\Aurora Kernel\kernel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
-      <PreprocessorDefinitions>ARCH_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ARCH_X64;AVX_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -157,6 +157,7 @@
     <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h" />
     <ClInclude Include="include\auinfo.h" />
     <ClInclude Include="include\console.h" />
+    <ClInclude Include="include\kdrivers\au_acpi.h" />
     <ClInclude Include="include\kdrivers\au_video.h" />
     <ClInclude Include="include\kdrivers\serial.h" />
     <ClInclude Include="include\limits.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="arch\x86_64\x86_64_paging.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp" />
     <ClCompile Include="console.cpp" />
+    <ClCompile Include="kdrivers\au_acpi.cpp" />
     <ClCompile Include="kdrivers\au_video.cpp" />
     <ClCompile Include="kdrivers\serial.cpp" />
     <ClCompile Include="main.cpp" />

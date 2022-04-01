@@ -188,6 +188,7 @@ extern "C" size_t x64_read_cr3();
 extern "C" size_t x64_read_cr4();
 extern "C" void x64_write_cr0(size_t);
 extern "C" void x64_write_cr3(size_t);
+extern "C" void x64_write_cr4(size_t);
 
 //!GDT &  IDT Function
 extern "C" void x64_lgdt(void* location);
@@ -196,4 +197,10 @@ extern "C" void x64_idt_test();
 //! TLB Flush
 extern "C" void flush_tlb(void* addr);
 extern "C" void cache_flush();
+
+//! SSE & AVX
+extern "C" void x64_activate_sse();
+extern "C" void x64_activate_avx();
+extern "C" uint64_t x64_read_xcr0();
+extern "C" void x64_write_xcr0(uint64_t);
 #endif
