@@ -72,4 +72,16 @@ extern uint64_t x86_64_virt_to_phys(uint64_t phys_addr);
 * @param attrib -- attributes
 */
 extern bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib);
+
+/*
+* x86_64_get_free_page -- search for free page
+* @param user -- set if return page is needed for user mode
+*/
+extern uint64_t* x86_64_get_free_page(bool user);
+
+/*
+* x86_64_check_free -- checks if page is free
+* @param address -- virtual address
+*/
+extern bool x86_64_check_free(uint64_t address);
 #endif

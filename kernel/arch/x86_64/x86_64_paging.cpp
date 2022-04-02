@@ -34,7 +34,32 @@
 #include <auinfo.h>
 #include <console.h>
 #include <string.h>
+#include <kdrivers\serial.h>
 
+/* search for free page from this address*/
+#define PAGE_SEARCH_KERNEL  0xFFFFE00000000000
+#define PAGE_SEARCH_USER    0x0000000000000000
+
+
+size_t  pml4_index(uint64_t addr){
+	return (addr >> 39) & 0x1ff;
+}
+
+size_t pdp_index(uint64_t addr){
+	return (addr >> 30) & 0x1ff;
+}
+
+size_t pd_index(uint64_t addr){
+	return (addr >> 21) & 0x1ff;
+}
+
+size_t pt_index(uint64_t addr){
+	return (addr >> 12) & 0x1ff;
+}
+
+size_t p_index(uint64_t addr){
+	return (addr & 0x7ff);
+}
 
 /*
  * early_map_page -- maps pages to virtual address before moving to 
@@ -104,7 +129,7 @@ int x86_64_paging_init() {
 		if (i == 511)
 			continue;
 
-		if (old_cr3[i] & 0x1)
+		if ((old_cr3[i] & 0x1))
 			new_cr3[i] = old_cr3[i];
 		else
 			new_cr3[i] = 0;
@@ -112,11 +137,31 @@ int x86_64_paging_init() {
 
 	x64_write_cr3((size_t)new_cr3);
 
-	/* map entire physical memory to PHYSICAL_MEMORY_BASE */
-	for (uint64_t i = 0; i < x86_64_pmmngr_get_total_mem() / 4096; i++)
-		early_map_page(0x0 + i * 4096, PHYSICAL_MEMORY_BASE + i * 4096, 0);
+	/* Here! map 16 GiB of Physical Memory to Virtual Memory */
 
-	/* clear up the lower half*/
+	uint64_t* pdpt = (uint64_t*)x86_64_pmmngr_alloc();
+	uint64_t* pd = (uint64_t*)x86_64_pmmngr_alloc();
+	uint64_t* pd2 = (uint64_t*)x86_64_pmmngr_alloc();
+
+	new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = (uintptr_t)pdpt | PAGING_PRESENT | PAGING_WRITABLE;
+
+	/* Point the pdpt entry to 8GiB PD */
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE)] = (uintptr_t)&pd[0] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 1] = (uintptr_t)&pd[512] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 2] = (uintptr_t)&pd[1024] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 3] = (uintptr_t)&pd[1536] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 4] = (uintptr_t)&pd[2048] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 5] = (uintptr_t)&pd[2560] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 6] = (uintptr_t)&pd[3072] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 7] = (uintptr_t)&pd[3584] | PAGING_PRESENT | PAGING_WRITABLE;
+	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 8] = (uintptr_t)&pd[4096] | PAGING_PRESENT | PAGING_WRITABLE;
+
+	/* First 8 GiB mapped , 2MB pages*/
+	for (size_t i = 0; i <= 4096; i++) {
+		pd[pd_index(PHYSICAL_MEMORY_BASE) + i] = i * 512 * 4096 | 0x80 | PAGING_PRESENT | PAGING_WRITABLE;
+	}
+
+
 	for (int i = 0; i < 256; i++)
 		new_cr3[i] = 0;
 
@@ -167,31 +212,34 @@ bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib) {
 	const long i1 = (virt >> 12) & 0x1FF;
 
 	uint64_t *pml4i = (uint64_t*)x86_64_phys_to_virt(x64_read_cr3());
-	if (!(x86_64_phys_to_virt(pml4i[i4]) & PAGING_PRESENT)) {
+
+	if (!(pml4i[i4] & PAGING_PRESENT)) {
 		uint64_t page = (uint64_t)x86_64_pmmngr_alloc();
+		memset((void*)x86_64_phys_to_virt(page), 0, 4096);
 		pml4i[i4] = page | flags;
 		flush_tlb((void*)page);
 		x64_mfence();
 	}
 
-	uint64_t* pml3 = (uint64_t*)x86_64_phys_to_virt(pml4i[i4] & ~(4096 - 1));
+	uint64_t* pml3 = (uint64_t*)(x86_64_phys_to_virt(pml4i[i4]) & ~(4096 - 1));
 	if (!(pml3[i3] & PAGING_PRESENT)) {
 		const uint64_t page = (uint64_t)x86_64_pmmngr_alloc();
+		memset((void*)x86_64_phys_to_virt(page), 0, 4096);
 		pml3[i3] = page | flags;
 		flush_tlb((void*)page);
 		x64_mfence();
 	}
 
-	uint64_t* pml2 = (uint64_t*)x86_64_phys_to_virt((pml3[i3] & ~(4096 - 1)));
-
+	uint64_t* pml2 = (uint64_t*)(x86_64_phys_to_virt(pml3[i3]) & ~(4096 - 1));
 	if (!(pml2[i2] & PAGING_PRESENT)) {
 		const uint64_t page = (uint64_t)x86_64_pmmngr_alloc();
+		memset((void*)x86_64_phys_to_virt(page), 0, 4096);
 		pml2[i2] = page | flags;
 		flush_tlb((void*)page);
 		x64_mfence();
 	}
 
-	uint64_t* pml1 = (uint64_t*)x86_64_phys_to_virt((pml2[i2] & ~(4096 - 1)));
+	uint64_t* pml1 = (uint64_t*)(x86_64_phys_to_virt(pml2[i2]) & ~(4096 - 1));
 	if (pml1[i1] & PAGING_PRESENT) {
 		x86_64_pmmngr_free((void*)phys);
 		return false;
@@ -201,5 +249,68 @@ bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib) {
 	flush_tlb((void*)virt);
 	x64_mfence();
 	return true;
+}
+
+
+/*
+ * x86_64_get_free_page -- search for free page 
+ * @param user -- set if return page is needed for user mode
+ */
+uint64_t* x86_64_get_free_page(bool user) {
+	uint64_t* page = 0;
+	uint64_t start = PAGE_SEARCH_KERNEL;
+	if (user)
+		start = PAGE_SEARCH_USER;
+
+	uint64_t *pml4 = (uint64_t*)x86_64_phys_to_virt(x64_read_cr3());
+	
+	/* Walk through every page tables */
+	for (;;) {
+		if (!(pml4[pml4_index(start)] & PAGING_PRESENT))
+			return (uint64_t*)start;
+
+		uint64_t *pdpt = (uint64_t*)(x86_64_phys_to_virt(pml4[pml4_index(start)]) & ~(4096 - 1));
+		if (!(pdpt[pdp_index(start)] & PAGING_PRESENT))
+			return (uint64_t*)start;
+
+		uint64_t *pd = (uint64_t*)(x86_64_phys_to_virt(pdpt[pdp_index(start)]) & ~(4096 - 1));
+		if (!(pd[pd_index(start)] & PAGING_PRESENT))
+			return (uint64_t*)start;
+
+		uint64_t *pt = (uint64_t*)(x86_64_phys_to_virt(pd[pd_index(start)]) & ~(4096 - 1));
+
+		if (!(pt[pt_index(start)] & PAGING_PRESENT))
+			return (uint64_t*)start;
+		
+		start += 4096;
+	}
+	return 0;
+}
+
+/*
+* x86_64_check_free -- checks if page is free
+* @param start -- virtual address
+*/
+bool x86_64_check_free(uint64_t start) {
+
+	uint64_t *pml4 = (uint64_t*)x86_64_phys_to_virt(x64_read_cr3());
+
+	if (!(pml4[pml4_index(start)] & PAGING_PRESENT))
+		return true;
+
+	uint64_t *pdpt = (uint64_t*)(x86_64_phys_to_virt(pml4[pml4_index(start)]) & ~(4096 - 1));
+	if (!(pdpt[pdp_index(start)] & PAGING_PRESENT))
+		return true;
+
+	uint64_t *pd = (uint64_t*)(x86_64_phys_to_virt(pdpt[pdp_index(start)]) & ~(4096 - 1));
+	if (!(pd[pd_index(start)] & PAGING_PRESENT))
+		return true;
+
+	uint64_t *pt = (uint64_t*)(x86_64_phys_to_virt(pd[pd_index(start)]) & ~(4096 - 1));
+
+	if (!(pt[pt_index(start)] & PAGING_PRESENT))
+		return true;
+
+	return false;
 }
 

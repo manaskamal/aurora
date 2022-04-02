@@ -1,12 +1,12 @@
-﻿Build started 01-04-2022 ৰাতিপু 10:47:41.
+﻿Build started 02-04-2022 আবেলি 2:36:04.
      1>Project "E:\Aurora Kernel\kernel\kernel.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
          _fastcpy.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpcaf5f17b76084edb8b55fc4ed3887c32.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp0606079b3db24ac19e6d5687e8948763.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\_fastcpy.obj"  "E:\Aurora Kernel\kernel\_fastcpy.asm"
        _NASM:
          arch\x86_64\x86_64_interrupt.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpce8f6c67999e40ae9b6d9af85ecdf659.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp1253848b29a643ccac92731ce02b1429.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_interrupt.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm"
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(128): warning : signed dword immediate exceeds bounds
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(129): warning : signed dword immediate exceeds bounds
@@ -258,10 +258,10 @@
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(152): warning : signed dword immediate exceeds bounds
        _NASM:
          arch\x86_64\x86_64_lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpb5f52cc899a540478ea13a16d7843ac8.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp43f7503d0a924ce1a821271594c883b1.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_lowlevel.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_lowlevel.asm"
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D AVX_ENABLED /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_pmmngr.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp stdlib.cpp string.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D AVX_ENABLED_MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_pmmngr.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp stdlib.cpp string.cpp
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          string.cpp
          stdlib.cpp
@@ -272,14 +272,18 @@
          console.cpp
          x86_64_pmmngr.cpp
          x86_64_paging.cpp
+         x86_64_ioapic.cpp
          x86_64_exception.cpp
          x86_64_cpu.cpp
+         x86_64_apic.cpp
          Generating Code...
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1186,5): warning MSB8012: TargetPath(E:\Aurora Kernel\kernel\x64\Debug\kernel.exe) does not match the Linker's OutputFile property value (F:\EFI\XENEVA\xnkrnl.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1188,5): warning MSB8012: TargetName(kernel) does not match the Linker's OutputFile property value (xnkrnl). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\EFI\XENEVA\xnkrnl.exe" /INCREMENTAL /NOLOGO /NODEFAULTLIB /MANIFEST:NO /PDB:"E:\Aurora Kernel\kernel\x64\Debug\kernel.pdb" /MAP /MAPINFO:EXPORTS /SUBSYSTEM:NATIVE /STACK:"0x100000" /LARGEADDRESSAWARE /Driver /OPT:NOREF /LTCG /TLBID:1 /ENTRY:"_kmain" /BASE:"0xFFFFC00000000000" /FIXED:NO /IMPLIB:"E:\Aurora Kernel\kernel\x64\Debug\kernel.lib" /MACHINE:X64 /ALIGN:512 x64\Debug\x86_64_cpu.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\EFI\XENEVA\xnkrnl.exe" /INCREMENTAL /NOLOGO /NODEFAULTLIB /MANIFEST:NO /PDB:"E:\Aurora Kernel\kernel\x64\Debug\kernel.pdb" /MAP /MAPINFO:EXPORTS /SUBSYSTEM:NATIVE /STACK:"0x100000" /LARGEADDRESSAWARE /Driver /OPT:NOREF /LTCG /TLBID:1 /ENTRY:"_kmain" /BASE:"0xFFFFC00000000000" /FIXED:NO /IMPLIB:"E:\Aurora Kernel\kernel\x64\Debug\kernel.lib" /MACHINE:X64 /ALIGN:512 x64\Debug\x86_64_apic.obj
+         x64\Debug\x86_64_cpu.obj
          x64\Debug\x86_64_exception.obj
+         x64\Debug\x86_64_ioapic.obj
          x64\Debug\x86_64_paging.obj
          x64\Debug\x86_64_pmmngr.obj
          x64\Debug\console.obj
@@ -299,4 +303,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.02
+Time Elapsed 00:00:01.65

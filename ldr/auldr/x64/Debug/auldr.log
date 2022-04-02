@@ -1,8 +1,8 @@
-﻿Build started 30-03-2022 আবেলি 9:43:49.
+﻿Build started 01-04-2022 আবেলি 7:25:57.
      1>Project "E:\Aurora Kernel\ldr\auldr\auldr.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
          lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpeaafd25797624130adae701d93cbec0a.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp278fae1764214c019897a22b94679701.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\lowlevel.obj"  "E:\Aurora Kernel\ldr\auldr\lowlevel.asm"
        ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\ldr\auldr\include" /I"E:\Aurora Kernel\ldr\auldr\include\AArch64" /I"E:\Aurora Kernel\ldr\auldr\include\Protocol" /nologo /W4 /WX- /sdl- /MP /Od /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt aulib.cpp au_mm.cpp graphics.cpp main.cpp print.cpp string.cpp type.cpp
@@ -10,132 +10,132 @@
      1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
      1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
-     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
-     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
-     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
-     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
-     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
-     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
-     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
      1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
-     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
          aulib.cpp
-     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
-     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
+     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
+     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
          au_mm.cpp
+     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
+     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
+     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
+     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          graphics.cpp
-     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          main.cpp
-     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
+         print.cpp
+     1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
+     1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9025: overriding '/sdl-' with '/GS-'
      1>cl : Command line warning D9007: '/Gm' requires '/Zi'; option ignored
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
-         print.cpp
          string.cpp
+     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          type.cpp
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (aulib.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (graphics.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (print.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (graphics.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (aulib.cpp)
      1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (print.cpp)
-     1>au_mm.cpp(77): warning C4267: 'argument' : conversion from 'size_t' to 'const intptr_t', possible loss of data
-     1>au_mm.cpp(102): warning C4244: 'argument' : conversion from 'uint64_t' to 'const intptr_t', possible loss of data
-     1>au_mm.cpp(69): warning C4189: 'mem_blocks' : local variable is initialized but not referenced
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (au_mm.cpp)
+     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (main.cpp)
      1>graphics.cpp(66): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
      1>graphics.cpp(69): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
      1>graphics.cpp(72): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
-     1>aulib.cpp(163): warning C4018: '<' : signed/unsigned mismatch
      1>graphics.cpp(115): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
+     1>aulib.cpp(163): warning C4018: '<' : signed/unsigned mismatch
      1>graphics.cpp(118): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
-     1>aulib.cpp(190): warning C4244: 'argument' : conversion from 'uint64_t' to 'UINT32', possible loss of data
      1>graphics.cpp(121): warning C4267: 'argument' : conversion from 'size_t' to 'unsigned int', possible loss of data
+     1>aulib.cpp(190): warning C4244: 'argument' : conversion from 'uint64_t' to 'UINT32', possible loss of data
+     1>main.cpp(109): warning C4244: '=' : conversion from 'uint32_t' to 'uint16_t', possible loss of data
+     1>main.cpp(48): warning C4189: 'desc_ptr' : local variable is initialized but not referenced
      1>print.cpp(19): warning C4244: '=' : conversion from 'int' to 'unsigned short', possible loss of data
      1>print.cpp(140): warning C4244: '=' : conversion from 'int' to 'unsigned short', possible loss of data
      1>print.cpp(215): warning C4146: unary minus operator applied to unsigned type, result still unsigned
      1>print.cpp(226): warning C4244: '=' : conversion from '__int64' to 'int', possible loss of data
      1>print.cpp(250): warning C4244: '=' : conversion from 'int' to 'unsigned short', possible loss of data
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(54): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(55): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(56): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(57): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(58): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(59): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(60): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(61): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(62): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(63): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(64): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(85): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(86): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(87): warning C4804: '/' : unsafe use of type 'bool' in operation (main.cpp)
-     1>E:\Aurora Kernel\ldr\auldr\include\Base.h(1266): warning C4162: '_ReturnAddress' : no function with C linkage found (main.cpp)
+     1>au_mm.cpp(77): warning C4267: 'argument' : conversion from 'size_t' to 'const intptr_t', possible loss of data
+     1>au_mm.cpp(102): warning C4244: 'argument' : conversion from 'uint64_t' to 'const intptr_t', possible loss of data
+     1>au_mm.cpp(69): warning C4189: 'mem_blocks' : local variable is initialized but not referenced
+     1>e:\aurora kernel\ldr\auldr\aulib.cpp(170): warning C4715: 'aulib_query_gop' : not all control paths return a value
      1>e:\aurora kernel\ldr\auldr\print.cpp(17): warning C4706: assignment within conditional expression
+     1>e:\aurora kernel\ldr\auldr\aulib.cpp(275): warning C4715: 'aulib_get_acpi_pointer' : not all control paths return a value
+     1>e:\aurora kernel\ldr\auldr\main.cpp(121): warning C4702: unreachable code
      1>e:\aurora kernel\ldr\auldr\print.cpp(205): warning C4706: assignment within conditional expression
      1>e:\aurora kernel\ldr\auldr\print.cpp(210): warning C4706: assignment within conditional expression
-     1>e:\aurora kernel\ldr\auldr\aulib.cpp(170): warning C4715: 'aulib_query_gop' : not all control paths return a value
-     1>e:\aurora kernel\ldr\auldr\aulib.cpp(275): warning C4715: 'aulib_get_acpi_pointer' : not all control paths return a value
-     1>main.cpp(105): warning C4244: '=' : conversion from 'uint32_t' to 'uint16_t', possible loss of data
-     1>main.cpp(46): warning C4189: 'desc_ptr' : local variable is initialized but not referenced
-     1>e:\aurora kernel\ldr\auldr\main.cpp(117): warning C4702: unreachable code
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1186,5): warning MSB8012: TargetPath(E:\Aurora Kernel\ldr\auldr\x64\Debug\auldr.efi) does not match the Linker's OutputFile property value (F:\EFI\BOOT\BOOTx64.efi). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(1188,5): warning MSB8012: TargetName(auldr) does not match the Linker's OutputFile property value (BOOTx64). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
        Link:
@@ -154,4 +154,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.21
+Time Elapsed 00:00:02.96

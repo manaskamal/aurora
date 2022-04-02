@@ -10,34 +10,38 @@ PUBLIC	_fltused
 _BSS	SEGMENT
 ?info@@3U_AURORA_INFO_@@A DB 05aH DUP (?)		; info
 _BSS	ENDS
-CONST	SEGMENT
-$SG3195	DB	'Aurora Kernel ', 0aH, 00H
-CONST	ENDS
 _DATA	SEGMENT
 _fltused DD	01H
 _DATA	ENDS
+CONST	SEGMENT
+$SG3224	DB	'Key pressed ', 0dH, 0aH, 00H
+	ORG $+1
+$SG3229	DB	'Aurora Kernel ', 0aH, 00H
+CONST	ENDS
 PUBLIC	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ	; au_get_boot_info
+PUBLIC	?kybrd_handler@@YAX_KPEAX@Z			; kybrd_handler
 PUBLIC	?_kmain@@YAHPEAU_AURORA_INFO_@@@Z		; _kmain
-PUBLIC	__real@3f800000
 EXTRN	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z:PROC ; x86_64_pmmngr_init
 EXTRN	?x86_64_cpu_initialize@@YAXXZ:PROC		; x86_64_cpu_initialize
 EXTRN	?x86_64_paging_init@@YAHXZ:PROC			; x86_64_paging_init
+EXTRN	?x86_64_initialize_apic@@YAHXZ:PROC		; x86_64_initialize_apic
 EXTRN	memcpy:PROC
 EXTRN	?au_fb_initialize@@YAHXZ:PROC			; au_fb_initialize
 EXTRN	?au_video_get_fb@@YAPEAIXZ:PROC			; au_video_get_fb
 EXTRN	?au_initialize_serial@@YAHXZ:PROC		; au_initialize_serial
+EXTRN	?_au_debug_print_@@YAXPEADZZ:PROC		; _au_debug_print_
 EXTRN	?au_initialize_acpi@@YAHXZ:PROC			; au_initialize_acpi
-EXTRN	_fltused:DWORD
 pdata	SEGMENT
+$pdata$?kybrd_handler@@YAX_KPEAX@Z DD imagerel $LN3
+	DD	imagerel $LN3+31
+	DD	imagerel $unwind$?kybrd_handler@@YAX_KPEAX@Z
 $pdata$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD imagerel $LN11
-	DD	imagerel $LN11+220
+	DD	imagerel $LN11+215
 	DD	imagerel $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z
 pdata	ENDS
-;	COMDAT __real@3f800000
-CONST	SEGMENT
-__real@3f800000 DD 03f800000r			; 1
-CONST	ENDS
 xdata	SEGMENT
+$unwind$?kybrd_handler@@YAX_KPEAX@Z DD 010e01H
+	DD	0420eH
 $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD 010901H
 	DD	06209H
 xdata	ENDS
@@ -47,78 +51,78 @@ _TEXT	SEGMENT
 au_status$ = 32
 j$1 = 36
 i$2 = 40
-b$ = 44
 bootinfo$ = 64
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z PROC			; _kmain
 
-; 52   : int _kmain(aurora_info_t *bootinfo) {
+; 57   : int _kmain(aurora_info_t *bootinfo) {
 
 $LN11:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 53   : 	bootinfo->auprint("Aurora Kernel \n");
+; 58   : 	bootinfo->auprint("Aurora Kernel \n");
 
-	lea	rcx, OFFSET FLAT:$SG3195
+	lea	rcx, OFFSET FLAT:$SG3229
 	mov	rax, QWORD PTR bootinfo$[rsp]
 	call	QWORD PTR [rax+82]
 
-; 54   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
+; 59   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
 	mov	r8d, 90					; 0000005aH
 	mov	rdx, QWORD PTR bootinfo$[rsp]
 	lea	rcx, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 	call	memcpy
 
-; 55   : 
-; 56   : 	int au_status = 0;
+; 60   : 
+; 61   : 	int au_status = 0;
 
 	mov	DWORD PTR au_status$[rsp], 0
 
-; 57   : 
-; 58   : 	
-; 59   : 
-; 60   : 	x86_64_pmmngr_init(bootinfo);
+; 62   : 
+; 63   : 
+; 64   : 	x86_64_pmmngr_init(bootinfo);
 
 	mov	rcx, QWORD PTR bootinfo$[rsp]
 	call	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z ; x86_64_pmmngr_init
 
-; 61   : 	x86_64_cpu_initialize();
+; 65   : 	x86_64_cpu_initialize();
 
 	call	?x86_64_cpu_initialize@@YAXXZ		; x86_64_cpu_initialize
 
-; 62   : 
-; 63   : 	/* initialize early drivers*/
-; 64   : 	au_status = au_fb_initialize();
+; 66   : 
+; 67   : 
+; 68   : 	/* initialize early drivers*/
+; 69   : 	au_status = au_fb_initialize();
 
 	call	?au_fb_initialize@@YAHXZ		; au_fb_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 65   : 	au_status = x86_64_paging_init();
+; 70   : 	au_status = x86_64_paging_init();
 
 	call	?x86_64_paging_init@@YAHXZ		; x86_64_paging_init
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 66   : 	
-; 67   : 
-; 68   : 	au_status = au_initialize_serial();
+; 71   : 
+; 72   : 	au_status = au_initialize_serial();
 
 	call	?au_initialize_serial@@YAHXZ		; au_initialize_serial
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 69   : 	au_status = au_initialize_acpi();
+; 73   : 	au_status = au_initialize_acpi();
 
 	call	?au_initialize_acpi@@YAHXZ		; au_initialize_acpi
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 70   : 
-; 71   : 	float b = 1.0;
+; 74   : 	au_status = x86_64_initialize_apic();
 
-	movss	xmm0, DWORD PTR __real@3f800000
-	movss	DWORD PTR b$[rsp], xmm0
+	call	?x86_64_initialize_apic@@YAHXZ		; x86_64_initialize_apic
+	mov	DWORD PTR au_status$[rsp], eax
 
-; 72   : 
-; 73   : 	for (int i = 0; i < 100; i++) {
+; 75   : 
+; 76   : 
+; 77   : 
+; 78   : 	/* just for debug purpose */
+; 79   : 	for (int i = 0; i < 100; i++) {
 
 	mov	DWORD PTR i$2[rsp], 0
 	jmp	SHORT $LN8@kmain
@@ -130,7 +134,7 @@ $LN8@kmain:
 	cmp	DWORD PTR i$2[rsp], 100			; 00000064H
 	jge	SHORT $LN6@kmain
 
-; 74   : 		for (int j = 0; j < 100; j++) {
+; 80   : 		for (int j = 0; j < 100; j++) {
 
 	mov	DWORD PTR j$1[rsp], 0
 	jmp	SHORT $LN5@kmain
@@ -142,7 +146,7 @@ $LN5@kmain:
 	cmp	DWORD PTR j$1[rsp], 100			; 00000064H
 	jge	SHORT $LN3@kmain
 
-; 75   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
+; 81   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
 
 	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
 	mov	ecx, DWORD PTR j$1[rsp]
@@ -153,27 +157,27 @@ $LN5@kmain:
 	mov	ecx, ecx
 	mov	DWORD PTR [rax+rcx*4], -1		; ffffffffH
 
-; 76   : 		}
+; 82   : 		}
 
 	jmp	SHORT $LN4@kmain
 $LN3@kmain:
 
-; 77   : 	}
+; 83   : 	}
 
 	jmp	SHORT $LN7@kmain
 $LN6@kmain:
 $LN2@kmain:
 
-; 78   : 	
-; 79   : 	for (;;);
+; 84   : 	
+; 85   : 	for (;;);
 
 	jmp	SHORT $LN2@kmain
 
-; 80   : 	return 0;
+; 86   : 	return 0;
 
 	xor	eax, eax
 
-; 81   : }
+; 87   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -182,13 +186,38 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\main.cpp
 _TEXT	SEGMENT
+v$ = 48
+p$ = 56
+?kybrd_handler@@YAX_KPEAX@Z PROC			; kybrd_handler
+
+; 51   : void kybrd_handler(size_t v, void* p) {
+
+$LN3:
+	mov	QWORD PTR [rsp+16], rdx
+	mov	QWORD PTR [rsp+8], rcx
+	sub	rsp, 40					; 00000028H
+
+; 52   : 	_au_debug_print_("Key pressed \r\n");
+
+	lea	rcx, OFFSET FLAT:$SG3224
+	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
+
+; 53   : }
+
+	add	rsp, 40					; 00000028H
+	ret	0
+?kybrd_handler@@YAX_KPEAX@Z ENDP			; kybrd_handler
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\main.cpp
+_TEXT	SEGMENT
 ?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ PROC		; au_get_boot_info
 
-; 46   : 	return &info;
+; 48   : 	return &info;
 
 	lea	rax, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 
-; 47   : }
+; 49   : }
 
 	ret	0
 ?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ENDP		; au_get_boot_info

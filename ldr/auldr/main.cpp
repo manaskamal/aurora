@@ -21,6 +21,8 @@ int main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *system_table) {
 	/* initialize the aulib service */
 	aulib_initialize(ImageHandle, system_table);
 
+	system_table->ConOut->ClearScreen(system_table->ConOut);
+
 	/* initialize the console service*/
 	aulib_initialize_console();
 
@@ -65,6 +67,8 @@ int main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *system_table) {
 	}
 
 	void* xsdp_address = aulib_get_acpi_pointer();
+
+
 
 	if (EFI_ERROR(status = system_table->BootServices->ExitBootServices(ImageHandle, map.MapKey))) {
 		au_print("[auldr]: exit_boot_service failed\n");

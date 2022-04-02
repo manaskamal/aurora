@@ -87,7 +87,7 @@
       </SDLCheck>
       <AdditionalIncludeDirectories>E:\Aurora Kernel\kernel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
-      <PreprocessorDefinitions>ARCH_X64;AVX_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ARCH_X64;AVX_ENABLED%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -149,9 +149,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\arch\x86_64\x86_64_apic.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_cpu.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_efi.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_exception.h" />
+    <ClInclude Include="include\arch\x86_64\x86_64_ioapic.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_lowlevel.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_paging.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h" />
@@ -172,8 +174,10 @@
     <ClCompile Include="arch\aarch64\start.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_apic.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_cpu.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_exception.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_ioapic.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_paging.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp" />
     <ClCompile Include="console.cpp" />

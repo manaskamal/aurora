@@ -21,10 +21,6 @@ $SG2895	DB	'[aurora]: fxsave supported ', 0aH, 00H
 $SG2898	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
 	ORG $+2
 $SG2901	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
-	ORG $+2
-$SG2904	DB	'[aurora]: AVX enabled', 0aH, 00H
-	ORG $+1
-$SG2911	DB	'[aurora]: AVX-512 enabled %d bytes', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_cpu_initialize@@YAXXZ			; x86_64_cpu_initialize
 PUBLIC	?setvect@@YAX_KP6AX0PEAX@Z@Z			; setvect
@@ -45,8 +41,6 @@ EXTRN	x64_read_cr4:PROC
 EXTRN	x64_write_cr4:PROC
 EXTRN	x64_lgdt:PROC
 EXTRN	x64_sgdt:PROC
-EXTRN	x64_read_xcr0:PROC
-EXTRN	x64_write_xcr0:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?printf@@YAXPEBDZZ:PROC				; printf
 EXTRN	?x86_64_exception_init@@YAXXZ:PROC		; x86_64_exception_init
@@ -100,8 +94,8 @@ $pdata$?default_irq@@YAX_KPEAX@Z DD imagerel $LN5
 $pdata$?x86_64_idt_initialize@@YAXXZ DD imagerel $LN12
 	DD	imagerel $LN12+519
 	DD	imagerel $unwind$?x86_64_idt_initialize@@YAXXZ
-$pdata$?x86_64_cpu_feature_enable@@YAXXZ DD imagerel $LN12
-	DD	imagerel $LN12+543
+$pdata$?x86_64_cpu_feature_enable@@YAXXZ DD imagerel $LN10
+	DD	imagerel $LN10+295
 	DD	imagerel $unwind$?x86_64_cpu_feature_enable@@YAXXZ
 pdata	ENDS
 xdata	SEGMENT
@@ -125,30 +119,24 @@ $unwind$?default_irq@@YAX_KPEAX@Z DD 010e01H
 	DD	0420eH
 $unwind$?x86_64_idt_initialize@@YAXXZ DD 020701H
 	DD	0a10107H
-$unwind$?x86_64_cpu_feature_enable@@YAXXZ DD 020701H
-	DD	0130107H
+$unwind$?x86_64_cpu_feature_enable@@YAXXZ DD 010401H
+	DD	0c204H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
 _TEXT	SEGMENT
 cr4$1 = 48
-d$ = 56
-c$ = 64
-xcr0$2 = 72
-cr4$3 = 80
-xcr0$4 = 88
-a$ = 96
-b$ = 104
-bx$5 = 112
-ax$6 = 120
-dx$7 = 128
-cx$8 = 136
+cr4$2 = 56
+d$ = 64
+c$ = 72
+b$ = 80
+a$ = 88
 ?x86_64_cpu_feature_enable@@YAXXZ PROC			; x86_64_cpu_feature_enable
 
 ; 199  : void x86_64_cpu_feature_enable() {
 
-$LN12:
-	sub	rsp, 152				; 00000098H
+$LN10:
+	sub	rsp, 104				; 00000068H
 
 ; 200  : 
 ; 201  : 	size_t a, b, c, d;
@@ -169,7 +157,7 @@ $LN12:
 	mov	rax, QWORD PTR c$[rsp]
 	and	rax, 67108864				; 04000000H
 	test	rax, rax
-	je	SHORT $LN9@x86_64_cpu
+	je	SHORT $LN7@x86_64_cpu
 
 ; 205  : 		au_get_boot_info()->auprint("[aurora]: xcr0 supported\n");
 
@@ -181,19 +169,19 @@ $LN12:
 ; 207  : 		uint64_t cr4 = x64_read_cr4();
 
 	call	x64_read_cr4
-	mov	QWORD PTR cr4$3[rsp], rax
+	mov	QWORD PTR cr4$2[rsp], rax
 
 ; 208  : 		cr4 |= (1 << 18);
 
-	mov	rax, QWORD PTR cr4$3[rsp]
+	mov	rax, QWORD PTR cr4$2[rsp]
 	bts	rax, 18
-	mov	QWORD PTR cr4$3[rsp], rax
+	mov	QWORD PTR cr4$2[rsp], rax
 
 ; 209  : 		x64_write_cr4(cr4);
 
-	mov	rcx, QWORD PTR cr4$3[rsp]
+	mov	rcx, QWORD PTR cr4$2[rsp]
 	call	x64_write_cr4
-$LN9@x86_64_cpu:
+$LN7@x86_64_cpu:
 
 ; 210  : 	}
 ; 211  : 
@@ -202,7 +190,7 @@ $LN9@x86_64_cpu:
 	mov	rax, QWORD PTR d$[rsp]
 	and	rax, 33554432				; 02000000H
 	test	rax, rax
-	je	SHORT $LN8@x86_64_cpu
+	je	SHORT $LN6@x86_64_cpu
 
 ; 213  : 		au_get_boot_info()->auprint("[aurora]: SSE is supported \n");
 
@@ -227,7 +215,7 @@ $LN9@x86_64_cpu:
 	mov	rax, QWORD PTR d$[rsp]
 	and	rax, 16777216				; 01000000H
 	test	rax, rax
-	je	SHORT $LN7@x86_64_cpu
+	je	SHORT $LN5@x86_64_cpu
 
 ; 218  : 			au_get_boot_info()->auprint("[aurora]: fxsave supported \n");
 
@@ -240,7 +228,7 @@ $LN9@x86_64_cpu:
 	mov	rax, QWORD PTR cr4$1[rsp]
 	bts	rax, 9
 	mov	QWORD PTR cr4$1[rsp], rax
-$LN7@x86_64_cpu:
+$LN5@x86_64_cpu:
 
 ; 220  : 		}
 ; 221  : 
@@ -248,8 +236,8 @@ $LN7@x86_64_cpu:
 
 	mov	rcx, QWORD PTR cr4$1[rsp]
 	call	x64_write_cr4
-	jmp	SHORT $LN6@x86_64_cpu
-$LN8@x86_64_cpu:
+	jmp	SHORT $LN4@x86_64_cpu
+$LN6@x86_64_cpu:
 
 ; 223  : 	}
 ; 224  : 	else if ((d & (1 << 26)) != 0) {
@@ -257,15 +245,15 @@ $LN8@x86_64_cpu:
 	mov	rax, QWORD PTR d$[rsp]
 	and	rax, 67108864				; 04000000H
 	test	rax, rax
-	je	SHORT $LN5@x86_64_cpu
+	je	SHORT $LN3@x86_64_cpu
 
 ; 225  : 		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rcx, OFFSET FLAT:$SG2898
 	call	QWORD PTR [rax+82]
-	jmp	SHORT $LN4@x86_64_cpu
-$LN5@x86_64_cpu:
+	jmp	SHORT $LN2@x86_64_cpu
+$LN3@x86_64_cpu:
 
 ; 226  : 	}
 ; 227  : 	else if ((c & (1 << 0)) != 0)
@@ -273,112 +261,38 @@ $LN5@x86_64_cpu:
 	mov	rax, QWORD PTR c$[rsp]
 	and	rax, 1
 	test	rax, rax
-	je	SHORT $LN3@x86_64_cpu
+	je	SHORT $LN1@x86_64_cpu
 
 ; 228  : 		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rcx, OFFSET FLAT:$SG2901
 	call	QWORD PTR [rax+82]
-$LN3@x86_64_cpu:
+$LN1@x86_64_cpu:
+$LN2@x86_64_cpu:
 $LN4@x86_64_cpu:
-$LN6@x86_64_cpu:
 
 ; 229  : 
 ; 230  : #ifdef AVX_ENABLED
 ; 231  : 	if ((c & (1 << 28)) != 0) {
-
-	mov	rax, QWORD PTR c$[rsp]
-	and	rax, 268435456				; 10000000H
-	test	rax, rax
-	je	SHORT $LN2@x86_64_cpu
-
 ; 232  : 		size_t xcr0 = x64_read_xcr0();
-
-	call	x64_read_xcr0
-	mov	QWORD PTR xcr0$4[rsp], rax
-
 ; 233  : 		xcr0 |= 7;
-
-	mov	rax, QWORD PTR xcr0$4[rsp]
-	or	rax, 7
-	mov	QWORD PTR xcr0$4[rsp], rax
-
 ; 234  : 		x64_write_xcr0(xcr0);
-
-	mov	rcx, QWORD PTR xcr0$4[rsp]
-	call	x64_write_xcr0
-
 ; 235  : 		au_get_boot_info()->auprint("[aurora]: AVX enabled\n");
-
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2904
-	call	QWORD PTR [rax+82]
-$LN2@x86_64_cpu:
-
 ; 236  : 	}
 ; 237  : 	x64_cpuid(0xD, &a, &b, &c, &d);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR d$[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR c$[rsp]
-	lea	r8, QWORD PTR b$[rsp]
-	lea	rdx, QWORD PTR a$[rsp]
-	mov	ecx, 13
-	call	x64_cpuid
-
 ; 238  : 	if ((a & (7 << 5)) != 0) {
-
-	mov	rax, QWORD PTR a$[rsp]
-	and	rax, 224				; 000000e0H
-	test	rax, rax
-	je	SHORT $LN1@x86_64_cpu
-
 ; 239  : 		size_t ax, bx, cx, dx;
 ; 240  : 		x64_cpuid(0xD, &ax, &bx, &cx, &dx, 0);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR dx$7[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR cx$8[rsp]
-	lea	r8, QWORD PTR bx$5[rsp]
-	lea	rdx, QWORD PTR ax$6[rsp]
-	mov	ecx, 13
-	call	x64_cpuid
-
 ; 241  : 		size_t xcr0 = x64_read_xcr0();
-
-	call	x64_read_xcr0
-	mov	QWORD PTR xcr0$2[rsp], rax
-
 ; 242  : 		xcr0 |= (ax&(7<<5));
-
-	mov	rax, QWORD PTR ax$6[rsp]
-	and	rax, 224				; 000000e0H
-	mov	rcx, QWORD PTR xcr0$2[rsp]
-	or	rcx, rax
-	mov	rax, rcx
-	mov	QWORD PTR xcr0$2[rsp], rax
-
 ; 243  : 		x64_write_xcr0(xcr0);
-
-	mov	rcx, QWORD PTR xcr0$2[rsp]
-	call	x64_write_xcr0
-
 ; 244  : 		au_get_boot_info()->auprint("[aurora]: AVX-512 enabled %d bytes\n",bx);
-
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	mov	rdx, QWORD PTR bx$5[rsp]
-	lea	rcx, OFFSET FLAT:$SG2911
-	call	QWORD PTR [rax+82]
-$LN1@x86_64_cpu:
-
 ; 245  : 	}
 ; 246  : #endif
 ; 247  : }
 
-	add	rsp, 152				; 00000098H
+	add	rsp, 104				; 00000068H
 	ret	0
 ?x86_64_cpu_feature_enable@@YAXXZ ENDP			; x86_64_cpu_feature_enable
 _TEXT	ENDS

@@ -10,17 +10,17 @@ _BSS	SEGMENT
 ?au_acpi@@3U_aurora_acpi_@@A DB 02dH DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3179	DB	'FACP', 00H
+$SG3183	DB	'FACP', 00H
 	ORG $+3
-$SG3180	DB	'FACP', 00H
+$SG3184	DB	'FACP', 00H
 	ORG $+3
-$SG3184	DB	'APIC', 00H
+$SG3188	DB	'APIC', 00H
 	ORG $+3
-$SG3185	DB	'APIC', 00H
+$SG3189	DB	'APIC', 00H
 	ORG $+3
-$SG3205	DB	0dH, 0aH, ' lapid id -> %d,', 00H
+$SG3209	DB	0dH, 0aH, ' lapid id -> %d,', 00H
 	ORG $+5
-$SG3209	DB	0dH, 0aH, ' IOAPIC id-> %d, address-> %x', 00H
+$SG3213	DB	0dH, 0aH, ' IOAPIC id-> %d, address-> %x', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
 PUBLIC	??$raw_diff@U_acpi_apic_header_@@UacpiMadt@@@@YAHPEAU_acpi_apic_header_@@PEAUacpiMadt@@@Z ; raw_diff<_acpi_apic_header_,acpiMadt>
@@ -204,10 +204,10 @@ $LN12@au_initial:
 ; 60   : 
 ; 61   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3179
+	lea	rcx, OFFSET FLAT:$SG3183
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3180
+	lea	rdx, OFFSET FLAT:$SG3184
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -224,10 +224,10 @@ $LN9@au_initial:
 ; 64   : 
 ; 65   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3184
+	lea	rcx, OFFSET FLAT:$SG3188
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3185
+	lea	rdx, OFFSET FLAT:$SG3189
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -278,7 +278,7 @@ $LN2@au_initial:
 	mov	rax, QWORD PTR lapic$4[rsp]
 	movzx	eax, BYTE PTR [rax+3]
 	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3205
+	lea	rcx, OFFSET FLAT:$SG3209
 	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
 
 ; 74   : 						 break;
@@ -301,7 +301,7 @@ $LN1@au_initial:
 	mov	rcx, QWORD PTR ioapic$3[rsp]
 	mov	r8d, DWORD PTR [rcx+4]
 	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3209
+	lea	rcx, OFFSET FLAT:$SG3213
 	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
 $LN3@au_initial:
 

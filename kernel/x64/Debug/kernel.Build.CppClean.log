@@ -3,10 +3,14 @@ e:\aurora kernel\kernel\x64\debug\x86_64_interrupt.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_lowlevel.obj
 e:\aurora kernel\kernel\x64\debug\vc120.pdb
 e:\aurora kernel\kernel\x64\debug\vc120.idb
+e:\aurora kernel\kernel\x64\debug\x86_64_apic.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_apic.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_exception.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_exception.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.obj

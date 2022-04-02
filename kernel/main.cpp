@@ -33,6 +33,8 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_exception.h>
 #include <arch\x86_64\x86_64_paging.h>
+#include <arch\x86_64\x86_64_apic.h>
+#include <arch\x86_64\x86_64_ioapic.h>
 #include <string.h>
 
 #include <kdrivers\au_video.h>
@@ -46,6 +48,9 @@ aurora_info_t * au_get_boot_info() {
 	return &info;
 }
 
+void kybrd_handler(size_t v, void* p) {
+	_au_debug_print_("Key pressed \r\n");
+}
 
 extern "C" int _fltused = 1;
 
@@ -55,18 +60,19 @@ int _kmain(aurora_info_t *bootinfo) {
 
 	int au_status = 0;
 
-	
 
 	x86_64_pmmngr_init(bootinfo);
 	x86_64_cpu_initialize();
 
+
 	/* initialize early drivers*/
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
-	
 
 	au_status = au_initialize_serial();
 	au_status = au_initialize_acpi();
+	au_status = x86_64_initialize_apic();
+
 
 
 	/* just for debug purpose */

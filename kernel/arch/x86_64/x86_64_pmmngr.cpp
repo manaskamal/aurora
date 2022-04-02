@@ -30,6 +30,7 @@
 #include <arch\x86_64\x86_64_pmmngr.h>
 #include <arch\x86_64\x86_64_efi.h>
 #include <arch\x86_64\x86_64_paging.h>
+#include <kdrivers\serial.h>
 #include <stdint.h>
 #include <string.h>
 #include <auinfo.h>
@@ -122,9 +123,7 @@ void x86_64_pmmngr_unreserve_page(void* address) {
  */
 void* x86_64_pmmngr_alloc() {
 	for (; ram_bitmap_index < ram_bitmap.size * 8; ram_bitmap_index++) {
-		if (ram_bitmap[ram_bitmap_index] == true) {
-			continue;
-		}
+		if (ram_bitmap[ram_bitmap_index] == true) continue;
 		x86_64_pmmngr_lock_page((void*)(ram_bitmap_index * 4096));
 		used_memory++;
 		return (void*)(ram_bitmap_index * 4096);
@@ -240,6 +239,7 @@ void x86_64_pmmngr_set_high(bool value) {
 
 void x86_64_pmmngr_high_mem_bitmap() {
 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
+	_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
 }
 
 /*

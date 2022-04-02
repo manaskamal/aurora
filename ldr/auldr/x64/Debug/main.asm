@@ -65,7 +65,7 @@ EXTRN	au_cli:PROC
 EXTRN	au_call_kernel:PROC
 pdata	SEGMENT
 $pdata$main DD	imagerel $LN14
-	DD	imagerel $LN14+1197
+	DD	imagerel $LN14+1224
 	DD	imagerel $unwind$main
 pdata	ENDS
 xdata	SEGMENT
@@ -91,7 +91,7 @@ entrypoint$ = 160
 dos2$ = 168
 nt$ = 176
 xsdp_address$ = 184
-tv158 = 192
+tv162 = 192
 mode$ = 200
 bootinfo$ = 208
 desc_ptr$ = 304
@@ -119,50 +119,59 @@ $LN14:
 	call	?aulib_initialize@@YAHPEAXPEAUEFI_SYSTEM_TABLE@@@Z ; aulib_initialize
 
 ; 23   : 
-; 24   : 	/* initialize the console service*/
-; 25   : 	aulib_initialize_console();
+; 24   : 	system_table->ConOut->ClearScreen(system_table->ConOut);
+
+	mov	rax, QWORD PTR system_table$[rsp]
+	mov	rax, QWORD PTR [rax+64]
+	mov	rcx, QWORD PTR system_table$[rsp]
+	mov	rcx, QWORD PTR [rcx+64]
+	call	QWORD PTR [rax+48]
+
+; 25   : 
+; 26   : 	/* initialize the console service*/
+; 27   : 	aulib_initialize_console();
 
 	call	?aulib_initialize_console@@YAHXZ	; aulib_initialize_console
 
-; 26   : 
-; 27   : 	printf(L"[auldr]: Aurora Loader v2.0 \r\n");
+; 28   : 
+; 29   : 	printf(L"[auldr]: Aurora Loader v2.0 \r\n");
 
 	lea	rcx, OFFSET FLAT:$SG13533
 	call	?printf@@YAHPEA_WZZ			; printf
 
-; 28   : 
-; 29   : 	/* setup the graphics */
-; 30   : 	uint64_t mode = aulib_query_gop(1024, 720);
+; 30   : 
+; 31   : 	/* setup the graphics */
+; 32   : 	uint64_t mode = aulib_query_gop(1024, 720);
 
 	mov	edx, 720				; 000002d0H
 	mov	ecx, 1024				; 00000400H
 	call	?aulib_query_gop@@YA_KII@Z		; aulib_query_gop
 	mov	QWORD PTR mode$[rsp], rax
 
-; 31   : 	aulib_set_graphics_mode(mode);
+; 33   : 	aulib_set_graphics_mode(mode);
 
 	mov	rcx, QWORD PTR mode$[rsp]
 	call	?aulib_set_graphics_mode@@YAH_K@Z	; aulib_set_graphics_mode
 
-; 32   : 
-; 33   : 	uint8_t* kernel = aulib_load_file(L"\\EFI\\XENEVA\\xnkrnl.exe");
+; 34   : 
+; 35   : 	uint8_t* kernel = aulib_load_file(L"\\EFI\\XENEVA\\xnkrnl.exe");
 
 	lea	rcx, OFFSET FLAT:$SG13536
 	call	?aulib_load_file@@YAPEAEPEA_W@Z		; aulib_load_file
 	mov	QWORD PTR kernel$[rsp], rax
 
-; 34   : 	au_puts("[auldr]: kernel file loaded successfully \n");
+; 36   : 	au_puts("[auldr]: kernel file loaded successfully \n");
 
 	lea	rcx, OFFSET FLAT:$SG13537
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 
-; 35   : 
-; 36   : 	IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER*)kernel;
+; 37   : 
+; 38   : 	IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER*)kernel;
 
 	mov	rax, QWORD PTR kernel$[rsp]
 	mov	QWORD PTR dos$[rsp], rax
 
-; 37   : 	IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS*)(kernel + dos->e_lfanew);
+; 39   : 	IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS*)(kernel + dos->e_lfanew);
 
 	mov	rax, QWORD PTR dos$[rsp]
 	movzx	eax, WORD PTR [rax+60]
@@ -171,35 +180,35 @@ $LN14:
 	mov	rax, rcx
 	mov	QWORD PTR nt$[rsp], rax
 
-; 38   : 
-; 39   : 	uint64_t kernel_size = aulib_get_recent_file_size();
+; 40   : 
+; 41   : 	uint64_t kernel_size = aulib_get_recent_file_size();
 
 	call	?aulib_get_recent_file_size@@YA_KXZ	; aulib_get_recent_file_size
 	mov	QWORD PTR kernel_size$[rsp], rax
 
-; 40   : 
-; 41   : 	au_puts("[auldr]: AuLoader v1.0 \n");
+; 42   : 
+; 43   : 	au_puts("[auldr]: AuLoader v1.0 \n");
 
 	lea	rcx, OFFSET FLAT:$SG13543
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 
-; 42   : 
-; 43   : 	au_puts("[auldr]: initializing memory manager\n");
+; 44   : 
+; 45   : 	au_puts("[auldr]: initializing memory manager\n");
 
 	lea	rcx, OFFSET FLAT:$SG13544
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 
-; 44   : 	
-; 45   : 	EfiMemoryMap map;
-; 46   : 	EFI_MEMORY_DESCRIPTOR *desc_ptr = nullptr;
+; 46   : 	
+; 47   : 	EfiMemoryMap map;
+; 48   : 	EFI_MEMORY_DESCRIPTOR *desc_ptr = nullptr;
 
 	mov	QWORD PTR desc_ptr$[rsp], 0
 
-; 47   : 	map.MemMapSize = 0;
+; 49   : 	map.MemMapSize = 0;
 
 	mov	QWORD PTR map$[rsp+8], 0
 
-; 48   : 	map.MapKey = map.DescriptorSize = map.DescriptorVersion = 0;
+; 50   : 	map.MapKey = map.DescriptorSize = map.DescriptorVersion = 0;
 
 	mov	DWORD PTR map$[rsp+32], 0
 	mov	eax, DWORD PTR map$[rsp+32]
@@ -207,7 +216,7 @@ $LN14:
 	mov	rax, QWORD PTR map$[rsp+24]
 	mov	QWORD PTR map$[rsp+16], rax
 
-; 49   : 	status = system_table->BootServices->GetMemoryMap(&map.MemMapSize, nullptr, &map.MapKey, &map.DescriptorSize, &map.DescriptorVersion);
+; 51   : 	status = system_table->BootServices->GetMemoryMap(&map.MemMapSize, nullptr, &map.MapKey, &map.DescriptorSize, &map.DescriptorVersion);
 
 	mov	rax, QWORD PTR system_table$[rsp]
 	mov	rax, QWORD PTR [rax+96]
@@ -220,22 +229,22 @@ $LN14:
 	call	QWORD PTR [rax+56]
 	mov	QWORD PTR status$[rsp], rax
 
-; 50   : 
-; 51   : 	
-; 52   : 	map.MemMapSize += 16 * sizeof(EFI_MEMORY_DESCRIPTOR);
+; 52   : 
+; 53   : 	
+; 54   : 	map.MemMapSize += 16 * sizeof(EFI_MEMORY_DESCRIPTOR);
 
 	mov	rax, QWORD PTR map$[rsp+8]
 	add	rax, 640				; 00000280H
 	mov	QWORD PTR map$[rsp+8], rax
 
-; 53   : 	map.memmap = (EFI_MEMORY_DESCRIPTOR*)aulib_allocate(map.MemMapSize);
+; 55   : 	map.memmap = (EFI_MEMORY_DESCRIPTOR*)aulib_allocate(map.MemMapSize);
 
 	mov	rcx, QWORD PTR map$[rsp+8]
 	call	?aulib_allocate@@YAPEAX_K@Z		; aulib_allocate
 	mov	QWORD PTR map$[rsp], rax
 
-; 54   : 
-; 55   : 	status = system_table->BootServices->GetMemoryMap(&map.MemMapSize, map.memmap, &map.MapKey, &map.DescriptorSize, &map.DescriptorVersion);
+; 56   : 
+; 57   : 	status = system_table->BootServices->GetMemoryMap(&map.MemMapSize, map.memmap, &map.MapKey, &map.DescriptorSize, &map.DescriptorVersion);
 
 	mov	rax, QWORD PTR system_table$[rsp]
 	mov	rax, QWORD PTR [rax+96]
@@ -248,29 +257,29 @@ $LN14:
 	call	QWORD PTR [rax+56]
 	mov	QWORD PTR status$[rsp], rax
 
-; 56   : 	if (status != EFI_SUCCESS) {
+; 58   : 	if (status != EFI_SUCCESS) {
 
 	cmp	QWORD PTR status$[rsp], 0
 	je	SHORT $LN11@main
 
-; 57   : 		au_puts("[auldr]: failed to obtain memory map \n");
+; 59   : 		au_puts("[auldr]: failed to obtain memory map \n");
 
 	lea	rcx, OFFSET FLAT:$SG13550
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 $LN11@main:
 
-; 58   : 	}
-; 59   : 
-; 60   : 	
-; 61   : 	const size_t early_page_stack_size = 1024*1024;
+; 60   : 	}
+; 61   : 
+; 62   : 	
+; 63   : 	const size_t early_page_stack_size = 1024*1024;
 
 	mov	QWORD PTR early_page_stack_size$[rsp], 1048576 ; 00100000H
 
-; 62   : 	EFI_PHYSICAL_ADDRESS early_phys_page_stack = 0;
+; 64   : 	EFI_PHYSICAL_ADDRESS early_phys_page_stack = 0;
 
 	mov	QWORD PTR early_phys_page_stack$[rsp], 0
 
-; 63   : 	if (!(system_table->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, early_page_stack_size / EFI_PAGE_SIZE, (EFI_PHYSICAL_ADDRESS*)early_phys_page_stack))) {
+; 65   : 	if (!(system_table->BootServices->AllocatePages(AllocateAnyPages, EfiLoaderData, early_page_stack_size / EFI_PAGE_SIZE, (EFI_PHYSICAL_ADDRESS*)early_phys_page_stack))) {
 
 	mov	rax, QWORD PTR system_table$[rsp]
 	mov	rax, QWORD PTR [rax+96]
@@ -282,21 +291,23 @@ $LN11@main:
 	test	rax, rax
 	jne	SHORT $LN10@main
 
-; 64   : 		au_puts("[auldr]: early page stack allocation failed \n");
+; 66   : 		au_puts("[auldr]: early page stack allocation failed \n");
 
 	lea	rcx, OFFSET FLAT:$SG13555
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 $LN10@main:
 
-; 65   : 	}
-; 66   : 
-; 67   : 	void* xsdp_address = aulib_get_acpi_pointer();
+; 67   : 	}
+; 68   : 
+; 69   : 	void* xsdp_address = aulib_get_acpi_pointer();
 
 	call	?aulib_get_acpi_pointer@@YAPEAXXZ	; aulib_get_acpi_pointer
 	mov	QWORD PTR xsdp_address$[rsp], rax
 
-; 68   : 
-; 69   : 	if (EFI_ERROR(status = system_table->BootServices->ExitBootServices(ImageHandle, map.MapKey))) {
+; 70   : 
+; 71   : 
+; 72   : 
+; 73   : 	if (EFI_ERROR(status = system_table->BootServices->ExitBootServices(ImageHandle, map.MapKey))) {
 
 	mov	rax, QWORD PTR system_table$[rsp]
 	mov	rax, QWORD PTR [rax+96]
@@ -307,25 +318,25 @@ $LN10@main:
 	cmp	QWORD PTR status$[rsp], 0
 	jge	SHORT $LN9@main
 
-; 70   : 		au_print("[auldr]: exit_boot_service failed\n");
+; 74   : 		au_print("[auldr]: exit_boot_service failed\n");
 
 	lea	rcx, OFFSET FLAT:$SG13560
 	call	?au_print@@YAXPEBDZZ			; au_print
 
-; 71   : 		return EFI_SUCCESS;
+; 75   : 		return EFI_SUCCESS;
 
 	xor	eax, eax
 	jmp	$LN12@main
 $LN9@main:
 
-; 72   : 	}
-; 73   : 
-; 74   : 	au_cli();
+; 76   : 	}
+; 77   : 
+; 78   : 	au_cli();
 
 	call	au_cli
 
-; 75   : 
-; 76   : 	au_initialize_pmmngr(map, (void*)early_phys_page_stack, early_page_stack_size);
+; 79   : 
+; 80   : 	au_initialize_pmmngr(map, (void*)early_phys_page_stack, early_page_stack_size);
 
 	lea	rax, QWORD PTR $T3[rsp]
 	lea	rcx, QWORD PTR map$[rsp]
@@ -338,24 +349,24 @@ $LN9@main:
 	lea	rcx, QWORD PTR $T3[rsp]
 	call	?au_initialize_pmmngr@@YAXUEfiMemoryMap@@PEAX_K@Z ; au_initialize_pmmngr
 
-; 77   : 	au_initialize_vm();
+; 81   : 	au_initialize_vm();
 
 	call	?au_initialize_vm@@YAXXZ		; au_initialize_vm
 
-; 78   : 	au_puts("[auldr]: memory manager initialized \n");
+; 82   : 	au_puts("[auldr]: memory manager initialized \n");
 
 	lea	rcx, OFFSET FLAT:$SG13562
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 
-; 79   : 
-; 80   : 	
-; 81   : 	uint64_t vaddr = nt->OptionalHeader.ImageBase;
+; 83   : 
+; 84   : 	
+; 85   : 	uint64_t vaddr = nt->OptionalHeader.ImageBase;
 
 	mov	rax, QWORD PTR nt$[rsp]
 	mov	rax, QWORD PTR [rax+48]
 	mov	QWORD PTR vaddr$[rsp], rax
 
-; 82   : 	for (int i = 0; i < (kernel_size + 4095) / 4096; i++) {
+; 86   : 	for (int i = 0; i < (kernel_size + 4095) / 4096; i++) {
 
 	mov	DWORD PTR i$1[rsp], 0
 	jmp	SHORT $LN8@main
@@ -365,18 +376,18 @@ $LN7@main:
 	mov	DWORD PTR i$1[rsp], eax
 $LN8@main:
 	movsxd	rax, DWORD PTR i$1[rsp]
-	mov	QWORD PTR tv158[rsp], rax
+	mov	QWORD PTR tv162[rsp], rax
 	mov	rcx, QWORD PTR kernel_size$[rsp]
 	add	rcx, 4095				; 00000fffH
 	xor	edx, edx
 	mov	rax, rcx
 	mov	ecx, 4096				; 00001000H
 	div	rcx
-	mov	rcx, QWORD PTR tv158[rsp]
+	mov	rcx, QWORD PTR tv162[rsp]
 	cmp	rcx, rax
 	jae	SHORT $LN6@main
 
-; 83   : 		au_map_p2v(vaddr + i * 4096, au_pmmngr_allocate(), 0);
+; 87   : 		au_map_p2v(vaddr + i * 4096, au_pmmngr_allocate(), 0);
 
 	call	?au_pmmngr_allocate@@YA_KXZ		; au_pmmngr_allocate
 	imul	ecx, DWORD PTR i$1[rsp], 4096		; 00001000H
@@ -388,32 +399,32 @@ $LN8@main:
 	mov	rdx, rax
 	call	?au_map_p2v@@YA_N_K00@Z			; au_map_p2v
 
-; 84   : 	}
+; 88   : 	}
 
 	jmp	SHORT $LN7@main
 $LN6@main:
 
-; 85   : 	
-; 86   : 	aulib_copy_mem((void*)vaddr, kernel, kernel_size);
+; 89   : 	
+; 90   : 	aulib_copy_mem((void*)vaddr, kernel, kernel_size);
 
 	mov	r8, QWORD PTR kernel_size$[rsp]
 	mov	rdx, QWORD PTR kernel$[rsp]
 	mov	rcx, QWORD PTR vaddr$[rsp]
 	call	?aulib_copy_mem@@YAXPEAX0_K@Z		; aulib_copy_mem
 
-; 87   : 
-; 88   : 	au_print("[auldr]: Kernel copied to virtual address \n");
+; 91   : 
+; 92   : 	au_print("[auldr]: Kernel copied to virtual address \n");
 
 	lea	rcx, OFFSET FLAT:$SG13569
 	call	?au_print@@YAXPEBDZZ			; au_print
 
-; 89   : 
-; 90   : 	uint64_t ke_stack = 0xFFFFA00000000000;
+; 93   : 
+; 94   : 	uint64_t ke_stack = 0xFFFFA00000000000;
 
 	mov	rax, -105553116266496			; ffffa00000000000H
 	mov	QWORD PTR ke_stack$[rsp], rax
 
-; 91   : 	for (int i = 0; i < (0x100000 + 4095) / 4096; i++)
+; 95   : 	for (int i = 0; i < (0x100000 + 4095) / 4096; i++)
 
 	mov	DWORD PTR i$2[rsp], 0
 	jmp	SHORT $LN5@main
@@ -425,7 +436,7 @@ $LN5@main:
 	cmp	DWORD PTR i$2[rsp], 256			; 00000100H
 	jge	SHORT $LN3@main
 
-; 92   : 		au_map_p2v(ke_stack + i * 4096, au_pmmngr_allocate(), 0);
+; 96   : 		au_map_p2v(ke_stack + i * 4096, au_pmmngr_allocate(), 0);
 
 	call	?au_pmmngr_allocate@@YA_KXZ		; au_pmmngr_allocate
 	imul	ecx, DWORD PTR i$2[rsp], 4096		; 00001000H
@@ -439,86 +450,86 @@ $LN5@main:
 	jmp	SHORT $LN4@main
 $LN3@main:
 
-; 93   : 
-; 94   : 	au_print("[auldr]: kstack mapped \n");
+; 97   : 
+; 98   : 	au_print("[auldr]: kstack mapped \n");
 
 	lea	rcx, OFFSET FLAT:$SG13575
 	call	?au_print@@YAXPEBDZZ			; au_print
 
-; 95   : 	aurora_info_t bootinfo;
-; 96   : 	bootinfo.mem_map = map.memmap;
+; 99   : 	aurora_info_t bootinfo;
+; 100  : 	bootinfo.mem_map = map.memmap;
 
 	mov	rax, QWORD PTR map$[rsp]
 	mov	QWORD PTR bootinfo$[rsp], rax
 
-; 97   : 	bootinfo.mem_desc_size = map.DescriptorSize;
+; 101  : 	bootinfo.mem_desc_size = map.DescriptorSize;
 
 	mov	rax, QWORD PTR map$[rsp+24]
 	mov	QWORD PTR bootinfo$[rsp+8], rax
 
-; 98   : 	bootinfo.mem_map_size = map.MemMapSize;
+; 102  : 	bootinfo.mem_map_size = map.MemMapSize;
 
 	mov	rax, QWORD PTR map$[rsp+8]
 	mov	QWORD PTR bootinfo$[rsp+16], rax
 
-; 99   : 	bootinfo.phys_stack_allocated = au_get_phys_allocated();
+; 103  : 	bootinfo.phys_stack_allocated = au_get_phys_allocated();
 
 	call	?au_get_phys_allocated@@YAPEAXXZ	; au_get_phys_allocated
 	mov	QWORD PTR bootinfo$[rsp+24], rax
 
-; 100  : 	bootinfo.resvd_mem_count = au_get_rsvd_mem_count();
+; 104  : 	bootinfo.resvd_mem_count = au_get_rsvd_mem_count();
 
 	call	?au_get_rsvd_mem_count@@YAHXZ		; au_get_rsvd_mem_count
 	cdqe
 	mov	QWORD PTR bootinfo$[rsp+32], rax
 
-; 101  : 	bootinfo.fb_addr = aulib_get_fb_address();
+; 105  : 	bootinfo.fb_addr = aulib_get_fb_address();
 
 	call	?aulib_get_fb_address@@YAPEAIXZ		; aulib_get_fb_address
 	mov	QWORD PTR bootinfo$[rsp+40], rax
 
-; 102  : 	bootinfo.fb_size = aulib_get_fb_size();
+; 106  : 	bootinfo.fb_size = aulib_get_fb_size();
 
 	call	?aulib_get_fb_size@@YA_KXZ		; aulib_get_fb_size
 	mov	QWORD PTR bootinfo$[rsp+48], rax
 
-; 103  : 	bootinfo.x_res = aulib_get_x_resolution();
+; 107  : 	bootinfo.x_res = aulib_get_x_resolution();
 
 	call	?aulib_get_x_resolution@@YAIXZ		; aulib_get_x_resolution
 	mov	DWORD PTR bootinfo$[rsp+56], eax
 
-; 104  : 	bootinfo.y_res = aulib_get_y_resolution();
+; 108  : 	bootinfo.y_res = aulib_get_y_resolution();
 
 	call	?aulib_get_y_resolution@@YAIXZ		; aulib_get_y_resolution
 	mov	DWORD PTR bootinfo$[rsp+60], eax
 
-; 105  : 	bootinfo.pixels_per_line = aulib_get_pixels_per_line();
+; 109  : 	bootinfo.pixels_per_line = aulib_get_pixels_per_line();
 
 	call	?aulib_get_pixels_per_line@@YAIXZ	; aulib_get_pixels_per_line
 	mov	WORD PTR bootinfo$[rsp+64], ax
 
-; 106  : 	bootinfo.acpi_table_pointer = xsdp_address;
+; 110  : 	bootinfo.acpi_table_pointer = xsdp_address;
 
 	mov	rax, QWORD PTR xsdp_address$[rsp]
 	mov	QWORD PTR bootinfo$[rsp+66], rax
 
-; 107  : 	bootinfo.kernel_size = kernel_size;
+; 111  : 	bootinfo.kernel_size = kernel_size;
 
 	mov	rax, QWORD PTR kernel_size$[rsp]
 	mov	QWORD PTR bootinfo$[rsp+74], rax
 
-; 108  : 	bootinfo.auprint = au_print;
+; 112  : 	bootinfo.auprint = au_print;
 
 	lea	rax, OFFSET FLAT:?au_print@@YAXPEBDZZ	; au_print
 	mov	QWORD PTR bootinfo$[rsp+82], rax
 
-; 109  : 
-; 110  : 	IMAGE_DOS_HEADER *dos2 = (IMAGE_DOS_HEADER*)vaddr;
+; 113  : 
+; 114  : 	IMAGE_DOS_HEADER *dos2 = (IMAGE_DOS_HEADER*)vaddr;
 
 	mov	rax, QWORD PTR vaddr$[rsp]
 	mov	QWORD PTR dos2$[rsp], rax
 
-; 111  : 	IMAGE_NT_HEADERS *nt2 = (IMAGE_NT_HEADERS*)(vaddr + dos2->e_lfanew);
+; 115  : 	IMAGE_NT_HEADERS *nt2 = (IMAGE_NT_HEADERS*)(vaddr + dos2->e_lfanew);
 
 	mov	rax, QWORD PTR dos2$[rsp]
 	movzx	eax, WORD PTR [rax+60]
@@ -527,7 +538,7 @@ $LN3@main:
 	mov	rax, rcx
 	mov	QWORD PTR nt2$[rsp], rax
 
-; 112  : 	void* entrypoint = (void*)(nt2->OptionalHeader.ImageBase + nt2->OptionalHeader.AddressOfEntryPoint);
+; 116  : 	void* entrypoint = (void*)(nt2->OptionalHeader.ImageBase + nt2->OptionalHeader.AddressOfEntryPoint);
 
 	mov	rax, QWORD PTR nt2$[rsp]
 	mov	eax, DWORD PTR [rax+40]
@@ -535,13 +546,13 @@ $LN3@main:
 	add	rax, QWORD PTR [rcx+48]
 	mov	QWORD PTR entrypoint$[rsp], rax
 
-; 113  : 
-; 114  : 	au_puts("[auldr]:Calling Kernel\n");
+; 117  : 
+; 118  : 	au_puts("[auldr]:Calling Kernel\n");
 
 	lea	rcx, OFFSET FLAT:$SG13583
 	call	?au_puts@@YAXPEBD@Z			; au_puts
 
-; 115  : 	au_call_kernel(&bootinfo, entrypoint, (void*)ke_stack, 0x100000);
+; 119  : 	au_call_kernel(&bootinfo, entrypoint, (void*)ke_stack, 0x100000);
 
 	mov	r9d, 1048576				; 00100000H
 	mov	r8, QWORD PTR ke_stack$[rsp]
@@ -550,16 +561,16 @@ $LN3@main:
 	call	au_call_kernel
 $LN2@main:
 
-; 116  : 	for (;;);
+; 120  : 	for (;;);
 
 	jmp	SHORT $LN2@main
 
-; 117  : 	return EFI_SUCCESS;
+; 121  : 	return EFI_SUCCESS;
 
 	xor	eax, eax
 $LN12@main:
 
-; 118  : }
+; 122  : }
 
 	add	rsp, 376				; 00000178H
 	pop	rdi
