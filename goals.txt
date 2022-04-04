@@ -1,0 +1,59 @@
+Goals for Aurora Kernel:
+-------------------------
+
+SMP/NUMA
+SSE/AVX/AVX-512
+Advanced lockings for atomic operations
+Better data structures
+Better VFS Subsystem / FAT32 Filesystem
+Better IPC (Pipes/Shared Memory/Message queues/Sockets)
+Better and smooth PTY Subsystem
+Good Driver Management
+Good Process / Thread management
+Dynamic linker
+Good Memory Management with avoid of fragmentations
+Page swapping
+Graphics stack (should be named as project)
+Better Audio Mixer (should be named as project)
+Network Stack
+Unix styled system calls
+File Mappings
+Security
+ACPI Shutdown/Reboot 
+
+
+(Smooth performance, fastness, robus, stable, scalability and better
+ user experience with better processed audio and video are the primary goal
+ of this project, it should also provide some extra unique features for the users,
+ and users should experience some unexpericed features, and user should feel the 
+ kernel performance along with user space)
+
+User Can Handle three options:
+. One click build
+. Portability of user applications without complication
+. Every user should feel easy and comfortable with the software
+
+Drivers:
+----------
+Bluetooth
+Wifi
+E1000
+Intel HD-Audio
+Intel HD-Audio Realtek
+Intel HD-Audio Sigmatel
+USB xhci
+AHCI 
+USB flash
+NVMe
+USB MIDI
+Intel UHD/HD Graphics
+
+
+User Space Ports:
+-----------------
+Python
+Bash shell
+JVM + Java libraries
+(I will think later on)
+
+ 
