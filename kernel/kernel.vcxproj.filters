@@ -90,6 +90,9 @@
     <ClInclude Include="include\arch\x86_64\x86_64_ioapic.h">
       <Filter>include\arch\x86_64</Filter>
     </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_ap_init.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -128,6 +131,9 @@
     <ClCompile Include="arch\x86_64\x86_64_ioapic.cpp">
       <Filter>arch\x86_64</Filter>
     </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_ap_init.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="arch\aarch64\bootstub.s">
@@ -145,5 +151,8 @@
       <Filter>arch\x86_64</Filter>
     </NASM>
     <NASM Include="_fastcpy.asm" />
+    <NASM Include="arch\x86_64\x86_64_ap_code.asm">
+      <Filter>arch\x86_64</Filter>
+    </NASM>
   </ItemGroup>
 </Project>

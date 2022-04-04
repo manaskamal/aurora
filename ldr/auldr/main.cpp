@@ -40,6 +40,8 @@ int main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *system_table) {
 
 	uint64_t kernel_size = aulib_get_recent_file_size();
 
+	uint8_t *apcode = aulib_load_file(L"\\EFI\\XENEVA\\apcode.bin");
+
 	au_puts("[auldr]: AuLoader v1.0 \n");
 
 	au_puts("[auldr]: initializing memory manager\n");
@@ -109,6 +111,7 @@ int main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *system_table) {
 	bootinfo.pixels_per_line = aulib_get_pixels_per_line();
 	bootinfo.acpi_table_pointer = xsdp_address;
 	bootinfo.kernel_size = kernel_size;
+	bootinfo.apcode = apcode;
 	bootinfo.auprint = au_print;
 
 	IMAGE_DOS_HEADER *dos2 = (IMAGE_DOS_HEADER*)vaddr;

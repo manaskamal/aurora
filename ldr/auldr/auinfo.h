@@ -30,6 +30,7 @@ typedef struct _AURORA_INFO_ {
 	uint16_t pixels_per_line;
 	void*  acpi_table_pointer;
 	size_t kernel_size;
+	void*  apcode;
 	void(*auprint)(const char* text, ...);
 }aurora_info_t;
 

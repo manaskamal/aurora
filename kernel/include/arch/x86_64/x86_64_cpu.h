@@ -32,6 +32,9 @@
 
 #include <stdint.h>
 
+typedef struct _cpu_ {
+	uint8_t id;
+}cpu_t;
 /*
 * x86_64_cpu_initialize -- initialize the cpu
 */

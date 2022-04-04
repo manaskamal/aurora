@@ -80,6 +80,8 @@ extern bool x86_64_pmmngr_is_high_mem();
 
 extern void x86_64_pmmngr_high_mem_bitmap();
 
+extern void x86_64_pmmngr_lock_page(void* address);
+
 
 
 #endif

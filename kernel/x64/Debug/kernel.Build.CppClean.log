@@ -5,6 +5,8 @@ e:\aurora kernel\kernel\x64\debug\vc120.pdb
 e:\aurora kernel\kernel\x64\debug\vc120.idb
 e:\aurora kernel\kernel\x64\debug\x86_64_apic.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_apic.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_exception.obj

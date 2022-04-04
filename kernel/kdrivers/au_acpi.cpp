@@ -32,6 +32,7 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_paging.h>
 #include <arch\x86_64\x86_64_cpu.h>
+#include <arch\x86_64\x86_64_apic.h>
 #include <auinfo.h>
 #include <string.h>
 #include <_null.h>
@@ -70,13 +71,14 @@ int au_initialize_acpi() {
 				switch (apic_header->type) {
                     case ACPI_APICTYPE_LAPIC: {
 						acpiLocalApic *lapic = (acpiLocalApic*)apic_header;
-						_au_debug_print_("\r\n lapid id -> %d,", lapic->lapicId);
+					//	au_get_boot_info()->auprint("LAPIC id -> %x, %x \n", lapic->lapicId, lapic->procId);
+						if (lapic->procId != 0)
+							initialize_cpu(lapic->procId);
 						 break;
 					}
 
 					case ACPI_APICTYPE_IOAPIC: {
 						acpiIoApic *ioapic = (acpiIoApic*)apic_header;
-						_au_debug_print_("\r\n IOAPIC id-> %d, address-> %x", ioapic->ioApicId, ioapic->ioApicAddr);
 						break;
 					}
 				}

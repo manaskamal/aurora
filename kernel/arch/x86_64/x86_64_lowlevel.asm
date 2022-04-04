@@ -341,4 +341,31 @@ x64_write_xcr0:
 	  xsetbv
 	  ret
 
+global x64_stack_switch
+x64_stack_switch:
+      mov rax, rcx
+	  mov rsp, rax
+	  ret
+
+;======================================
+; LOCKING
+;======================================
+global x64_lock_acquire
+x64_lock_acquire:  
+     mov rax,1
+     lock xchg [rcx],rax
+	 cmp rax, 0
+	 je .escape
+     pause
+	 jmp x64_lock_acquire
+.escape:
+     ret
+
+global x64_lock_release
+x64_lock_release:
+	 mov rax, [rcx]
+	 mov qword [rax], 0
+	 ret
+
+
 

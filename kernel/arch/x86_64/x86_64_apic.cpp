@@ -33,6 +33,10 @@
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_paging.h>
 #include <arch\x86_64\x86_64_ioapic.h>
+#include <arch\x86_64\x86_64_pmmngr.h>
+#include <arch\x86_64\x86_64_ap_init.h>
+#include <string.h>
+#include <kdrivers\serial.h>
 
 
 #define IA32_APIC_BASE_MSR  0x1B
@@ -152,10 +156,13 @@ void  apic_timer_interrupt(size_t p, void* param) {
 
 
 //! Initialize our APIC
-int x86_64_initialize_apic() {
+int x86_64_initialize_apic(bool bsp) {
 
 	size_t apic_base;
-	apic_base = (size_t)x86_64_phys_to_virt(0xFEE00000);
+	if (bsp)
+		apic_base = (size_t)x86_64_phys_to_virt(0xFEE00000);
+	else
+		apic_base = x64_read_msr(IA32_APIC_BASE_MSR);
 	apic_timer_count = 0;
 	//map_page (0xFEE00000, 0xFEE00000,0);
 
@@ -168,7 +175,10 @@ int x86_64_initialize_apic() {
 
 	apic_base |= IA32_APIC_BASE_MSR_ENABLE;
 	//! Sends EOI to APIC
-	x64_write_msr(IA32_APIC_BASE_MSR,x86_64_virt_to_phys(apic_base));
+	if (bsp)
+		x64_write_msr(IA32_APIC_BASE_MSR,x86_64_virt_to_phys(apic_base));
+	else
+		x64_write_msr(IA32_APIC_BASE_MSR, apic_base);
 	//! Sends EOI to APIC
 	setvect(0xFF, apic_spurious_interrupt);
 	write_apic_register(LAPIC_REGISTER_SVR, read_apic_register(LAPIC_REGISTER_SVR) |
@@ -194,7 +204,8 @@ int x86_64_initialize_apic() {
 
 	//! Finally Intialize I/O APIC
 	//map_page (ioapic_base,ioapic_base,0);
-	ioapic_init((void*)x86_64_phys_to_virt(0xfec00000));
+	if (bsp)
+		ioapic_init((void*)x86_64_phys_to_virt(0xfec00000));
 	return 0;
 }
 
@@ -218,22 +229,37 @@ bool icr_busy() {
 }
 
 
-#ifdef SMP
+/* initialize other processors
+ * @param processor -- other processor id
+ */
 void initialize_cpu(uint32_t processor) {
 
-	uint64_t* address = (uint64_t*)pmmngr_alloc();
-	void* ap_data = get_ap_address();
+	uint64_t* address = (uint64_t*)x86_64_phys_to_virt((uint64_t)0x9000);
+	x86_64_pmmngr_lock_page((void*)0x9000);
+	void* ap_data = (void*)x86_64_phys_to_virt((uint64_t)au_get_boot_info()->apcode);
 	memcpy(address, ap_data, 4096);
+
+	uint64_t ap_init_address = (uint64_t)x86_64_ap_init;
+	void* stack_address = x86_64_pmmngr_alloc();
+	uint64_t aligned_address = (uint64_t)address;
+	*(uint32_t*)(aligned_address + 8) = (uint32_t)x86_64_get_boot_pml();
+	*(uint64_t*)(aligned_address + 12) = (uint64_t)stack_address;
+	*(uint64_t*)(aligned_address + 20) = ap_init_address;
+
+	for (int i = 0; i < 100000; i++)
+		;
 
 	write_apic_register(LAPIC_REGISTER_ICR, icr_dest(processor) | 0x4500);
 	while (icr_busy());
 
-	//!startup ipi
-	size_t startup_ipi = icr_dest(processor) | 0x4600 | ((size_t)address >> 12);
-	write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
-	while (icr_busy());
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 100000; i++)
 		;
 
+	//!startup ipi
+	size_t startup_ipi = icr_dest(processor) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
+	write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
+	while (icr_busy());
+	for (int i = 0; i < 100000; i++)
+		;
 }
-#endif
+

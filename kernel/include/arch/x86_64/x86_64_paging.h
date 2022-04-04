@@ -84,4 +84,9 @@ extern uint64_t* x86_64_get_free_page(bool user);
 * @param address -- virtual address
 */
 extern bool x86_64_check_free(uint64_t address);
+
+/*
+* x86_64_get_boot_pml -- returns the boot pml4 table
+*/
+extern uint64_t* x86_64_get_boot_pml();
 #endif

@@ -10,31 +10,27 @@ _BSS	SEGMENT
 ?au_acpi@@3U_aurora_acpi_@@A DB 02dH DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3183	DB	'FACP', 00H
+$SG3211	DB	'FACP', 00H
 	ORG $+3
-$SG3184	DB	'FACP', 00H
+$SG3212	DB	'FACP', 00H
 	ORG $+3
-$SG3188	DB	'APIC', 00H
+$SG3216	DB	'APIC', 00H
 	ORG $+3
-$SG3189	DB	'APIC', 00H
-	ORG $+3
-$SG3209	DB	0dH, 0aH, ' lapid id -> %d,', 00H
-	ORG $+5
-$SG3213	DB	0dH, 0aH, ' IOAPIC id-> %d, address-> %x', 00H
+$SG3217	DB	'APIC', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
 PUBLIC	??$raw_diff@U_acpi_apic_header_@@UacpiMadt@@@@YAHPEAU_acpi_apic_header_@@PEAUacpiMadt@@@Z ; raw_diff<_acpi_apic_header_,acpiMadt>
 PUBLIC	??$raw_offset@PEAU_acpi_apic_header_@@PEAU1@@@YAPEAU_acpi_apic_header_@@PEAU0@H@Z ; raw_offset<_acpi_apic_header_ * __ptr64,_acpi_apic_header_ * __ptr64>
-EXTRN	?_au_debug_print_@@YAXPEADZZ:PROC		; _au_debug_print_
 EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
+EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?strlen@@YA_KPEBD@Z:PROC			; strlen
 EXTRN	?strncmp@@YAHPEBD0_K@Z:PROC			; strncmp
 EXTRN	?strncpy@@YAPEADPEADPEBD_K@Z:PROC		; strncpy
 EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 pdata	SEGMENT
-$pdata$?au_initialize_acpi@@YAHXZ DD imagerel $LN15
-	DD	imagerel $LN15+539
+$pdata$?au_initialize_acpi@@YAHXZ DD imagerel $LN16
+	DD	imagerel $LN16+509
 	DD	imagerel $unwind$?au_initialize_acpi@@YAHXZ
 pdata	ENDS
 xdata	SEGMENT
@@ -102,38 +98,38 @@ count$2 = 64
 entries$ = 72
 rsdt$ = 80
 rsdp$ = 88
-ioapic$3 = 96
+lapic$3 = 96
 acpi_base$ = 104
-lapic$4 = 112
-xsdt$ = 120
+xsdt$ = 112
+ioapic$4 = 120
 ?au_initialize_acpi@@YAHXZ PROC				; au_initialize_acpi
 
-; 44   : int au_initialize_acpi() {
+; 45   : int au_initialize_acpi() {
 
-$LN15:
+$LN16:
 	sub	rsp, 136				; 00000088H
 
-; 45   : 	void* acpi_base = (void*)x86_64_phys_to_virt((uint64_t)au_get_boot_info()->acpi_table_pointer);
+; 46   : 	void* acpi_base = (void*)x86_64_phys_to_virt((uint64_t)au_get_boot_info()->acpi_table_pointer);
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rcx, QWORD PTR [rax+66]
 	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
 	mov	QWORD PTR acpi_base$[rsp], rax
 
-; 46   : 	memset(&au_acpi, 0, sizeof(aurora_acpi));
+; 47   : 	memset(&au_acpi, 0, sizeof(aurora_acpi));
 
 	mov	r8d, 45					; 0000002dH
 	xor	edx, edx
 	lea	rcx, OFFSET FLAT:?au_acpi@@3U_aurora_acpi_@@A ; au_acpi
 	call	?memset@@YAXPEAXEI@Z			; memset
 
-; 47   : 
-; 48   : 	acpiRsdp *rsdp = (acpiRsdp*)acpi_base;
+; 48   : 
+; 49   : 	acpiRsdp *rsdp = (acpiRsdp*)acpi_base;
 
 	mov	rax, QWORD PTR acpi_base$[rsp]
 	mov	QWORD PTR rsdp$[rsp], rax
 
-; 49   : 	acpiRsdt *rsdt = (acpiRsdt*)x86_64_phys_to_virt((uint64_t)rsdp->rsdtAddr);
+; 50   : 	acpiRsdt *rsdt = (acpiRsdt*)x86_64_phys_to_virt((uint64_t)rsdp->rsdtAddr);
 
 	mov	rax, QWORD PTR rsdp$[rsp]
 	mov	eax, DWORD PTR [rax+16]
@@ -141,16 +137,16 @@ $LN15:
 	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
 	mov	QWORD PTR rsdt$[rsp], rax
 
-; 50   : 	acpiXsdt *xsdt = (acpiXsdt*)x86_64_phys_to_virt((uint64_t)rsdp->xsdtAddr);
+; 51   : 	acpiXsdt *xsdt = (acpiXsdt*)x86_64_phys_to_virt((uint64_t)rsdp->xsdtAddr);
 
 	mov	rax, QWORD PTR rsdp$[rsp]
 	mov	rcx, QWORD PTR [rax+24]
 	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
 	mov	QWORD PTR xsdt$[rsp], rax
 
-; 51   : 	char sig[5];
-; 52   : 
-; 53   : 	int entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
+; 52   : 	char sig[5];
+; 53   : 
+; 54   : 	int entries = (rsdt->header.length - sizeof(rsdt->header)) / 4;
 
 	mov	rax, QWORD PTR rsdt$[rsp]
 	mov	eax, DWORD PTR [rax+4]
@@ -160,25 +156,25 @@ $LN15:
 	div	rcx
 	mov	DWORD PTR entries$[rsp], eax
 
-; 54   : 	acpiSysDescHeader *header = NULL;
+; 55   : 	acpiSysDescHeader *header = NULL;
 
 	mov	QWORD PTR header$[rsp], 0
 
-; 55   : 	
-; 56   : 	for (size_t count = 0; count < entries; count++) {
+; 56   : 	
+; 57   : 	for (size_t count = 0; count < entries; count++) {
 
 	mov	QWORD PTR count$2[rsp], 0
-	jmp	SHORT $LN12@au_initial
-$LN11@au_initial:
+	jmp	SHORT $LN13@au_initial
+$LN12@au_initial:
 	mov	rax, QWORD PTR count$2[rsp]
 	inc	rax
 	mov	QWORD PTR count$2[rsp], rax
-$LN12@au_initial:
+$LN13@au_initial:
 	movsxd	rax, DWORD PTR entries$[rsp]
 	cmp	QWORD PTR count$2[rsp], rax
-	jae	$LN10@au_initial
+	jae	$LN11@au_initial
 
-; 57   : 		header = (acpiSysDescHeader*)x86_64_phys_to_virt((uint64_t)rsdt->entry[count]);
+; 58   : 		header = (acpiSysDescHeader*)x86_64_phys_to_virt((uint64_t)rsdt->entry[count]);
 
 	mov	rax, QWORD PTR rsdt$[rsp]
 	mov	rcx, QWORD PTR count$2[rsp]
@@ -187,7 +183,7 @@ $LN12@au_initial:
 	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
 	mov	QWORD PTR header$[rsp], rax
 
-; 58   : 		strncpy(sig, header->signature, 4);
+; 59   : 		strncpy(sig, header->signature, 4);
 
 	mov	rax, QWORD PTR header$[rsp]
 	mov	r8d, 4
@@ -195,120 +191,118 @@ $LN12@au_initial:
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncpy@@YAPEADPEADPEBD_K@Z		; strncpy
 
-; 59   : 		sig[4] = '\0';
+; 60   : 		sig[4] = '\0';
 
 	mov	eax, 1
 	imul	rax, rax, 4
 	mov	BYTE PTR sig$[rsp+rax], 0
 
-; 60   : 
-; 61   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
+; 61   : 
+; 62   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3183
+	lea	rcx, OFFSET FLAT:$SG3211
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3184
+	lea	rdx, OFFSET FLAT:$SG3212
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
-	jne	SHORT $LN9@au_initial
+	jne	SHORT $LN10@au_initial
 
-; 62   : 			au_acpi.fadt = (acpiFadt*)header;
+; 63   : 			au_acpi.fadt = (acpiFadt*)header;
 
 	mov	rax, QWORD PTR header$[rsp]
 	mov	QWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+9, rax
-	jmp	$LN8@au_initial
-$LN9@au_initial:
+	jmp	$LN9@au_initial
+$LN10@au_initial:
 
-; 63   : 		}
-; 64   : 
-; 65   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
+; 64   : 		}
+; 65   : 
+; 66   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3188
+	lea	rcx, OFFSET FLAT:$SG3216
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3189
+	lea	rdx, OFFSET FLAT:$SG3217
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
-	jne	$LN7@au_initial
+	jne	$LN8@au_initial
 
-; 66   : 			au_acpi.madt = (acpiMadt*)header;
+; 67   : 			au_acpi.madt = (acpiMadt*)header;
 
 	mov	rax, QWORD PTR header$[rsp]
 	mov	QWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+1, rax
 
-; 67   : 			
-; 68   : 			acpiApicHeader *apic_header = (acpiApicHeader*)au_acpi.madt->entry;
+; 68   : 			
+; 69   : 			acpiApicHeader *apic_header = (acpiApicHeader*)au_acpi.madt->entry;
 
 	mov	rax, QWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+1
 	add	rax, 44					; 0000002cH
 	mov	QWORD PTR apic_header$1[rsp], rax
-$LN6@au_initial:
+$LN7@au_initial:
 
-; 69   : 			while (raw_diff(apic_header, au_acpi.madt) < au_acpi.madt->header.length) {
+; 70   : 			while (raw_diff(apic_header, au_acpi.madt) < au_acpi.madt->header.length) {
 
 	mov	rdx, QWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+1
 	mov	rcx, QWORD PTR apic_header$1[rsp]
 	call	??$raw_diff@U_acpi_apic_header_@@UacpiMadt@@@@YAHPEAU_acpi_apic_header_@@PEAUacpiMadt@@@Z ; raw_diff<_acpi_apic_header_,acpiMadt>
 	mov	rcx, QWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+1
 	cmp	eax, DWORD PTR [rcx+4]
-	jae	$LN5@au_initial
+	jae	SHORT $LN6@au_initial
 
-; 70   : 				switch (apic_header->type) {
+; 71   : 				switch (apic_header->type) {
 
 	mov	rax, QWORD PTR apic_header$1[rsp]
 	movzx	eax, BYTE PTR [rax]
 	mov	BYTE PTR tv154[rsp], al
 	cmp	BYTE PTR tv154[rsp], 0
-	je	SHORT $LN2@au_initial
+	je	SHORT $LN3@au_initial
 	cmp	BYTE PTR tv154[rsp], 1
 	je	SHORT $LN1@au_initial
-	jmp	SHORT $LN3@au_initial
-$LN2@au_initial:
-
-; 71   :                     case ACPI_APICTYPE_LAPIC: {
-; 72   : 						acpiLocalApic *lapic = (acpiLocalApic*)apic_header;
-
-	mov	rax, QWORD PTR apic_header$1[rsp]
-	mov	QWORD PTR lapic$4[rsp], rax
-
-; 73   : 						_au_debug_print_("\r\n lapid id -> %d,", lapic->lapicId);
-
-	mov	rax, QWORD PTR lapic$4[rsp]
-	movzx	eax, BYTE PTR [rax+3]
-	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3209
-	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
-
-; 74   : 						 break;
-
-	jmp	SHORT $LN3@au_initial
-$LN1@au_initial:
-
-; 75   : 					}
-; 76   : 
-; 77   : 					case ACPI_APICTYPE_IOAPIC: {
-; 78   : 						acpiIoApic *ioapic = (acpiIoApic*)apic_header;
-
-	mov	rax, QWORD PTR apic_header$1[rsp]
-	mov	QWORD PTR ioapic$3[rsp], rax
-
-; 79   : 						_au_debug_print_("\r\n IOAPIC id-> %d, address-> %x", ioapic->ioApicId, ioapic->ioApicAddr);
-
-	mov	rax, QWORD PTR ioapic$3[rsp]
-	movzx	eax, BYTE PTR [rax+2]
-	mov	rcx, QWORD PTR ioapic$3[rsp]
-	mov	r8d, DWORD PTR [rcx+4]
-	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3213
-	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
+	jmp	SHORT $LN4@au_initial
 $LN3@au_initial:
 
-; 80   : 						break;
-; 81   : 					}
-; 82   : 				}
-; 83   : 				apic_header = raw_offset <acpiApicHeader*>(apic_header, apic_header->length);
+; 72   :                     case ACPI_APICTYPE_LAPIC: {
+; 73   : 						acpiLocalApic *lapic = (acpiLocalApic*)apic_header;
+
+	mov	rax, QWORD PTR apic_header$1[rsp]
+	mov	QWORD PTR lapic$3[rsp], rax
+
+; 74   : 					//	au_get_boot_info()->auprint("LAPIC id -> %x, %x \n", lapic->lapicId, lapic->procId);
+; 75   : 						if (lapic->procId != 0)
+
+	mov	rax, QWORD PTR lapic$3[rsp]
+	movzx	eax, BYTE PTR [rax+2]
+	test	eax, eax
+	je	SHORT $LN2@au_initial
+
+; 76   : 							initialize_cpu(lapic->procId);
+
+	mov	rax, QWORD PTR lapic$3[rsp]
+	movzx	eax, BYTE PTR [rax+2]
+	mov	ecx, eax
+	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
+$LN2@au_initial:
+
+; 77   : 						 break;
+
+	jmp	SHORT $LN4@au_initial
+$LN1@au_initial:
+
+; 78   : 					}
+; 79   : 
+; 80   : 					case ACPI_APICTYPE_IOAPIC: {
+; 81   : 						acpiIoApic *ioapic = (acpiIoApic*)apic_header;
+
+	mov	rax, QWORD PTR apic_header$1[rsp]
+	mov	QWORD PTR ioapic$4[rsp], rax
+$LN4@au_initial:
+
+; 82   : 						break;
+; 83   : 					}
+; 84   : 				}
+; 85   : 				apic_header = raw_offset <acpiApicHeader*>(apic_header, apic_header->length);
 
 	mov	rax, QWORD PTR apic_header$1[rsp]
 	movzx	eax, BYTE PTR [rax+1]
@@ -317,25 +311,25 @@ $LN3@au_initial:
 	call	??$raw_offset@PEAU_acpi_apic_header_@@PEAU1@@@YAPEAU_acpi_apic_header_@@PEAU0@H@Z ; raw_offset<_acpi_apic_header_ * __ptr64,_acpi_apic_header_ * __ptr64>
 	mov	QWORD PTR apic_header$1[rsp], rax
 
-; 84   : 			}
+; 86   : 			}
 
-	jmp	$LN6@au_initial
-$LN5@au_initial:
-$LN7@au_initial:
+	jmp	$LN7@au_initial
+$LN6@au_initial:
 $LN8@au_initial:
+$LN9@au_initial:
 
-; 85   : 		}
-; 86   : 	}
+; 87   : 		}
+; 88   : 	}
 
-	jmp	$LN11@au_initial
-$LN10@au_initial:
+	jmp	$LN12@au_initial
+$LN11@au_initial:
 
-; 87   : 
-; 88   : 	return 0;
+; 89   : 
+; 90   : 	return 0;
 
 	xor	eax, eax
 
-; 89   : }
+; 91   : }
 
 	add	rsp, 136				; 00000088H
 	ret	0

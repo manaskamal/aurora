@@ -40,6 +40,7 @@
 #define PAGE_SEARCH_KERNEL  0xFFFFE00000000000
 #define PAGE_SEARCH_USER    0x0000000000000000
 
+uint64_t * boot_cr3;
 
 size_t  pml4_index(uint64_t addr){
 	return (addr >> 39) & 0x1ff;
@@ -121,6 +122,7 @@ bool early_map_page(uint64_t physical_address, uint64_t virtual_address, uint8_t
 int x86_64_paging_init() {
 
 	uint64_t* old_cr3 = (uint64_t*)x64_read_cr3();
+	boot_cr3 = old_cr3;
 	uint64_t* new_cr3 = (uint64_t*)x86_64_pmmngr_alloc();
 	memset(new_cr3, 0, 4096);
 
@@ -161,10 +163,15 @@ int x86_64_paging_init() {
 		pd[pd_index(PHYSICAL_MEMORY_BASE) + i] = i * 512 * 4096 | 0x80 | PAGING_PRESENT | PAGING_WRITABLE;
 	}
 
+	/* Copy the mappings to boot page tables */
+	boot_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
 
+
+	/* clear up the lower half */
 	for (int i = 0; i < 256; i++)
 		new_cr3[i] = 0;
 
+	
 	/* from here we are fully boot free*/
 	x86_64_pmmngr_set_high(true);
 	x86_64_pmmngr_high_mem_bitmap();
@@ -312,5 +319,12 @@ bool x86_64_check_free(uint64_t start) {
 		return true;
 
 	return false;
+}
+
+/*
+ * x86_64_get_boot_pml -- returns the boot pml4 table
+ */
+uint64_t* x86_64_get_boot_pml() {
+	return boot_cr3;
 }
 

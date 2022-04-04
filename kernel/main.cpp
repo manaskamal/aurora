@@ -64,16 +64,15 @@ int _kmain(aurora_info_t *bootinfo) {
 	x86_64_pmmngr_init(bootinfo);
 	x86_64_cpu_initialize();
 
-
 	/* initialize early drivers*/
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
 
 	au_status = au_initialize_serial();
+	au_status = x86_64_initialize_apic(true);
 	au_status = au_initialize_acpi();
-	au_status = x86_64_initialize_apic();
-
-
+   
+	
 
 	/* just for debug purpose */
 	for (int i = 0; i < 100; i++) {

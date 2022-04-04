@@ -51,7 +51,7 @@
 
 
 //! Initialize our APIC
-extern int x86_64_initialize_apic();
+extern int x86_64_initialize_apic(bool bsp);
 
 //! Sends EOI to APIC
 extern void apic_local_eoi();
@@ -61,3 +61,8 @@ extern uint64_t read_apic_register(uint16_t reg);
 
 //! Writs APIC Register
 extern void write_apic_register(uint16_t reg, uint64_t value);
+
+/* initialize other processors
+* @param processor -- other processor id
+*/
+extern void initialize_cpu(uint32_t processor);

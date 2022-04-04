@@ -44,7 +44,7 @@ $LN4:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rcx, QWORD PTR text$[rsp]
-	call	QWORD PTR [rax+82]
+	call	QWORD PTR [rax+90]
 $LN1@printf:
 
 ; 41   : 		return;
