@@ -7,22 +7,22 @@ INCLUDELIB OLDNAMES
 
 PUBLIC	?au_acpi@@3U_aurora_acpi_@@A			; au_acpi
 _BSS	SEGMENT
-?au_acpi@@3U_aurora_acpi_@@A DB 02dH DUP (?)		; au_acpi
+?au_acpi@@3U_aurora_acpi_@@A DB 031H DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3211	DB	'FACP', 00H
+$SG3218	DB	'FACP', 00H
 	ORG $+3
-$SG3212	DB	'FACP', 00H
+$SG3219	DB	'FACP', 00H
 	ORG $+3
-$SG3216	DB	'APIC', 00H
+$SG3223	DB	'APIC', 00H
 	ORG $+3
-$SG3217	DB	'APIC', 00H
+$SG3224	DB	'APIC', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
+PUBLIC	?au_acpi_get_num_core@@YAIXZ			; au_acpi_get_num_core
 PUBLIC	??$raw_diff@U_acpi_apic_header_@@UacpiMadt@@@@YAHPEAU_acpi_apic_header_@@PEAUacpiMadt@@@Z ; raw_diff<_acpi_apic_header_,acpiMadt>
 PUBLIC	??$raw_offset@PEAU_acpi_apic_header_@@PEAU1@@@YAPEAU_acpi_apic_header_@@PEAU0@H@Z ; raw_offset<_acpi_apic_header_ * __ptr64,_acpi_apic_header_ * __ptr64>
 EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
-EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?strlen@@YA_KPEBD@Z:PROC			; strlen
 EXTRN	?strncmp@@YAHPEBD0_K@Z:PROC			; strncmp
@@ -30,7 +30,7 @@ EXTRN	?strncpy@@YAPEADPEADPEBD_K@Z:PROC		; strncpy
 EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 pdata	SEGMENT
 $pdata$?au_initialize_acpi@@YAHXZ DD imagerel $LN16
-	DD	imagerel $LN16+509
+	DD	imagerel $LN16+508
 	DD	imagerel $unwind$?au_initialize_acpi@@YAHXZ
 pdata	ENDS
 xdata	SEGMENT
@@ -90,6 +90,20 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\kdrivers\au_acpi.cpp
 _TEXT	SEGMENT
+?au_acpi_get_num_core@@YAIXZ PROC			; au_acpi_get_num_core
+
+; 98   : 	return au_acpi.num_core;
+
+	mov	eax, DWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+45
+
+; 99   : }
+
+	ret	0
+?au_acpi_get_num_core@@YAIXZ ENDP			; au_acpi_get_num_core
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\kdrivers\au_acpi.cpp
+_TEXT	SEGMENT
 apic_header$1 = 32
 sig$ = 40
 tv154 = 48
@@ -118,7 +132,7 @@ $LN16:
 
 ; 47   : 	memset(&au_acpi, 0, sizeof(aurora_acpi));
 
-	mov	r8d, 45					; 0000002dH
+	mov	r8d, 49					; 00000031H
 	xor	edx, edx
 	lea	rcx, OFFSET FLAT:?au_acpi@@3U_aurora_acpi_@@A ; au_acpi
 	call	?memset@@YAXPEAXEI@Z			; memset
@@ -200,10 +214,10 @@ $LN13@au_initial:
 ; 61   : 
 ; 62   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3211
+	lea	rcx, OFFSET FLAT:$SG3218
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3212
+	lea	rdx, OFFSET FLAT:$SG3219
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -220,10 +234,10 @@ $LN10@au_initial:
 ; 65   : 
 ; 66   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3216
+	lea	rcx, OFFSET FLAT:$SG3223
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3217
+	lea	rdx, OFFSET FLAT:$SG3224
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -277,12 +291,11 @@ $LN3@au_initial:
 	test	eax, eax
 	je	SHORT $LN2@au_initial
 
-; 76   : 							initialize_cpu(lapic->procId);
+; 76   : 							au_acpi.num_core = lapic->procId;
 
 	mov	rax, QWORD PTR lapic$3[rsp]
 	movzx	eax, BYTE PTR [rax+2]
-	mov	ecx, eax
-	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
+	mov	DWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+45, eax
 $LN2@au_initial:
 
 ; 77   : 						 break;

@@ -87,7 +87,7 @@
       </SDLCheck>
       <AdditionalIncludeDirectories>E:\Aurora Kernel\kernel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
-      <PreprocessorDefinitions>ARCH_X64;AVX_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ARCH_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>

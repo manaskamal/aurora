@@ -294,6 +294,11 @@ x64_hlt:
      hlt
 	 ret
 
+global x64_pause
+x64_pause:
+     pause
+	 ret
+
 ;======================================
 ; SSE & AVX
 ;======================================
@@ -343,9 +348,13 @@ x64_write_xcr0:
 
 global x64_stack_switch
 x64_stack_switch:
-      mov rax, rcx
-	  mov rsp, rax
+	  mov rsp, rcx
 	  ret
+
+global x64_get_stack
+x64_get_stack:
+	 mov rax, rsp
+	 ret
 
 ;======================================
 ; LOCKING

@@ -152,8 +152,11 @@ void general_protection_fault(size_t v, void* p){
 
 //! Most important for good performance is page fault! whenever any memory related errors occurs
 //! it get fired and new page swapping process should be allocated
-
+int pg_lock = 0;
 void page_fault(size_t vector, void* param){
+	x64_lock_acquire(&pg_lock);
+	x64_cli();
+
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 	void* vaddr = (void*)x64_read_cr2();
 
@@ -163,7 +166,8 @@ void page_fault(size_t vector, void* param){
 	int resv = frame->error & 0x8;
 	int id = frame->error & 0x10;
 
-	panic("[aurora]: page fault -> %x\n", vaddr);
+	panic("[aurora]: page fault \n");
+	printf("[aurora]: page fault at -> %x \n", vaddr);
 	if (present)
 		printf("bit: present \n");
 	else if (rw)
@@ -174,6 +178,10 @@ void page_fault(size_t vector, void* param){
 		printf("bit: resv \n");
 	else if (id)
 		printf("bit: id\n");
+
+	printf("RIP -> %x \n", frame->rip);
+
+	pg_lock = 0;
 
 	for (;;);
 }

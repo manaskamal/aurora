@@ -137,45 +137,40 @@ int x86_64_paging_init() {
 			new_cr3[i] = 0;
 	}
 
-	x64_write_cr3((size_t)new_cr3);
-
 	/* Here! map 16 GiB of Physical Memory to Virtual Memory */
 
 	uint64_t* pdpt = (uint64_t*)x86_64_pmmngr_alloc();
-	uint64_t* pd = (uint64_t*)x86_64_pmmngr_alloc();
-	uint64_t* pd2 = (uint64_t*)x86_64_pmmngr_alloc();
+	memset(pdpt, 0, 4096);
 
-	new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = (uintptr_t)pdpt | PAGING_PRESENT | PAGING_WRITABLE;
 
-	/* Point the pdpt entry to 8GiB PD */
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE)] = (uintptr_t)&pd[0] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 1] = (uintptr_t)&pd[512] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 2] = (uintptr_t)&pd[1024] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 3] = (uintptr_t)&pd[1536] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 4] = (uintptr_t)&pd[2048] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 5] = (uintptr_t)&pd[2560] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 6] = (uintptr_t)&pd[3072] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 7] = (uintptr_t)&pd[3584] | PAGING_PRESENT | PAGING_WRITABLE;
-	pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + 8] = (uintptr_t)&pd[4096] | PAGING_PRESENT | PAGING_WRITABLE;
+	new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = (uint64_t)pdpt | PAGING_PRESENT | PAGING_WRITABLE;
 
-	/* First 8 GiB mapped , 2MB pages*/
-	for (size_t i = 0; i <= 4096; i++) {
-		pd[pd_index(PHYSICAL_MEMORY_BASE) + i] = i * 512 * 4096 | 0x80 | PAGING_PRESENT | PAGING_WRITABLE;
-	}
+	/* Map entire 512 GiB of Physical Memory using 1GiB pages */
+	for (size_t i = 0; i < 512; i++)
+		pdpt[pdp_index(PHYSICAL_MEMORY_BASE) + i] = i * 512 * 512 * 4096 | 0x80 | PAGING_PRESENT | PAGING_WRITABLE;
+	
 
 	/* Copy the mappings to boot page tables */
 	boot_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
+	//new_cr3[pml4_index(FRAMEBUFFER_ADDRESS)] = boot_cr3[pml4_index(FRAMEBUFFER_ADDRESS)];
+	boot_cr3 = new_cr3;
 
+	x64_write_cr3((size_t)new_cr3);
 
-	/* clear up the lower half */
-	for (int i = 0; i < 256; i++)
-		new_cr3[i] = 0;
-
-	
-	/* from here we are fully boot free*/
+	/* from here, every physical page = higher half virtual page */
 	x86_64_pmmngr_set_high(true);
 	x86_64_pmmngr_high_mem_bitmap();
+
 	return 0;
+}
+
+/*
+ * make the lower half available for userspace
+ */
+void x86_64_boot_free() {
+	uint64_t *cr3 = (uint64_t*)x64_read_cr3();
+	for (int i = 0; i < 256; i++)
+		cr3[i] = 0;
 }
 
 /*
@@ -197,7 +192,7 @@ uint64_t x86_64_virt_to_phys(uint64_t phys_addr) {
 	if (x86_64_pmmngr_is_high_mem())
 		return (phys_addr - PHYSICAL_MEMORY_BASE);
 	else
-		return 0;
+		return phys_addr;
 }
 
 /*
@@ -227,16 +222,16 @@ bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib) {
 		flush_tlb((void*)page);
 		x64_mfence();
 	}
-
+	
 	uint64_t* pml3 = (uint64_t*)(x86_64_phys_to_virt(pml4i[i4]) & ~(4096 - 1));
 	if (!(pml3[i3] & PAGING_PRESENT)) {
-		const uint64_t page = (uint64_t)x86_64_pmmngr_alloc();
+		uint64_t page = (uint64_t)x86_64_pmmngr_alloc();
 		memset((void*)x86_64_phys_to_virt(page), 0, 4096);
 		pml3[i3] = page | flags;
 		flush_tlb((void*)page);
 		x64_mfence();
 	}
-
+	
 	uint64_t* pml2 = (uint64_t*)(x86_64_phys_to_virt(pml3[i3]) & ~(4096 - 1));
 	if (!(pml2[i2] & PAGING_PRESENT)) {
 		const uint64_t page = (uint64_t)x86_64_pmmngr_alloc();

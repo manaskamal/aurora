@@ -312,6 +312,7 @@ typedef struct _aurora_acpi_
 	acpiMcfg *mcfg;
 	uint16_t slp_typa;
 	uint16_t slp_typb;
+	uint32_t num_core;
 }aurora_acpi;
 
 typedef struct _apic_interrupt_override_
@@ -370,5 +371,11 @@ typedef struct _acpi_srat_mem_affinity_
 * au_initialize_acpi -- initialize basic acpi data structures
 */
 extern int au_initialize_acpi();
+
+/*
+* au_acpi_get_num_core -- returns the total number of
+* cpu
+*/
+extern uint32_t au_acpi_get_num_core();
 
 #endif

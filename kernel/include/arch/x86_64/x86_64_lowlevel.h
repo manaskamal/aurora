@@ -197,6 +197,7 @@ extern "C" void x64_idt_test();
 //! TLB Flush
 extern "C" void flush_tlb(void* addr);
 extern "C" void cache_flush();
+extern "C" void x64_pause();
 
 //! SSE & AVX
 extern "C" void x64_activate_sse();
@@ -205,6 +206,7 @@ extern "C" uint64_t x64_read_xcr0();
 extern "C" void x64_write_xcr0(uint64_t);
 
 extern "C" void x64_stack_switch(size_t address);
+extern "C" size_t x64_get_stack();
 
 extern "C" void x64_lock_acquire(int * lock);
 extern "C" void x64_lock_release(int* lock);

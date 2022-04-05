@@ -73,7 +73,7 @@ int au_initialize_acpi() {
 						acpiLocalApic *lapic = (acpiLocalApic*)apic_header;
 					//	au_get_boot_info()->auprint("LAPIC id -> %x, %x \n", lapic->lapicId, lapic->procId);
 						if (lapic->procId != 0)
-							initialize_cpu(lapic->procId);
+							au_acpi.num_core = lapic->procId;
 						 break;
 					}
 
@@ -88,4 +88,12 @@ int au_initialize_acpi() {
 	}
 
 	return 0;
+}
+
+/*
+ * au_acpi_get_num_core -- returns the total number of
+ * cpu
+ */
+uint32_t au_acpi_get_num_core() {
+	return au_acpi.num_core;
 }

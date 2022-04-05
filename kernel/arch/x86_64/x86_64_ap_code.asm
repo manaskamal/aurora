@@ -7,6 +7,7 @@
 ;;
 ;;=======================================================
 
+[section .text]
 [bits 16]
 [org 0x9000]
 _entry:
@@ -16,9 +17,10 @@ _entry:
 	 nop
 
 align 8
-pml4_address: dd 0
+pml4_address: dq 0
 stack_address: dq 0
 kentry: dq 0
+kstack: dq 0
 
 gdt_address:
      dq 0
@@ -33,30 +35,33 @@ gdt_toc:
 
 ap_boot:
      cli
+
      mov ax, word [stack_address]
 	 mov ss, ax
 	 mov sp, 0xFFFF
 
-	 pusha
 	 lgdt [gdt_toc]
-	 popa
 
 	 mov eax, cr0
 	 or eax, 1
 	 mov cr0, eax
 
-
 	 jmp 0x18:ap_32
 [bits 32]
 ap_32:
+     cli
      mov ax, 0x20
 	 mov ds, ax
+	 mov es, ax
+	 mov fs, ax
+	 mov gs, ax
 	 mov ss, ax
 
 	 ; Enable PAE paging 
 	 mov eax, cr4
 	 or eax, 1 << 5
 	 mov cr4, eax
+	 
 
 	 ; enable long mode (bit 8 of EFER) and NXE bit (bit 11)
 	 mov ecx, 0xC0000080
@@ -65,8 +70,9 @@ ap_32:
 	 or eax, 1<<11
 	 wrmsr
 
-	 mov eax,dword [pml4_address]
+	 mov eax, dword [pml4_address]
 	 mov cr3, eax
+
 
 	 ; enable paging
 	 mov eax, cr0
@@ -75,9 +81,8 @@ ap_32:
 	 mov cr0, eax
 
 	 ;reload the GDT
-	 pusha
 	 lgdt [gdt_toc]
-	 popa
+
 
 	 jmp 0x08:ap_64
 [bits 64]
@@ -90,9 +95,20 @@ ap_64:
 	 mov gs, ax
 	 mov ss, ax
 
-	 mov rax, [stack_address]
-	 add rax, 4096
+
+	 mov rax, qword [pml4_address]
+	 mov cr3, rax
+
+
+	 ; move the stack address to higher half
+	 ; because at some point, the lower half
+	 ; will get cleared
+
+	 mov rax, qword  [kstack]
+	 add rax, 4095
+	 sub rax, 0x20
 	 mov rsp, rax
 
-	 mov r9, [kentry]
+	 ;mov rcx, [cpu_id]
+	 mov r9, qword [kentry]
 	 jmp r9

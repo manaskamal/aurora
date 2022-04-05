@@ -50,6 +50,12 @@ extern void x86_64_pmmngr_init(aurora_info_t *info);
 extern void* x86_64_pmmngr_alloc();
 
 /*
+* x86_64_pmmngr_alloc_blocks -- allocate more than
+* one physical 4k mem block
+*/
+extern void* x86_64_pmmngr_alloc_blocks(int count);
+
+/*
 * x86_64_pmmngr_free -- frees up a physical address
 * @param addr - address to free
 */

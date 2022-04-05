@@ -62,6 +62,7 @@ extern uint64_t read_apic_register(uint16_t reg);
 //! Writs APIC Register
 extern void write_apic_register(uint16_t reg, uint64_t value);
 
+extern void x86_64_ap_started();
 /* initialize other processors
 * @param processor -- other processor id
 */

@@ -42,9 +42,9 @@ int au_fb_initialize() {
 	uint32_t* phys_fb = au_get_boot_info()->fb_addr;
 
 	for (size_t i = 0; i < au_get_boot_info()->fb_size / 4096; i++)
-		x86_64_map_page((uint64_t)phys_fb + i * 4096, 0xFFFFD00000000000 + i * 4096, 0);
+		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
 
-	fb_.framebuffer = (uint32_t*)0xFFFFD00000000000;
+	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
 	fb_.pixels_per_scanline = au_get_boot_info()->pixels_per_line;
 	fb_.x_resolution = au_get_boot_info()->x_res;
 	fb_.y_resolution = au_get_boot_info()->y_res;

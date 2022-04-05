@@ -65,8 +65,9 @@ public:
 		uint64_t byte_index = index / 8;
 		uint8_t bit_index = index % 8;
 		uint8_t bit_indexer = 0x80 >> bit_index;
-
+	
 		buffer[byte_index] &= ~bit_indexer;
+		
 		if (value)
 			buffer[byte_index] |= bit_indexer;
 
@@ -92,6 +93,7 @@ void x86_64_pmmngr_init_bitmap(size_t bitmap_size, void* buffer) {
 
 void x86_64_pmmngr_lock_page(void* address) {
 	uint64_t index = (uint64_t)address / 4096;
+	uint64_t ind = index / 8;
 	if (ram_bitmap[index] == true) return;
 	if (ram_bitmap.set(index, true)) {
 		free_memory--;
@@ -130,6 +132,17 @@ void* x86_64_pmmngr_alloc() {
 	}
 }
 
+/*
+ * x86_64_pmmngr_alloc_blocks -- allocate more than 
+ * one physical 4k mem block
+ */
+void* x86_64_pmmngr_alloc_blocks(int count) {
+	void* first = x86_64_pmmngr_alloc();
+	for (int i = 0; i < count - 1; i++)
+		x86_64_pmmngr_alloc();
+	return first;
+}
+
 
 /*
  * x86_64_pmmngr_free -- frees up a physical address
@@ -166,7 +179,9 @@ void x86_64_pmmngr_init(aurora_info_t *info) {
 		EFI_MEMORY_DESCRIPTOR *efi_mem = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)info->mem_map + i * info->mem_desc_size);
 		total_ram += efi_mem->num_pages * 4096;
 		if (efi_mem->type == 7) {
-			bitmap_area = (void*)efi_mem->phys_start;
+			if (((efi_mem->num_pages * 4096) > 0x100000) && bitmap_area == 0) {
+				bitmap_area = (void*)efi_mem->phys_start;
+			}
 			uint64_t size_in_mb_kb = 0;
 			char* unit = "B";
 			if ((efi_mem->num_pages * 4096 / 1024 / 1024) == 0) {
@@ -238,8 +253,10 @@ void x86_64_pmmngr_set_high(bool value) {
 }
 
 void x86_64_pmmngr_high_mem_bitmap() {
+	au_get_boot_info()->auprint("RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
-	_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
+	au_get_boot_info()->auprint("after RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
+	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
 }
 
 /*

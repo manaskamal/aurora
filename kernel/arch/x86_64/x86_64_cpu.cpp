@@ -30,8 +30,10 @@
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_exception.h>
+#include <arch\x86_64\x86_64_pmmngr.h>
 #include <console.h>
 #include <auinfo.h>
+#include <string.h>
 
 //! Global Descriptor Table functions
 extern "C" uint16_t x64_get_segment_register(size_t reg);
@@ -202,7 +204,6 @@ void x86_64_cpu_feature_enable() {
 	x64_cpuid(1, &a, &b, &c, &d);
 
 	if ((c & (1 << 26)) != 0) {
-		au_get_boot_info()->auprint("[aurora]: xcr0 supported\n");
 		/* Enable XCR0 register */
 		uint64_t cr4 = x64_read_cr4();
 		cr4 |= (1 << 18);
@@ -210,12 +211,10 @@ void x86_64_cpu_feature_enable() {
 	}
 
 	if ((d & (1 << 25)) != 0){
-		au_get_boot_info()->auprint("[aurora]: SSE is supported \n");
 		size_t cr4 = x64_read_cr4();
 		cr4 |= (1 << 10);
 
 		if ((d & (1 << 24)) != 0) {
-			au_get_boot_info()->auprint("[aurora]: fxsave supported \n");
 			cr4 |= (1 << 9);
 		}
 
@@ -232,7 +231,6 @@ void x86_64_cpu_feature_enable() {
 		size_t xcr0 = x64_read_xcr0();
 		xcr0 |= 7;
 		x64_write_xcr0(xcr0);
-		au_get_boot_info()->auprint("[aurora]: AVX enabled\n");
 	}
 	x64_cpuid(0xD, &a, &b, &c, &d);
 	if ((a & (7 << 5)) != 0) {
@@ -241,20 +239,54 @@ void x86_64_cpu_feature_enable() {
 		size_t xcr0 = x64_read_xcr0();
 		xcr0 |= (ax&(7<<5));
 		x64_write_xcr0(xcr0);
-		au_get_boot_info()->auprint("[aurora]: AVX-512 enabled %d bytes\n",bx);
 	}
 #endif
 }
 
+
+/*
+ * x86_64_cpu_print_brand -- prints brand strings
+ */
+void x86_64_cpu_print_brand() {
+	size_t maxcpuid, a, b, c, d;
+	x64_cpuid(0, &maxcpuid, &b, &c, &d);
+	char vendor[13];
+	*(uint32_t*)&vendor[0] = b;
+	*(uint32_t*)&vendor[4] = d;
+	*(uint32_t*)&vendor[8] = c;
+	vendor[12] = 0;
+	au_get_boot_info()->auprint("CPU: Vendor -> %s \n", vendor);
+
+	char bandstring[49];
+	x64_cpuid(0x80000002, &a, &b, &c, &d);
+	*(uint32_t*)&bandstring[0] = a;
+	*(uint32_t*)&bandstring[4] = b;
+	*(uint32_t*)&bandstring[8] = c;
+	*(uint32_t*)&bandstring[12] = d;
+	x64_cpuid(0x80000003, &a, &b, &c, &d);
+	*(uint32_t*)&bandstring[16] = a;
+	*(uint32_t*)&bandstring[20] = b;
+	*(uint32_t*)&bandstring[24] = c;
+	*(uint32_t*)&bandstring[28] = d;
+	x64_cpuid(0x80000004, &a, &b, &c, &d);
+	*(uint32_t*)&bandstring[32] = a;
+	*(uint32_t*)&bandstring[36] = b;
+	*(uint32_t*)&bandstring[40] = c;
+	*(uint32_t*)&bandstring[44] = d;
+	bandstring[48] = 0;
+	au_get_boot_info()->auprint("CPU: Brand = %s \n", bandstring);
+}
 /*
  * x86_64_cpu_initialize -- initialize the cpu
  */
 void x86_64_cpu_initialize() {
 	x64_cli();
+
 	x86_64_gdt_initialize();
 	x86_64_idt_initialize();
 	x86_64_exception_init();
 	x86_64_cpu_feature_enable();
+
 
 	/* Enable SYSCALL extension */
 	size_t efer = x64_read_msr(IA32_EFER);

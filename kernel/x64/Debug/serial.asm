@@ -9,7 +9,7 @@ _BSS	SEGMENT
 _serial_initialized_ DB 01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG2940	DB	'.', 00H
+$SG2945	DB	'.', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_serial@@YAHXZ			; au_initialize_serial
 PUBLIC	?_au_debug_print_@@YAXPEADZZ			; _au_debug_print_
@@ -470,7 +470,7 @@ $LN5@au_debug_p:
 ; 131  : 			{
 ; 132  : 				debug_serial(".");
 
-	lea	rcx, OFFSET FLAT:$SG2940
+	lea	rcx, OFFSET FLAT:$SG2945
 	call	?debug_serial@@YAXPEAD@Z		; debug_serial
 
 ; 133  : 			}

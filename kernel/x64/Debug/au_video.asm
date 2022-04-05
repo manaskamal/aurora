@@ -117,7 +117,7 @@ $LN3@au_fb_init:
 	cmp	QWORD PTR i$1[rsp], rax
 	jae	SHORT $LN1@au_fb_init
 
-; 45   : 		x86_64_map_page((uint64_t)phys_fb + i * 4096, 0xFFFFD00000000000 + i * 4096, 0);
+; 45   : 		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
 
 	imul	rax, QWORD PTR i$1[rsp], 4096		; 00001000H
 	mov	rcx, 52776558133248			; 0000300000000000H
@@ -133,7 +133,7 @@ $LN3@au_fb_init:
 $LN1@au_fb_init:
 
 ; 46   : 
-; 47   : 	fb_.framebuffer = (uint32_t*)0xFFFFD00000000000;
+; 47   : 	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
 
 	mov	rax, -52776558133248			; ffffd00000000000H
 	mov	QWORD PTR ?fb_@@3U_au_fb_@@A+16, rax

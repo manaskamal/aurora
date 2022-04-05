@@ -39,6 +39,11 @@ typedef struct _cpu_ {
 * x86_64_cpu_initialize -- initialize the cpu
 */
 extern void x86_64_cpu_initialize();
+
+/*
+* x86_64_cpu_print_brand -- prints brand strings
+*/
+extern void x86_64_cpu_print_brand();
 extern void setvect(size_t vector, void(*function)(size_t vector, void* param));
 
 #endif

@@ -10,35 +10,29 @@ _BSS	SEGMENT
 ?lock@@3HA DD	01H DUP (?)				; lock
 _BSS	ENDS
 CONST	SEGMENT
-$SG2881	DB	'APIC interrupt ', 0aH, 00H
-	ORG $+7
-$SG2884	DB	'APIC Base -> %x ', 0aH, 00H
-	ORG $+6
-$SG2894	DB	'CPU: Vendor -> %s ', 0aH, 00H
-	ORG $+4
-$SG2908	DB	'CPU: Brand = %s ', 0aH, 00H
+$SG2888	DB	'APIC interrupt ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_ap_init@@YAXXZ				; x86_64_ap_init
 PUBLIC	?x86_64_apic_handler@@YAX_KPEAX@Z		; x86_64_apic_handler
 EXTRN	?x86_64_cpu_initialize@@YAXXZ:PROC		; x86_64_cpu_initialize
+EXTRN	?x86_64_cpu_print_brand@@YAXXZ:PROC		; x86_64_cpu_print_brand
 EXTRN	x64_cli:PROC
-EXTRN	x64_read_msr:PROC
-EXTRN	x64_cpuid:PROC
 EXTRN	x64_lock_acquire:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
+EXTRN	?x86_64_ap_started@@YAXXZ:PROC			; x86_64_ap_started
 pdata	SEGMENT
 $pdata$?x86_64_ap_init@@YAXXZ DD imagerel $LN5
-	DD	imagerel $LN5+599
+	DD	imagerel $LN5+60
 	DD	imagerel $unwind$?x86_64_ap_init@@YAXXZ
 $pdata$?x86_64_apic_handler@@YAX_KPEAX@Z DD imagerel $LN3
 	DD	imagerel $LN3+39
 	DD	imagerel $unwind$?x86_64_apic_handler@@YAX_KPEAX@Z
 pdata	ENDS
 xdata	SEGMENT
-$unwind$?x86_64_ap_init@@YAXXZ DD 020701H
-	DD	0170107H
+$unwind$?x86_64_ap_init@@YAXXZ DD 010401H
+	DD	04204H
 $unwind$?x86_64_apic_handler@@YAX_KPEAX@Z DD 010e01H
 	DD	0420eH
 xdata	ENDS
@@ -59,7 +53,7 @@ $LN3:
 ; 43   : 	au_get_boot_info()->auprint("APIC interrupt \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2881
+	lea	rcx, OFFSET FLAT:$SG2888
 	call	QWORD PTR [rax+90]
 
 ; 44   : 	apic_local_eoi();
@@ -75,248 +69,51 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_ap_init.cpp
 _TEXT	SEGMENT
-c$ = 48
-b$ = 56
-d$ = 64
-a$ = 72
-vendor$ = 80
-bandstring$ = 96
-tv68 = 152
-maxcpuid$ = 160
 ?x86_64_ap_init@@YAXXZ PROC				; x86_64_ap_init
 
 ; 47   : void x86_64_ap_init() {
 
 $LN5:
-	sub	rsp, 184				; 000000b8H
+	sub	rsp, 40					; 00000028H
 
-; 48   : 
-; 49   : 	x64_lock_acquire(&lock);
+; 48   : 	x64_lock_acquire(&lock);
 
 	lea	rcx, OFFSET FLAT:?lock@@3HA		; lock
 	call	x64_lock_acquire
 
-; 50   : 	//au_get_boot_info()->auprint("Lock -> %d \n", lock);
-; 51   : 	x86_64_cpu_initialize();
-
-	call	?x86_64_cpu_initialize@@YAXXZ		; x86_64_cpu_initialize
-
-; 52   : 
-; 53   : 	x64_cli();
+; 49   : 	x64_cli();
 
 	call	x64_cli
 
-; 54   : 	x86_64_initialize_apic(false);
+; 50   : 	x86_64_cpu_initialize();
+
+	call	?x86_64_cpu_initialize@@YAXXZ		; x86_64_cpu_initialize
+
+; 51   : 	x86_64_initialize_apic(false);
 
 	xor	ecx, ecx
 	call	?x86_64_initialize_apic@@YAH_N@Z	; x86_64_initialize_apic
 
-; 55   : 	
-; 56   : 	au_get_boot_info()->auprint("APIC Base -> %x \n", x64_read_msr(0x1B));
+; 52   : 	x86_64_cpu_print_brand();
 
-	mov	ecx, 27
-	call	x64_read_msr
-	mov	QWORD PTR tv68[rsp], rax
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	mov	rcx, QWORD PTR tv68[rsp]
-	mov	rdx, rcx
-	lea	rcx, OFFSET FLAT:$SG2884
-	call	QWORD PTR [rax+90]
+	call	?x86_64_cpu_print_brand@@YAXXZ		; x86_64_cpu_print_brand
 
-; 57   : 
-; 58   : 	size_t maxcpuid, a, b, c, d;
-; 59   : 	x64_cpuid(0, &maxcpuid, &b, &c, &d);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR d$[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR c$[rsp]
-	lea	r8, QWORD PTR b$[rsp]
-	lea	rdx, QWORD PTR maxcpuid$[rsp]
-	xor	ecx, ecx
-	call	x64_cpuid
-
-; 60   : 	char vendor[13];
-; 61   : 	*(uint32_t*)&vendor[0] = b;
-
-	mov	eax, 1
-	imul	rax, rax, 0
-	mov	ecx, DWORD PTR b$[rsp]
-	mov	DWORD PTR vendor$[rsp+rax], ecx
-
-; 62   : 	*(uint32_t*)&vendor[4] = d;
-
-	mov	eax, 1
-	imul	rax, rax, 4
-	mov	ecx, DWORD PTR d$[rsp]
-	mov	DWORD PTR vendor$[rsp+rax], ecx
-
-; 63   : 	*(uint32_t*)&vendor[8] = c;
-
-	mov	eax, 1
-	imul	rax, rax, 8
-	mov	ecx, DWORD PTR c$[rsp]
-	mov	DWORD PTR vendor$[rsp+rax], ecx
-
-; 64   : 	vendor[12] = 0;
-
-	mov	eax, 1
-	imul	rax, rax, 12
-	mov	BYTE PTR vendor$[rsp+rax], 0
-
-; 65   : 	au_get_boot_info()->auprint("CPU: Vendor -> %s \n", vendor);
-
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rdx, QWORD PTR vendor$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2894
-	call	QWORD PTR [rax+90]
-
-; 66   : 
-; 67   : 	char bandstring[49];
-; 68   : 	x64_cpuid(0x80000002, &a, &b, &c, &d);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR d$[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR c$[rsp]
-	lea	r8, QWORD PTR b$[rsp]
-	lea	rdx, QWORD PTR a$[rsp]
-	mov	ecx, -2147483646			; 80000002H
-	call	x64_cpuid
-
-; 69   : 	*(uint32_t*)&bandstring[0] = a;
-
-	mov	eax, 1
-	imul	rax, rax, 0
-	mov	ecx, DWORD PTR a$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 70   : 	*(uint32_t*)&bandstring[4] = b;
-
-	mov	eax, 1
-	imul	rax, rax, 4
-	mov	ecx, DWORD PTR b$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 71   : 	*(uint32_t*)&bandstring[8] = c;
-
-	mov	eax, 1
-	imul	rax, rax, 8
-	mov	ecx, DWORD PTR c$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 72   : 	*(uint32_t*)&bandstring[12] = d;
-
-	mov	eax, 1
-	imul	rax, rax, 12
-	mov	ecx, DWORD PTR d$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 73   : 	x64_cpuid(0x80000003, &a, &b, &c, &d);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR d$[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR c$[rsp]
-	lea	r8, QWORD PTR b$[rsp]
-	lea	rdx, QWORD PTR a$[rsp]
-	mov	ecx, -2147483645			; 80000003H
-	call	x64_cpuid
-
-; 74   : 	*(uint32_t*)&bandstring[16] = a;
-
-	mov	eax, 1
-	imul	rax, rax, 16
-	mov	ecx, DWORD PTR a$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 75   : 	*(uint32_t*)&bandstring[20] = b;
-
-	mov	eax, 1
-	imul	rax, rax, 20
-	mov	ecx, DWORD PTR b$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 76   : 	*(uint32_t*)&bandstring[24] = c;
-
-	mov	eax, 1
-	imul	rax, rax, 24
-	mov	ecx, DWORD PTR c$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 77   : 	*(uint32_t*)&bandstring[28] = d;
-
-	mov	eax, 1
-	imul	rax, rax, 28
-	mov	ecx, DWORD PTR d$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 78   : 	x64_cpuid(0x80000004, &a, &b, &c, &d);
-
-	mov	QWORD PTR [rsp+40], 0
-	lea	rax, QWORD PTR d$[rsp]
-	mov	QWORD PTR [rsp+32], rax
-	lea	r9, QWORD PTR c$[rsp]
-	lea	r8, QWORD PTR b$[rsp]
-	lea	rdx, QWORD PTR a$[rsp]
-	mov	ecx, -2147483644			; 80000004H
-	call	x64_cpuid
-
-; 79   : 	*(uint32_t*)&bandstring[32] = a;
-
-	mov	eax, 1
-	imul	rax, rax, 32				; 00000020H
-	mov	ecx, DWORD PTR a$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 80   : 	*(uint32_t*)&bandstring[36] = b;
-
-	mov	eax, 1
-	imul	rax, rax, 36				; 00000024H
-	mov	ecx, DWORD PTR b$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 81   : 	*(uint32_t*)&bandstring[40] = c;
-
-	mov	eax, 1
-	imul	rax, rax, 40				; 00000028H
-	mov	ecx, DWORD PTR c$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 82   : 	*(uint32_t*)&bandstring[44] = d;
-
-	mov	eax, 1
-	imul	rax, rax, 44				; 0000002cH
-	mov	ecx, DWORD PTR d$[rsp]
-	mov	DWORD PTR bandstring$[rsp+rax], ecx
-
-; 83   : 	bandstring[48] = 0;
-
-	mov	eax, 1
-	imul	rax, rax, 48				; 00000030H
-	mov	BYTE PTR bandstring$[rsp+rax], 0
-
-; 84   : 	au_get_boot_info()->auprint("CPU: Brand = %s \n", bandstring);
-
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rdx, QWORD PTR bandstring$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2908
-	call	QWORD PTR [rax+90]
-
-; 85   : 	//x64_sti();
-; 86   : 	lock = 0;
+; 53   : 	lock = 0;
 
 	mov	DWORD PTR ?lock@@3HA, 0			; lock
+
+; 54   : 	x86_64_ap_started();
+
+	call	?x86_64_ap_started@@YAXXZ		; x86_64_ap_started
 $LN2@x86_64_ap_:
 
-; 87   : 
-; 88   : 	for (;;);
+; 55   : 	for (;;);
 
 	jmp	SHORT $LN2@x86_64_ap_
 
-; 89   : }
+; 56   : }
 
-	add	rsp, 184				; 000000b8H
+	add	rsp, 40					; 00000028H
 	ret	0
 ?x86_64_ap_init@@YAXXZ ENDP				; x86_64_ap_init
 _TEXT	ENDS

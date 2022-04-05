@@ -45,45 +45,12 @@ void x86_64_apic_handler(size_t v, void* p) {
 }
 
 void x86_64_ap_init() {
-
 	x64_lock_acquire(&lock);
-	//au_get_boot_info()->auprint("Lock -> %d \n", lock);
-	x86_64_cpu_initialize();
-
 	x64_cli();
+	x86_64_cpu_initialize();
 	x86_64_initialize_apic(false);
-	
-	au_get_boot_info()->auprint("APIC Base -> %x \n", x64_read_msr(0x1B));
-
-	size_t maxcpuid, a, b, c, d;
-	x64_cpuid(0, &maxcpuid, &b, &c, &d);
-	char vendor[13];
-	*(uint32_t*)&vendor[0] = b;
-	*(uint32_t*)&vendor[4] = d;
-	*(uint32_t*)&vendor[8] = c;
-	vendor[12] = 0;
-	au_get_boot_info()->auprint("CPU: Vendor -> %s \n", vendor);
-
-	char bandstring[49];
-	x64_cpuid(0x80000002, &a, &b, &c, &d);
-	*(uint32_t*)&bandstring[0] = a;
-	*(uint32_t*)&bandstring[4] = b;
-	*(uint32_t*)&bandstring[8] = c;
-	*(uint32_t*)&bandstring[12] = d;
-	x64_cpuid(0x80000003, &a, &b, &c, &d);
-	*(uint32_t*)&bandstring[16] = a;
-	*(uint32_t*)&bandstring[20] = b;
-	*(uint32_t*)&bandstring[24] = c;
-	*(uint32_t*)&bandstring[28] = d;
-	x64_cpuid(0x80000004, &a, &b, &c, &d);
-	*(uint32_t*)&bandstring[32] = a;
-	*(uint32_t*)&bandstring[36] = b;
-	*(uint32_t*)&bandstring[40] = c;
-	*(uint32_t*)&bandstring[44] = d;
-	bandstring[48] = 0;
-	au_get_boot_info()->auprint("CPU: Brand = %s \n", bandstring);
-	//x64_sti();
+	x86_64_cpu_print_brand();
 	lock = 0;
-
+	x86_64_ap_started();
 	for (;;);
 }

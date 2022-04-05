@@ -39,6 +39,7 @@
 #define PHYSICAL_MEMORY_BASE  0xffff800000000000
 #define PHYSICAL_MEMORY_MAX 0x0000400000000000
 
+#define FRAMEBUFFER_ADDRESS 0xFFFFD00000000000
 /*
 * x86_64_paging_init -- initialise the paging structures
 */
@@ -89,4 +90,9 @@ extern bool x86_64_check_free(uint64_t address);
 * x86_64_get_boot_pml -- returns the boot pml4 table
 */
 extern uint64_t* x86_64_get_boot_pml();
+
+/*
+* make the lower half available for userspace
+*/
+extern void x86_64_boot_free();
 #endif

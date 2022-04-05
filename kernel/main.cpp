@@ -42,6 +42,7 @@
 #include <kdrivers\au_acpi.h>
 
 
+
 aurora_info_t info;
 
 aurora_info_t * au_get_boot_info() {
@@ -70,9 +71,11 @@ int _kmain(aurora_info_t *bootinfo) {
 
 	au_status = au_initialize_serial();
 	au_status = x86_64_initialize_apic(true);
+
+	x64_cli();
 	au_status = au_initialize_acpi();
-   
-	
+	initialize_cpu(au_acpi_get_num_core());
+
 
 	/* just for debug purpose */
 	for (int i = 0; i < 100; i++) {
