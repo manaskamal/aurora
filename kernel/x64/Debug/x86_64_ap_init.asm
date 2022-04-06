@@ -10,29 +10,33 @@ _BSS	SEGMENT
 ?lock@@3HA DD	01H DUP (?)				; lock
 _BSS	ENDS
 CONST	SEGMENT
-$SG2888	DB	'APIC interrupt ', 0aH, 00H
+$SG2893	DB	'APIC interrupt ', 0aH, 00H
+	ORG $+7
+$SG2898	DB	'CPU: id %d ', 0aH, 00H
 CONST	ENDS
-PUBLIC	?x86_64_ap_init@@YAXXZ				; x86_64_ap_init
+PUBLIC	?x86_64_ap_init@@YAXPEAX@Z			; x86_64_ap_init
 PUBLIC	?x86_64_apic_handler@@YAX_KPEAX@Z		; x86_64_apic_handler
 EXTRN	?x86_64_cpu_initialize@@YAXXZ:PROC		; x86_64_cpu_initialize
 EXTRN	?x86_64_cpu_print_brand@@YAXXZ:PROC		; x86_64_cpu_print_brand
 EXTRN	x64_cli:PROC
+EXTRN	x64_write_msr:PROC
+EXTRN	x64_read_gs_b:PROC
 EXTRN	x64_lock_acquire:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
 EXTRN	?x86_64_ap_started@@YAXXZ:PROC			; x86_64_ap_started
 pdata	SEGMENT
-$pdata$?x86_64_ap_init@@YAXXZ DD imagerel $LN5
-	DD	imagerel $LN5+60
-	DD	imagerel $unwind$?x86_64_ap_init@@YAXXZ
+$pdata$?x86_64_ap_init@@YAXPEAX@Z DD imagerel $LN5
+	DD	imagerel $LN5+115
+	DD	imagerel $unwind$?x86_64_ap_init@@YAXPEAX@Z
 $pdata$?x86_64_apic_handler@@YAX_KPEAX@Z DD imagerel $LN3
 	DD	imagerel $LN3+39
 	DD	imagerel $unwind$?x86_64_apic_handler@@YAX_KPEAX@Z
 pdata	ENDS
 xdata	SEGMENT
-$unwind$?x86_64_ap_init@@YAXXZ DD 010401H
-	DD	04204H
+$unwind$?x86_64_ap_init@@YAXPEAX@Z DD 010901H
+	DD	06209H
 $unwind$?x86_64_apic_handler@@YAX_KPEAX@Z DD 010e01H
 	DD	0420eH
 xdata	ENDS
@@ -53,7 +57,7 @@ $LN3:
 ; 43   : 	au_get_boot_info()->auprint("APIC interrupt \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2888
+	lea	rcx, OFFSET FLAT:$SG2893
 	call	QWORD PTR [rax+90]
 
 ; 44   : 	apic_local_eoi();
@@ -69,12 +73,15 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_ap_init.cpp
 _TEXT	SEGMENT
-?x86_64_ap_init@@YAXXZ PROC				; x86_64_ap_init
+tv72 = 32
+cpu_data$ = 64
+?x86_64_ap_init@@YAXPEAX@Z PROC				; x86_64_ap_init
 
-; 47   : void x86_64_ap_init() {
+; 47   : void x86_64_ap_init(void *cpu_data) {
 
 $LN5:
-	sub	rsp, 40					; 00000028H
+	mov	QWORD PTR [rsp+8], rcx
+	sub	rsp, 56					; 00000038H
 
 ; 48   : 	x64_lock_acquire(&lock);
 
@@ -98,23 +105,43 @@ $LN5:
 
 	call	?x86_64_cpu_print_brand@@YAXXZ		; x86_64_cpu_print_brand
 
-; 53   : 	lock = 0;
+; 53   : 
+; 54   : 	x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu_data);
+
+	mov	rdx, QWORD PTR cpu_data$[rsp]
+	mov	ecx, -1073741567			; c0000101H
+	call	x64_write_msr
+
+; 55   : 	au_get_boot_info()->auprint("CPU: id %d \n", x64_read_gs_b(0));
+
+	xor	ecx, ecx
+	call	x64_read_gs_b
+	movzx	eax, al
+	mov	DWORD PTR tv72[rsp], eax
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	mov	ecx, DWORD PTR tv72[rsp]
+	mov	edx, ecx
+	lea	rcx, OFFSET FLAT:$SG2898
+	call	QWORD PTR [rax+90]
+
+; 56   : 
+; 57   : 	lock = 0;
 
 	mov	DWORD PTR ?lock@@3HA, 0			; lock
 
-; 54   : 	x86_64_ap_started();
+; 58   : 	x86_64_ap_started();
 
 	call	?x86_64_ap_started@@YAXXZ		; x86_64_ap_started
 $LN2@x86_64_ap_:
 
-; 55   : 	for (;;);
+; 59   : 	for (;;);
 
 	jmp	SHORT $LN2@x86_64_ap_
 
-; 56   : }
+; 60   : }
 
-	add	rsp, 40					; 00000028H
+	add	rsp, 56					; 00000038H
 	ret	0
-?x86_64_ap_init@@YAXXZ ENDP				; x86_64_ap_init
+?x86_64_ap_init@@YAXPEAX@Z ENDP				; x86_64_ap_init
 _TEXT	ENDS
 END

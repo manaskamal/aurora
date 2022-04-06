@@ -44,12 +44,16 @@ void x86_64_apic_handler(size_t v, void* p) {
 	apic_local_eoi();
 }
 
-void x86_64_ap_init() {
+void x86_64_ap_init(void *cpu_data) {
 	x64_lock_acquire(&lock);
 	x64_cli();
 	x86_64_cpu_initialize();
 	x86_64_initialize_apic(false);
 	x86_64_cpu_print_brand();
+
+	x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu_data);
+	au_get_boot_info()->auprint("CPU: id %d \n", x64_read_gs_b(0));
+
 	lock = 0;
 	x86_64_ap_started();
 	for (;;);

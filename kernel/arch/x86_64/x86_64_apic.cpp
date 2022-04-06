@@ -259,10 +259,15 @@ void initialize_cpu(uint32_t processor) {
 		if (i == 8) //MAX number of processor : 8 on SMP (non-NUMA system)
 			break;
 		ap_started = 0;
+		
 		void* stack_address = x86_64_pmmngr_alloc();
 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
 		*(uint64_t*)(aligned_address + 24) = ap_init_address;
 		*(uint64_t*)(aligned_address + 32) = (kstack_addr + i * 4096);
+		void* cpu_struc = (void*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
+		cpu_t *cpu = (cpu_t*)cpu_struc;
+		cpu->id = i;
+		*(uint64_t*)(aligned_address + 40) = (uint64_t)cpu_struc;
 		
 		for (int i = 0; i < 100000; i++)
 			;

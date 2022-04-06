@@ -28,6 +28,12 @@
     <Filter Include="kdrivers">
       <UniqueIdentifier>{149c0a4b-26da-489c-bf23-135c499eb49a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mm">
+      <UniqueIdentifier>{a605094f-b52a-4cac-a7cf-2ccc0feb55a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\mm">
+      <UniqueIdentifier>{20357562-6987-436a-a17c-425c4bb69240}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stdint.h">
@@ -93,6 +99,9 @@
     <ClInclude Include="include\arch\x86_64\x86_64_ap_init.h">
       <Filter>include\arch\x86_64</Filter>
     </ClInclude>
+    <ClInclude Include="include\mm\kmalloc.h">
+      <Filter>include\mm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -133,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="arch\x86_64\x86_64_ap_init.cpp">
       <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="mm\kmalloc.cpp">
+      <Filter>mm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

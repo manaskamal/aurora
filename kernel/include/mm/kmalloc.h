@@ -27,24 +27,52 @@
 *
 **/
 
-#ifndef __X86_64_CPU_H__
-#define __X86_64_CPU_H__
+#ifndef __KMALLOC_H__
+#define __KMALLOC_H__
 
 #include <stdint.h>
+#include <auinfo.h>
 
-/* cpu structure */
-typedef struct _cpu_ {
-	uint8_t id;
-}cpu_t;
+/* Meta data magic */
+#define MAGIC_USED  0x12112002
+#define MAGIC_FREE  0x16062002
+
+typedef struct _meta_data_ {
+	uint32_t magic;
+	size_t   size;
+	bool     free;
+	uint8_t*   eob_mark;
+	_meta_data_ *next;
+	_meta_data_ *prev;
+}meta_data_t;
+
+typedef struct _page_desc_ {
+	int num_block;
+	meta_data_t *first_free_pointer;
+	meta_data_t *last_free_pointer;
+	uint8_t num_free_block;
+	uint32_t used_size_in_bytes;
+	_page_desc_ *next;
+	_page_desc_ *prev;
+}kmalloc_page_desc_t;
+
 /*
-* x86_64_cpu_initialize -- initialize the cpu
+* au_request_page -- request contiguous 4k virtual pages
+* @param pages -- number of pages needs to be mapped
 */
-extern void x86_64_cpu_initialize();
+extern void* au_request_page(int pages);
 
 /*
-* x86_64_cpu_print_brand -- prints brand strings
+* au_free_page -- frees up pages, note that pages
+* are needed to be 4k and contiguous
+* @param ptr -- pointer to the first page
+* @param pages --pages -- number of pages
 */
-extern void x86_64_cpu_print_brand();
-extern void setvect(size_t vector, void(*function)(size_t vector, void* param));
+extern void au_free_page(void* ptr, int pages);
 
+/*
+* kmalloc -- allocate a small chunk of memory
+* @param size -- size in bytes
+*/
+extern void* kmalloc(size_t size);
 #endif

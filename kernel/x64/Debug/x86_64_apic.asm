@@ -46,7 +46,7 @@ EXTRN	?ioapic_init@@YAXPEAX@Z:PROC			; ioapic_init
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?x86_64_pmmngr_alloc@@YAPEAXXZ:PROC		; x86_64_pmmngr_alloc
 EXTRN	?x86_64_pmmngr_lock_page@@YAXPEAX@Z:PROC	; x86_64_pmmngr_lock_page
-EXTRN	?x86_64_ap_init@@YAXXZ:PROC			; x86_64_ap_init
+EXTRN	?x86_64_ap_init@@YAXPEAX@Z:PROC			; x86_64_ap_init
 EXTRN	memcpy:PROC
 pdata	SEGMENT
 $pdata$?x86_64_initialize_apic@@YAH_N@Z DD imagerel $LN9
@@ -62,7 +62,7 @@ $pdata$?write_apic_register@@YAXG_K@Z DD imagerel $LN6
 	DD	imagerel $LN6+231
 	DD	imagerel $unwind$?write_apic_register@@YAXG_K@Z
 $pdata$?initialize_cpu@@YAXI@Z DD imagerel $LN29
-	DD	imagerel $LN29+613
+	DD	imagerel $LN29+679
 	DD	imagerel $unwind$?initialize_cpu@@YAXI@Z
 $pdata$?x2apic_supported@@YA_NXZ DD imagerel $LN5
 	DD	imagerel $LN5+92
@@ -90,7 +90,7 @@ $unwind$?read_apic_register@@YA_KG@Z DD 010901H
 $unwind$?write_apic_register@@YAXG_K@Z DD 010e01H
 	DD	0a20eH
 $unwind$?initialize_cpu@@YAXI@Z DD 020b01H
-	DD	011010bH
+	DD	013010bH
 $unwind$?x2apic_supported@@YA_NXZ DD 010401H
 	DD	0c204H
 $unwind$?io_wait@@YAXXZ DD 010401H
@@ -370,26 +370,28 @@ _TEXT	SEGMENT
 i$1 = 32
 i$2 = 36
 i$3 = 40
-j$4 = 44
+i$4 = 44
 i$5 = 48
-i$6 = 52
+j$6 = 52
 aligned_address$ = 56
 address$ = 64
-ap_init_address$ = 72
-ap_data$ = 80
+cpu_struc$7 = 72
+ap_init_address$ = 80
 kstack_addr$ = 88
-stack_address$7 = 96
-tv144 = 104
-tv83 = 112
-startup_ipi$8 = 120
-processor$ = 144
+tv83 = 96
+cpu$8 = 104
+ap_data$ = 112
+tv149 = 120
+stack_address$9 = 128
+startup_ipi$10 = 136
+processor$ = 160
 ?initialize_cpu@@YAXI@Z PROC				; initialize_cpu
 
 ; 237  : void initialize_cpu(uint32_t processor) {
 
 $LN29:
 	mov	DWORD PTR [rsp+8], ecx
-	sub	rsp, 136				; 00000088H
+	sub	rsp, 152				; 00000098H
 
 ; 238  : 	uint64_t* address = (uint64_t*)x86_64_phys_to_virt(0x9000);
 
@@ -420,7 +422,7 @@ $LN29:
 ; 243  : 	
 ; 244  : 	uint64_t ap_init_address = (uint64_t)x86_64_ap_init;
 
-	lea	rax, OFFSET FLAT:?x86_64_ap_init@@YAXXZ	; x86_64_ap_init
+	lea	rax, OFFSET FLAT:?x86_64_ap_init@@YAXPEAX@Z ; x86_64_ap_init
 	mov	QWORD PTR ap_init_address$[rsp], rax
 
 ; 245  : 
@@ -506,24 +508,25 @@ $LN20@initialize:
 
 	mov	BYTE PTR ?ap_started@@3_NA, 0		; ap_started
 
-; 262  : 		void* stack_address = x86_64_pmmngr_alloc();
+; 262  : 		
+; 263  : 		void* stack_address = x86_64_pmmngr_alloc();
 
 	call	?x86_64_pmmngr_alloc@@YAPEAXXZ		; x86_64_pmmngr_alloc
-	mov	QWORD PTR stack_address$7[rsp], rax
+	mov	QWORD PTR stack_address$9[rsp], rax
 
-; 263  : 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
+; 264  : 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
 
 	mov	rax, QWORD PTR aligned_address$[rsp]
-	mov	rcx, QWORD PTR stack_address$7[rsp]
+	mov	rcx, QWORD PTR stack_address$9[rsp]
 	mov	QWORD PTR [rax+16], rcx
 
-; 264  : 		*(uint64_t*)(aligned_address + 24) = ap_init_address;
+; 265  : 		*(uint64_t*)(aligned_address + 24) = ap_init_address;
 
 	mov	rax, QWORD PTR aligned_address$[rsp]
 	mov	rcx, QWORD PTR ap_init_address$[rsp]
 	mov	QWORD PTR [rax+24], rcx
 
-; 265  : 		*(uint64_t*)(aligned_address + 32) = (kstack_addr + i * 4096);
+; 266  : 		*(uint64_t*)(aligned_address + 32) = (kstack_addr + i * 4096);
 
 	imul	eax, DWORD PTR i$1[rsp], 4096		; 00001000H
 	cdqe
@@ -533,26 +536,50 @@ $LN20@initialize:
 	mov	rcx, QWORD PTR aligned_address$[rsp]
 	mov	QWORD PTR [rcx+32], rax
 
-; 266  : 		
-; 267  : 		for (int i = 0; i < 100000; i++)
+; 267  : 		void* cpu_struc = (void*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
 
-	mov	DWORD PTR i$6[rsp], 0
+	call	?x86_64_pmmngr_alloc@@YAPEAXXZ		; x86_64_pmmngr_alloc
+	mov	rcx, rax
+	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	mov	QWORD PTR cpu_struc$7[rsp], rax
+
+; 268  : 		cpu_t *cpu = (cpu_t*)cpu_struc;
+
+	mov	rax, QWORD PTR cpu_struc$7[rsp]
+	mov	QWORD PTR cpu$8[rsp], rax
+
+; 269  : 		cpu->id = i;
+
+	mov	rax, QWORD PTR cpu$8[rsp]
+	movzx	ecx, BYTE PTR i$1[rsp]
+	mov	BYTE PTR [rax], cl
+
+; 270  : 		*(uint64_t*)(aligned_address + 40) = (uint64_t)cpu_struc;
+
+	mov	rax, QWORD PTR aligned_address$[rsp]
+	mov	rcx, QWORD PTR cpu_struc$7[rsp]
+	mov	QWORD PTR [rax+40], rcx
+
+; 271  : 		
+; 272  : 		for (int i = 0; i < 100000; i++)
+
+	mov	DWORD PTR i$5[rsp], 0
 	jmp	SHORT $LN19@initialize
 $LN18@initialize:
-	mov	eax, DWORD PTR i$6[rsp]
+	mov	eax, DWORD PTR i$5[rsp]
 	inc	eax
-	mov	DWORD PTR i$6[rsp], eax
+	mov	DWORD PTR i$5[rsp], eax
 $LN19@initialize:
-	cmp	DWORD PTR i$6[rsp], 100000		; 000186a0H
+	cmp	DWORD PTR i$5[rsp], 100000		; 000186a0H
 	jge	SHORT $LN17@initialize
 
-; 268  : 			;
+; 273  : 			;
 
 	jmp	SHORT $LN18@initialize
 $LN17@initialize:
 
-; 269  : 
-; 270  : 		write_apic_register(LAPIC_REGISTER_ICR, icr_dest(i) | 0x4500);
+; 274  : 
+; 275  : 		write_apic_register(LAPIC_REGISTER_ICR, icr_dest(i) | 0x4500);
 
 	mov	ecx, DWORD PTR i$1[rsp]
 	call	?icr_dest@@YA_KI@Z			; icr_dest
@@ -562,7 +589,7 @@ $LN17@initialize:
 	call	?write_apic_register@@YAXG_K@Z		; write_apic_register
 $LN16@initialize:
 
-; 271  : 		while (icr_busy());
+; 276  : 		while (icr_busy());
 
 	call	?icr_busy@@YA_NXZ			; icr_busy
 	movzx	eax, al
@@ -571,8 +598,8 @@ $LN16@initialize:
 	jmp	SHORT $LN16@initialize
 $LN15@initialize:
 
-; 272  : 
-; 273  : 		for (int i = 0; i < 100000; i++)
+; 277  : 
+; 278  : 		for (int i = 0; i < 100000; i++)
 
 	mov	DWORD PTR i$3[rsp], 0
 	jmp	SHORT $LN14@initialize
@@ -584,47 +611,47 @@ $LN14@initialize:
 	cmp	DWORD PTR i$3[rsp], 100000		; 000186a0H
 	jge	SHORT $LN12@initialize
 
-; 274  : 			;
+; 279  : 			;
 
 	jmp	SHORT $LN13@initialize
 $LN12@initialize:
 
-; 275  : 	
-; 276  : 		//!startup ipi
-; 277  : 		for (int j = 0; j < 2; j++) {
+; 280  : 	
+; 281  : 		//!startup ipi
+; 282  : 		for (int j = 0; j < 2; j++) {
 
-	mov	DWORD PTR j$4[rsp], 0
+	mov	DWORD PTR j$6[rsp], 0
 	jmp	SHORT $LN11@initialize
 $LN10@initialize:
-	mov	eax, DWORD PTR j$4[rsp]
+	mov	eax, DWORD PTR j$6[rsp]
 	inc	eax
-	mov	DWORD PTR j$4[rsp], eax
+	mov	DWORD PTR j$6[rsp], eax
 $LN11@initialize:
-	cmp	DWORD PTR j$4[rsp], 2
+	cmp	DWORD PTR j$6[rsp], 2
 	jge	SHORT $LN9@initialize
 
-; 278  : 			size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
+; 283  : 			size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
 
 	mov	ecx, DWORD PTR i$1[rsp]
 	call	?icr_dest@@YA_KI@Z			; icr_dest
 	or	rax, 17920				; 00004600H
-	mov	QWORD PTR tv144[rsp], rax
+	mov	QWORD PTR tv149[rsp], rax
 	mov	rcx, QWORD PTR address$[rsp]
 	call	?x86_64_virt_to_phys@@YA_K_K@Z		; x86_64_virt_to_phys
 	shr	rax, 12
-	mov	rcx, QWORD PTR tv144[rsp]
+	mov	rcx, QWORD PTR tv149[rsp]
 	or	rcx, rax
 	mov	rax, rcx
-	mov	QWORD PTR startup_ipi$8[rsp], rax
+	mov	QWORD PTR startup_ipi$10[rsp], rax
 
-; 279  : 			write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
+; 284  : 			write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
 
-	mov	rdx, QWORD PTR startup_ipi$8[rsp]
+	mov	rdx, QWORD PTR startup_ipi$10[rsp]
 	mov	cx, 48					; 00000030H
 	call	?write_apic_register@@YAXG_K@Z		; write_apic_register
 $LN8@initialize:
 
-; 280  : 			while (icr_busy());
+; 285  : 			while (icr_busy());
 
 	call	?icr_busy@@YA_NXZ			; icr_busy
 	movzx	eax, al
@@ -633,50 +660,50 @@ $LN8@initialize:
 	jmp	SHORT $LN8@initialize
 $LN7@initialize:
 
-; 281  : 		}
+; 286  : 		}
 
 	jmp	SHORT $LN10@initialize
 $LN9@initialize:
 $LN6@initialize:
 
-; 282  : 		
-; 283  : 		do {
-; 284  : 			x64_pause();
+; 287  : 		
+; 288  : 		do {
+; 289  : 			x64_pause();
 
 	call	x64_pause
 
-; 285  : 		} while (!ap_started);
+; 290  : 		} while (!ap_started);
 
 	movzx	eax, BYTE PTR ?ap_started@@3_NA		; ap_started
 	test	eax, eax
 	je	SHORT $LN6@initialize
 
-; 286  : 		for (int i = 0; i < 100000; i++)
+; 291  : 		for (int i = 0; i < 100000; i++)
 
-	mov	DWORD PTR i$5[rsp], 0
+	mov	DWORD PTR i$4[rsp], 0
 	jmp	SHORT $LN3@initialize
 $LN2@initialize:
-	mov	eax, DWORD PTR i$5[rsp]
+	mov	eax, DWORD PTR i$4[rsp]
 	inc	eax
-	mov	DWORD PTR i$5[rsp], eax
+	mov	DWORD PTR i$4[rsp], eax
 $LN3@initialize:
-	cmp	DWORD PTR i$5[rsp], 100000		; 000186a0H
+	cmp	DWORD PTR i$4[rsp], 100000		; 000186a0H
 	jge	SHORT $LN1@initialize
 
-; 287  : 			;
+; 292  : 			;
 
 	jmp	SHORT $LN2@initialize
 $LN1@initialize:
 
-; 288  : 	}
+; 293  : 	}
 
 	jmp	$LN22@initialize
 $LN21@initialize:
 
-; 289  : 
-; 290  : }
+; 294  : 
+; 295  : }
 
-	add	rsp, 136				; 00000088H
+	add	rsp, 152				; 00000098H
 	ret	0
 ?initialize_cpu@@YAXI@Z ENDP				; initialize_cpu
 _TEXT	ENDS
@@ -685,11 +712,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_ap_started@@YAXXZ PROC				; x86_64_ap_started
 
-; 293  : 	ap_started = true;
+; 298  : 	ap_started = true;
 
 	mov	BYTE PTR ?ap_started@@3_NA, 1		; ap_started
 
-; 294  : }
+; 299  : }
 
 	ret	0
 ?x86_64_ap_started@@YAXXZ ENDP				; x86_64_ap_started

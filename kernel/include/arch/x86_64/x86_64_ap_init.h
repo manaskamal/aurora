@@ -33,9 +33,12 @@
 #include <stdint.h>
 
 /*
- * x86_64_ap_init -- document it 
+ * x86_64_ap_init -- when application processor
+ * enters long mode the first C function get called
+ *
+ * @param data -- cpu information
  */
-extern void x86_64_ap_init();
+extern void x86_64_ap_init(void *data);
 
 
 #endif

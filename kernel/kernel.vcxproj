@@ -164,6 +164,7 @@
     <ClInclude Include="include\kdrivers\au_video.h" />
     <ClInclude Include="include\kdrivers\serial.h" />
     <ClInclude Include="include\limits.h" />
+    <ClInclude Include="include\mm\kmalloc.h" />
     <ClInclude Include="include\stdarg.h" />
     <ClInclude Include="include\stdint.h" />
     <ClInclude Include="include\stdlib.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="kdrivers\au_video.cpp" />
     <ClCompile Include="kdrivers\serial.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mm\kmalloc.cpp" />
     <ClCompile Include="stdlib.cpp" />
     <ClCompile Include="string.cpp" />
   </ItemGroup>

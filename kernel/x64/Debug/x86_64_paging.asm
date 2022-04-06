@@ -18,6 +18,7 @@ PUBLIC	?x86_64_get_free_page@@YAPEA_K_N@Z		; x86_64_get_free_page
 PUBLIC	?x86_64_check_free@@YA_N_K@Z			; x86_64_check_free
 PUBLIC	?x86_64_get_boot_pml@@YAPEA_KXZ			; x86_64_get_boot_pml
 PUBLIC	?x86_64_boot_free@@YAXXZ			; x86_64_boot_free
+PUBLIC	?x86_64_paging_free@@YA_N_K@Z			; x86_64_paging_free
 PUBLIC	?pml4_index@@YA_K_K@Z				; pml4_index
 PUBLIC	?pdp_index@@YA_K_K@Z				; pdp_index
 PUBLIC	?pd_index@@YA_K_K@Z				; pd_index
@@ -58,6 +59,9 @@ $pdata$?x86_64_check_free@@YA_N_K@Z DD imagerel $LN7
 $pdata$?x86_64_boot_free@@YAXXZ DD imagerel $LN6
 	DD	imagerel $LN6+69
 	DD	imagerel $unwind$?x86_64_boot_free@@YAXXZ
+$pdata$?x86_64_paging_free@@YA_N_K@Z DD imagerel $LN7
+	DD	imagerel $LN7+339
+	DD	imagerel $unwind$?x86_64_paging_free@@YA_N_K@Z
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?x86_64_paging_init@@YAHXZ DD 010401H
@@ -76,6 +80,8 @@ $unwind$?x86_64_check_free@@YA_N_K@Z DD 010901H
 	DD	08209H
 $unwind$?x86_64_boot_free@@YAXXZ DD 010401H
 	DD	06204H
+$unwind$?x86_64_paging_free@@YA_N_K@Z DD 010901H
+	DD	0a209H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
@@ -184,6 +190,166 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
 _TEXT	SEGMENT
+pt$ = 32
+pml4$ = 40
+pdpt$ = 48
+pd$ = 56
+page$ = 64
+start$ = 96
+?x86_64_paging_free@@YA_N_K@Z PROC			; x86_64_paging_free
+
+; 324  : bool x86_64_paging_free(uint64_t start) {
+
+$LN7:
+	mov	QWORD PTR [rsp+8], rcx
+	sub	rsp, 88					; 00000058H
+
+; 325  : 
+; 326  : 	uint64_t *pml4 = (uint64_t*)x86_64_phys_to_virt(x64_read_cr3());
+
+	call	x64_read_cr3
+	mov	rcx, rax
+	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	mov	QWORD PTR pml4$[rsp], rax
+
+; 327  : 
+; 328  : 	if (!(pml4[pml4_index(start)] & PAGING_PRESENT))
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pml4_index@@YA_K_K@Z			; pml4_index
+	mov	rcx, QWORD PTR pml4$[rsp]
+	mov	rax, QWORD PTR [rcx+rax*8]
+	and	rax, 1
+	test	rax, rax
+	jne	SHORT $LN4@x86_64_pag
+
+; 329  : 		return false;
+
+	xor	al, al
+	jmp	$LN5@x86_64_pag
+$LN4@x86_64_pag:
+
+; 330  : 
+; 331  : 	uint64_t *pdpt = (uint64_t*)(x86_64_phys_to_virt(pml4[pml4_index(start)]) & ~(4096 - 1));
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pml4_index@@YA_K_K@Z			; pml4_index
+	mov	rcx, QWORD PTR pml4$[rsp]
+	mov	rcx, QWORD PTR [rcx+rax*8]
+	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	and	rax, -4096				; fffffffffffff000H
+	mov	QWORD PTR pdpt$[rsp], rax
+
+; 332  : 	if (!(pdpt[pdp_index(start)] & PAGING_PRESENT))
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pdp_index@@YA_K_K@Z			; pdp_index
+	mov	rcx, QWORD PTR pdpt$[rsp]
+	mov	rax, QWORD PTR [rcx+rax*8]
+	and	rax, 1
+	test	rax, rax
+	jne	SHORT $LN3@x86_64_pag
+
+; 333  : 		return false;
+
+	xor	al, al
+	jmp	$LN5@x86_64_pag
+$LN3@x86_64_pag:
+
+; 334  : 
+; 335  : 	uint64_t *pd = (uint64_t*)(x86_64_phys_to_virt(pdpt[pdp_index(start)]) & ~(4096 - 1));
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pdp_index@@YA_K_K@Z			; pdp_index
+	mov	rcx, QWORD PTR pdpt$[rsp]
+	mov	rcx, QWORD PTR [rcx+rax*8]
+	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	and	rax, -4096				; fffffffffffff000H
+	mov	QWORD PTR pd$[rsp], rax
+
+; 336  : 	if (!(pd[pd_index(start)] & PAGING_PRESENT))
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pd_index@@YA_K_K@Z			; pd_index
+	mov	rcx, QWORD PTR pd$[rsp]
+	mov	rax, QWORD PTR [rcx+rax*8]
+	and	rax, 1
+	test	rax, rax
+	jne	SHORT $LN2@x86_64_pag
+
+; 337  : 		return false;
+
+	xor	al, al
+	jmp	$LN5@x86_64_pag
+$LN2@x86_64_pag:
+
+; 338  : 
+; 339  : 	uint64_t *pt = (uint64_t*)(x86_64_phys_to_virt(pd[pd_index(start)]) & ~(4096 - 1));
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pd_index@@YA_K_K@Z			; pd_index
+	mov	rcx, QWORD PTR pd$[rsp]
+	mov	rcx, QWORD PTR [rcx+rax*8]
+	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	and	rax, -4096				; fffffffffffff000H
+	mov	QWORD PTR pt$[rsp], rax
+
+; 340  : 
+; 341  : 	if (!(pt[pt_index(start)] & PAGING_PRESENT))
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pt_index@@YA_K_K@Z			; pt_index
+	mov	rcx, QWORD PTR pt$[rsp]
+	mov	rax, QWORD PTR [rcx+rax*8]
+	and	rax, 1
+	test	rax, rax
+	jne	SHORT $LN1@x86_64_pag
+
+; 342  : 		return false;
+
+	xor	al, al
+	jmp	SHORT $LN5@x86_64_pag
+$LN1@x86_64_pag:
+
+; 343  : 
+; 344  : 	uint64_t *page = (uint64_t*)(pt[pt_index(start)] & ~(4096 - 1));
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pt_index@@YA_K_K@Z			; pt_index
+	mov	rcx, QWORD PTR pt$[rsp]
+	mov	rax, QWORD PTR [rcx+rax*8]
+	and	rax, -4096				; fffffffffffff000H
+	mov	QWORD PTR page$[rsp], rax
+
+; 345  : 	x86_64_pmmngr_free(page);
+
+	mov	rcx, QWORD PTR page$[rsp]
+	call	?x86_64_pmmngr_free@@YAXPEAX@Z		; x86_64_pmmngr_free
+
+; 346  : 
+; 347  : 	pt[pt_index(start)] = 0;
+
+	mov	rcx, QWORD PTR start$[rsp]
+	call	?pt_index@@YA_K_K@Z			; pt_index
+	mov	rcx, QWORD PTR pt$[rsp]
+	mov	QWORD PTR [rcx+rax*8], 0
+
+; 348  : 
+; 349  : 
+; 350  : 	return false;
+
+	xor	al, al
+$LN5@x86_64_pag:
+
+; 351  : }
+
+	add	rsp, 88					; 00000058H
+	ret	0
+?x86_64_paging_free@@YA_N_K@Z ENDP			; x86_64_paging_free
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
+_TEXT	SEGMENT
 i$1 = 32
 cr3$ = 40
 ?x86_64_boot_free@@YAXXZ PROC				; x86_64_boot_free
@@ -229,11 +395,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_get_boot_pml@@YAPEA_KXZ PROC			; x86_64_get_boot_pml
 
-; 323  : 	return boot_cr3;
+; 357  : 	return boot_cr3;
 
 	mov	rax, QWORD PTR ?boot_cr3@@3PEA_KEA	; boot_cr3
 
-; 324  : }
+; 358  : }
 
 	ret	0
 ?x86_64_get_boot_pml@@YAPEA_KXZ ENDP			; x86_64_get_boot_pml
@@ -1370,7 +1536,7 @@ $LN1@x86_64_pag:
 	mov	rdx, QWORD PTR [rdx+r8*8]
 	mov	QWORD PTR [rcx+rax*8], rdx
 
-; 155  : 	//new_cr3[pml4_index(FRAMEBUFFER_ADDRESS)] = boot_cr3[pml4_index(FRAMEBUFFER_ADDRESS)];
+; 155  : 
 ; 156  : 	boot_cr3 = new_cr3;
 
 	mov	rax, QWORD PTR new_cr3$[rsp]

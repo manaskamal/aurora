@@ -69,6 +69,12 @@ x64_write_msr:
 	 wrmsr
 	 ret
 
+global x64_read_gs_b
+x64_read_gs_b:
+     xor rax,rax
+     mov al, [gs:rcx]
+	 ret
+
 
 ;---------------------------------------------------------
 ; Control Register functions

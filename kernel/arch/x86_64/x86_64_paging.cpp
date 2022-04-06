@@ -152,7 +152,7 @@ int x86_64_paging_init() {
 
 	/* Copy the mappings to boot page tables */
 	boot_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
-	//new_cr3[pml4_index(FRAMEBUFFER_ADDRESS)] = boot_cr3[pml4_index(FRAMEBUFFER_ADDRESS)];
+
 	boot_cr3 = new_cr3;
 
 	x64_write_cr3((size_t)new_cr3);
@@ -312,6 +312,40 @@ bool x86_64_check_free(uint64_t start) {
 
 	if (!(pt[pt_index(start)] & PAGING_PRESENT))
 		return true;
+
+	return false;
+}
+
+
+/*
+* x86_64_paging_free -- makes a page entry free
+* @param start -- virtual address
+*/
+bool x86_64_paging_free(uint64_t start) {
+
+	uint64_t *pml4 = (uint64_t*)x86_64_phys_to_virt(x64_read_cr3());
+
+	if (!(pml4[pml4_index(start)] & PAGING_PRESENT))
+		return false;
+
+	uint64_t *pdpt = (uint64_t*)(x86_64_phys_to_virt(pml4[pml4_index(start)]) & ~(4096 - 1));
+	if (!(pdpt[pdp_index(start)] & PAGING_PRESENT))
+		return false;
+
+	uint64_t *pd = (uint64_t*)(x86_64_phys_to_virt(pdpt[pdp_index(start)]) & ~(4096 - 1));
+	if (!(pd[pd_index(start)] & PAGING_PRESENT))
+		return false;
+
+	uint64_t *pt = (uint64_t*)(x86_64_phys_to_virt(pd[pd_index(start)]) & ~(4096 - 1));
+
+	if (!(pt[pt_index(start)] & PAGING_PRESENT))
+		return false;
+
+	uint64_t *page = (uint64_t*)(pt[pt_index(start)] & ~(4096 - 1));
+	x86_64_pmmngr_free(page);
+
+	pt[pt_index(start)] = 0;
+
 
 	return false;
 }

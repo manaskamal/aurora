@@ -174,6 +174,8 @@ extern "C" void x64_outportd(uint16_t port, uint32_t data);
 //! MSR functions
 extern "C" uint64_t x64_read_msr(size_t msr);
 extern "C" void x64_write_msr(size_t msr, uint64_t data);
+extern "C" uint8_t x64_read_gs_b(uint8_t offset);
+
 
 //!Mfench
 extern "C" void x64_mfence();

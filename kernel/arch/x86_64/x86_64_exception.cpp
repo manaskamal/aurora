@@ -31,6 +31,8 @@
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_lowlevel.h>
 
+static int exception_lock = 0;
+
 void panic(const char* msg, ...) {
 	printf("***ARCH x86_64 : Exception Occured ***\n");
 	printf("[aurora]: We are sorry to say that, a processor invalid exception has occured\n");
@@ -139,6 +141,7 @@ void stack_fault(size_t v, void* p){
 //! exception function --- general protection fault
 //   general protection fault is responsible for displaying processor security based error
 void general_protection_fault(size_t v, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
 	panic ("Genral Protection Fault\n");
@@ -147,14 +150,15 @@ void general_protection_fault(size_t v, void* p){
 	printf ("Stack -> %x\n", frame->rsp);
 	printf ("RFLAGS -> %x\n", frame->rflags);
 	printf ("CS -> %x, SS -> %x\n", frame->cs, frame->ss);
+	exception_lock = 0;
 	for(;;);
 }
 
 //! Most important for good performance is page fault! whenever any memory related errors occurs
 //! it get fired and new page swapping process should be allocated
-int pg_lock = 0;
+
 void page_fault(size_t vector, void* param){
-	x64_lock_acquire(&pg_lock);
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
@@ -181,7 +185,7 @@ void page_fault(size_t vector, void* param){
 
 	printf("RIP -> %x \n", frame->rip);
 
-	pg_lock = 0;
+	exception_lock = 0;
 
 	for (;;);
 }
@@ -189,8 +193,10 @@ void page_fault(size_t vector, void* param){
 
 //! exception function -- fpu_fault
 void fpu_fault(size_t vector, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nFPU Fault");
+	exception_lock = 0;
 	for (;;);
 }
 

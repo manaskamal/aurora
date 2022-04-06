@@ -27,6 +27,8 @@ e:\aurora kernel\kernel\x64\debug\serial.obj
 e:\aurora kernel\kernel\x64\debug\serial.asm
 e:\aurora kernel\kernel\x64\debug\main.obj
 e:\aurora kernel\kernel\x64\debug\main.asm
+e:\aurora kernel\kernel\x64\debug\kmalloc.obj
+e:\aurora kernel\kernel\x64\debug\kmalloc.asm
 e:\aurora kernel\kernel\x64\debug\stdlib.obj
 e:\aurora kernel\kernel\x64\debug\stdlib.asm
 e:\aurora kernel\kernel\x64\debug\string.obj

@@ -1,12 +1,12 @@
-﻿Build started 05-04-2022 আবেলি 5:13:18.
+﻿Build started 07-04-2022 ৰাতিপু 12:07:01.
      1>Project "E:\Aurora Kernel\kernel\kernel.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
          _fastcpy.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpfac59326be7c49d78d3fed646ee8290d.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp8c7b09673b5649f7a46abf10327ec3b5.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\_fastcpy.obj"  "E:\Aurora Kernel\kernel\_fastcpy.asm"
        _NASM:
          arch\x86_64\x86_64_interrupt.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp93528677171243ba89f78d306e173866.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp29b051970a3e41cdb2a80b2d0acaf988.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_interrupt.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm"
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(128): warning : signed dword immediate exceeds bounds
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(129): warning : signed dword immediate exceeds bounds
@@ -258,13 +258,14 @@
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(152): warning : signed dword immediate exceeds bounds
        _NASM:
          arch\x86_64\x86_64_lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpa20f5c11412f46ce894dcdfd05206094.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp8c0736a6bcdf41ef8062978783a485e7.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_lowlevel.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_lowlevel.asm"
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_pmmngr.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp stdlib.cpp string.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_pmmngr.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp stdlib.cpp string.cpp
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          string.cpp
          stdlib.cpp
+         kmalloc.cpp
          main.cpp
          serial.cpp
          au_video.cpp
@@ -293,6 +294,7 @@
          x64\Debug\au_video.obj
          x64\Debug\serial.obj
          x64\Debug\main.obj
+         x64\Debug\kmalloc.obj
          x64\Debug\stdlib.obj
          x64\Debug\string.obj
          x64\Debug\_fastcpy.obj
@@ -305,4 +307,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.73
+Time Elapsed 00:00:01.86

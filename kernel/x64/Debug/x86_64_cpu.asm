@@ -10,15 +10,15 @@ _BSS	SEGMENT
 ?idtr@@3U_idtr@@A DB 0aH DUP (?)			; idtr
 _BSS	ENDS
 CONST	SEGMENT
-$SG2924	DB	'[aurora]: Default interrupt++', 0aH, 00H
+$SG2926	DB	'[aurora]: Default interrupt++', 0aH, 00H
 	ORG $+1
-$SG2966	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
+$SG2968	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
 	ORG $+2
-$SG2969	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
+$SG2971	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
 	ORG $+2
-$SG2981	DB	'CPU: Vendor -> %s ', 0aH, 00H
+$SG2983	DB	'CPU: Vendor -> %s ', 0aH, 00H
 	ORG $+4
-$SG2995	DB	'CPU: Brand = %s ', 0aH, 00H
+$SG2997	DB	'CPU: Brand = %s ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_cpu_initialize@@YAXXZ			; x86_64_cpu_initialize
 PUBLIC	?x86_64_cpu_print_brand@@YAXXZ			; x86_64_cpu_print_brand
@@ -236,7 +236,7 @@ $LN6@x86_64_cpu:
 ; 224  : 		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2966
+	lea	rcx, OFFSET FLAT:$SG2968
 	call	QWORD PTR [rax+90]
 	jmp	SHORT $LN2@x86_64_cpu
 $LN3@x86_64_cpu:
@@ -252,7 +252,7 @@ $LN3@x86_64_cpu:
 ; 227  : 		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2969
+	lea	rcx, OFFSET FLAT:$SG2971
 	call	QWORD PTR [rax+90]
 $LN1@x86_64_cpu:
 $LN2@x86_64_cpu:
@@ -513,7 +513,7 @@ $LN5:
 
 ; 160  : 	printf("[aurora]: Default interrupt++\n");
 
-	lea	rcx, OFFSET FLAT:$SG2924
+	lea	rcx, OFFSET FLAT:$SG2926
 	call	?printf@@YAXPEBDZZ			; printf
 $LN2@default_ir:
 
@@ -1055,7 +1055,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR vendor$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2981
+	lea	rcx, OFFSET FLAT:$SG2983
 	call	QWORD PTR [rax+90]
 
 ; 259  : 
@@ -1187,7 +1187,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR bandstring$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2995
+	lea	rcx, OFFSET FLAT:$SG2997
 	call	QWORD PTR [rax+90]
 
 ; 278  : }

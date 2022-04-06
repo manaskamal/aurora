@@ -21,6 +21,7 @@ pml4_address: dq 0
 stack_address: dq 0
 kentry: dq 0
 kstack: dq 0
+cpu_data: dq 0
 
 gdt_address:
      dq 0
@@ -109,6 +110,7 @@ ap_64:
 	 sub rax, 0x20
 	 mov rsp, rax
 
+	 mov rcx, qword [cpu_data]
 	 ;mov rcx, [cpu_id]
 	 mov r9, qword [kentry]
 	 jmp r9

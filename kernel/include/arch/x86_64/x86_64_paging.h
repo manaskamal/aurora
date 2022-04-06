@@ -95,4 +95,10 @@ extern uint64_t* x86_64_get_boot_pml();
 * make the lower half available for userspace
 */
 extern void x86_64_boot_free();
+
+/*
+* x86_64_paging_free -- makes a page entry free
+* @param start -- virtual address
+*/
+extern bool x86_64_paging_free(uint64_t start);
 #endif

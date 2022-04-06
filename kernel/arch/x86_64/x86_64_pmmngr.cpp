@@ -29,6 +29,7 @@
 
 #include <arch\x86_64\x86_64_pmmngr.h>
 #include <arch\x86_64\x86_64_efi.h>
+#include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_paging.h>
 #include <kdrivers\serial.h>
 #include <stdint.h>
@@ -140,6 +141,8 @@ void* x86_64_pmmngr_alloc_blocks(int count) {
 	void* first = x86_64_pmmngr_alloc();
 	for (int i = 0; i < count - 1; i++)
 		x86_64_pmmngr_alloc();
+
+
 	return first;
 }
 

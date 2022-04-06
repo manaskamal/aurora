@@ -41,6 +41,8 @@
 #include <kdrivers\serial.h>
 #include <kdrivers\au_acpi.h>
 
+#include <mm\kmalloc.h>
+
 
 
 aurora_info_t info;
@@ -70,9 +72,9 @@ int _kmain(aurora_info_t *bootinfo) {
 	au_status = x86_64_paging_init();
 
 	au_status = au_initialize_serial();
+
 	au_status = x86_64_initialize_apic(true);
 
-	x64_cli();
 	au_status = au_initialize_acpi();
 	initialize_cpu(au_acpi_get_num_core());
 

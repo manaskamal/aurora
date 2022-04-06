@@ -14,16 +14,15 @@ _DATA	SEGMENT
 _fltused DD	01H
 _DATA	ENDS
 CONST	SEGMENT
-$SG3255	DB	'Key pressed ', 0dH, 0aH, 00H
+$SG3296	DB	'Key pressed ', 0dH, 0aH, 00H
 	ORG $+1
-$SG3260	DB	'Aurora Kernel ', 0aH, 00H
+$SG3301	DB	'Aurora Kernel ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ	; au_get_boot_info
 PUBLIC	?kybrd_handler@@YAX_KPEAX@Z			; kybrd_handler
 PUBLIC	?_kmain@@YAHPEAU_AURORA_INFO_@@@Z		; _kmain
 EXTRN	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z:PROC ; x86_64_pmmngr_init
 EXTRN	?x86_64_cpu_initialize@@YAXXZ:PROC		; x86_64_cpu_initialize
-EXTRN	x64_cli:PROC
 EXTRN	?x86_64_paging_init@@YAHXZ:PROC			; x86_64_paging_init
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
@@ -39,7 +38,7 @@ $pdata$?kybrd_handler@@YAX_KPEAX@Z DD imagerel $LN3
 	DD	imagerel $LN3+31
 	DD	imagerel $unwind$?kybrd_handler@@YAX_KPEAX@Z
 $pdata$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD imagerel $LN11
-	DD	imagerel $LN11+234
+	DD	imagerel $LN11+229
 	DD	imagerel $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z
 pdata	ENDS
 xdata	SEGMENT
@@ -57,85 +56,82 @@ i$2 = 40
 bootinfo$ = 64
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z PROC			; _kmain
 
-; 58   : int _kmain(aurora_info_t *bootinfo) {
+; 60   : int _kmain(aurora_info_t *bootinfo) {
 
 $LN11:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 59   : 	bootinfo->auprint("Aurora Kernel \n");
+; 61   : 	bootinfo->auprint("Aurora Kernel \n");
 
-	lea	rcx, OFFSET FLAT:$SG3260
+	lea	rcx, OFFSET FLAT:$SG3301
 	mov	rax, QWORD PTR bootinfo$[rsp]
 	call	QWORD PTR [rax+90]
 
-; 60   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
+; 62   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
 	mov	r8d, 98					; 00000062H
 	mov	rdx, QWORD PTR bootinfo$[rsp]
 	lea	rcx, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 	call	memcpy
 
-; 61   : 
-; 62   : 	int au_status = 0;
+; 63   : 
+; 64   : 	int au_status = 0;
 
 	mov	DWORD PTR au_status$[rsp], 0
 
-; 63   : 
-; 64   : 
-; 65   : 	x86_64_pmmngr_init(bootinfo);
+; 65   : 
+; 66   : 
+; 67   : 	x86_64_pmmngr_init(bootinfo);
 
 	mov	rcx, QWORD PTR bootinfo$[rsp]
 	call	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z ; x86_64_pmmngr_init
 
-; 66   : 	x86_64_cpu_initialize();
+; 68   : 	x86_64_cpu_initialize();
 
 	call	?x86_64_cpu_initialize@@YAXXZ		; x86_64_cpu_initialize
 
-; 67   : 
-; 68   : 	/* initialize early drivers*/
-; 69   : 	au_status = au_fb_initialize();
+; 69   : 
+; 70   : 	/* initialize early drivers*/
+; 71   : 	au_status = au_fb_initialize();
 
 	call	?au_fb_initialize@@YAHXZ		; au_fb_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 70   : 	au_status = x86_64_paging_init();
+; 72   : 	au_status = x86_64_paging_init();
 
 	call	?x86_64_paging_init@@YAHXZ		; x86_64_paging_init
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 71   : 
-; 72   : 	au_status = au_initialize_serial();
+; 73   : 
+; 74   : 	au_status = au_initialize_serial();
 
 	call	?au_initialize_serial@@YAHXZ		; au_initialize_serial
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 73   : 	au_status = x86_64_initialize_apic(true);
+; 75   : 
+; 76   : 	au_status = x86_64_initialize_apic(true);
 
 	mov	cl, 1
 	call	?x86_64_initialize_apic@@YAH_N@Z	; x86_64_initialize_apic
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 74   : 
-; 75   : 	x64_cli();
-
-	call	x64_cli
-
-; 76   : 	au_status = au_initialize_acpi();
+; 77   : 
+; 78   : 	au_status = au_initialize_acpi();
 
 	call	?au_initialize_acpi@@YAHXZ		; au_initialize_acpi
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 77   : 	initialize_cpu(au_acpi_get_num_core());
+; 79   : 	initialize_cpu(au_acpi_get_num_core());
 
 	call	?au_acpi_get_num_core@@YAIXZ		; au_acpi_get_num_core
 	mov	ecx, eax
 	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
 
-; 78   : 
-; 79   : 
-; 80   : 	/* just for debug purpose */
-; 81   : 	for (int i = 0; i < 100; i++) {
+; 80   : 
+; 81   : 
+; 82   : 	/* just for debug purpose */
+; 83   : 	for (int i = 0; i < 100; i++) {
 
 	mov	DWORD PTR i$2[rsp], 0
 	jmp	SHORT $LN8@kmain
@@ -147,7 +143,7 @@ $LN8@kmain:
 	cmp	DWORD PTR i$2[rsp], 100			; 00000064H
 	jge	SHORT $LN6@kmain
 
-; 82   : 		for (int j = 0; j < 100; j++) {
+; 84   : 		for (int j = 0; j < 100; j++) {
 
 	mov	DWORD PTR j$1[rsp], 0
 	jmp	SHORT $LN5@kmain
@@ -159,7 +155,7 @@ $LN5@kmain:
 	cmp	DWORD PTR j$1[rsp], 100			; 00000064H
 	jge	SHORT $LN3@kmain
 
-; 83   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
+; 85   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
 
 	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
 	mov	ecx, DWORD PTR j$1[rsp]
@@ -170,27 +166,27 @@ $LN5@kmain:
 	mov	ecx, ecx
 	mov	DWORD PTR [rax+rcx*4], -1		; ffffffffH
 
-; 84   : 		}
+; 86   : 		}
 
 	jmp	SHORT $LN4@kmain
 $LN3@kmain:
 
-; 85   : 	}
+; 87   : 	}
 
 	jmp	SHORT $LN7@kmain
 $LN6@kmain:
 $LN2@kmain:
 
-; 86   : 	
-; 87   : 	for (;;);
+; 88   : 	
+; 89   : 	for (;;);
 
 	jmp	SHORT $LN2@kmain
 
-; 88   : 	return 0;
+; 90   : 	return 0;
 
 	xor	eax, eax
 
-; 89   : }
+; 91   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -203,19 +199,19 @@ v$ = 48
 p$ = 56
 ?kybrd_handler@@YAX_KPEAX@Z PROC			; kybrd_handler
 
-; 52   : void kybrd_handler(size_t v, void* p) {
+; 54   : void kybrd_handler(size_t v, void* p) {
 
 $LN3:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 53   : 	_au_debug_print_("Key pressed \r\n");
+; 55   : 	_au_debug_print_("Key pressed \r\n");
 
-	lea	rcx, OFFSET FLAT:$SG3255
+	lea	rcx, OFFSET FLAT:$SG3296
 	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
 
-; 54   : }
+; 56   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -226,11 +222,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ PROC		; au_get_boot_info
 
-; 49   : 	return &info;
+; 51   : 	return &info;
 
 	lea	rax, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 
-; 50   : }
+; 52   : }
 
 	ret	0
 ?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ENDP		; au_get_boot_info
