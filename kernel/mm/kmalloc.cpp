@@ -32,6 +32,7 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_pmmngr.h>
 #include <_null.h>
+#include <string.h>
 
 meta_data_t *first_block = NULL;
 meta_data_t *last_block = NULL;
@@ -95,6 +96,8 @@ void au_expand_kmalloc(size_t req_size) {
  * @param size -- size in bytes
  */
 void* kmalloc(size_t size) {
+
+	/* kmalloc is not initialized, so initialize it*/
 	if (first_block == NULL) {
 		void* page = au_request_page(1);
 		/* setup the first meta data block */
@@ -112,7 +115,7 @@ void* kmalloc(size_t size) {
 	}
 
 	
-	void* ptr = 0;
+	/* now search begins */
 	for (meta_data_t *meta = first_block; meta != NULL; meta = meta->next) {
 		if (meta->free) {
 
@@ -133,6 +136,65 @@ void* kmalloc(size_t size) {
 
 	au_expand_kmalloc(size);
 	return kmalloc(size);
+}
+
+
+/*
+ * free up a pointer
+ * @param ptr -- pointer to the address block to free
+ */
+void kfree(void* ptr) {
+	uint8_t* actual_addr = (uint8_t*)ptr - sizeof(meta_data_t);
+	meta_data_t *meta = (meta_data_t*)actual_addr;
+	meta->free = true;
+
+	/* merge it with 3 near blocks if they are free*/
+
+	if (meta->next && meta->next->free) {
+		meta->size += meta->next->size;
+	}
+
+	if (meta->prev && meta->prev->free) {
+		meta->prev->size += meta->size;
+		meta->prev->next = meta->next;
+	}
+
+	if (meta->next && meta->next->free) {
+		meta->next->prev = meta->prev;
+	}
+
+}
+
+/*
+ * krealloc -- reallocate a block from the old block
+ * @param ptr -- pointer to the old block
+ * @param new_size -- size of the new block
+ */
+void* krealloc(void* ptr, size_t new_size) {
+	void* result = kmalloc(new_size);
+	if (ptr) {
+		/* here we can check the size difference
+		 * of new_size and old size from internal
+		 * data structure of kmalloc */
+		memcpy(result, ptr, new_size);
+	}
+
+	kfree(ptr);
+	return result;
+}
+
+/*
+ * kcalloc -- allocates a memory filled with zeroes
+ * @param n_item -- number of items
+ * @param size -- size of each items
+ */
+void* kcalloc(size_t n_item, size_t size) {
+	size_t total = n_item * size;
+
+	void* ptr = kmalloc(total);
+	if (ptr)
+		memset(ptr, 0, total);
+	return ptr;
 }
 /*
  * au_request_page -- request contiguous 4k virtual pages

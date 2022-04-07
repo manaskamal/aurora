@@ -46,15 +46,6 @@ typedef struct _meta_data_ {
 	_meta_data_ *prev;
 }meta_data_t;
 
-typedef struct _page_desc_ {
-	int num_block;
-	meta_data_t *first_free_pointer;
-	meta_data_t *last_free_pointer;
-	uint8_t num_free_block;
-	uint32_t used_size_in_bytes;
-	_page_desc_ *next;
-	_page_desc_ *prev;
-}kmalloc_page_desc_t;
 
 /*
 * au_request_page -- request contiguous 4k virtual pages
@@ -75,4 +66,24 @@ extern void au_free_page(void* ptr, int pages);
 * @param size -- size in bytes
 */
 extern void* kmalloc(size_t size);
+
+/*
+* free up a pointer
+*@param ptr -- pointer to the address block to free
+*/
+extern void kfree(void* ptr);
+
+/*
+* krealloc -- reallocate a block from the old block
+* @param ptr -- pointer to the old block
+* @param new_size -- size of the new block
+*/
+extern void* krealloc(void* ptr, size_t new_size);
+
+/*
+* kcalloc -- allocates a memory filled with zeroes
+* @param n_item -- number of items
+* @param size -- size of each items
+*/
+extern void* kcalloc(size_t n_item, size_t size);
 #endif

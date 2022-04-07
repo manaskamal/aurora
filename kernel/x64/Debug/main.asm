@@ -14,15 +14,17 @@ _DATA	SEGMENT
 _fltused DD	01H
 _DATA	ENDS
 CONST	SEGMENT
-$SG3296	DB	'Key pressed ', 0dH, 0aH, 00H
+$SG3304	DB	'Key pressed ', 0dH, 0aH, 00H
 	ORG $+1
-$SG3301	DB	'Aurora Kernel ', 0aH, 00H
+$SG3309	DB	'Aurora Kernel ', 0aH, 00H
+$SG3313	DB	'ptr -> %x ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ	; au_get_boot_info
 PUBLIC	?kybrd_handler@@YAX_KPEAX@Z			; kybrd_handler
 PUBLIC	?_kmain@@YAHPEAU_AURORA_INFO_@@@Z		; _kmain
 EXTRN	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z:PROC ; x86_64_pmmngr_init
 EXTRN	?x86_64_cpu_initialize@@YAXXZ:PROC		; x86_64_cpu_initialize
+EXTRN	?printf@@YAXPEBDZZ:PROC				; printf
 EXTRN	?x86_64_paging_init@@YAHXZ:PROC			; x86_64_paging_init
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
@@ -33,19 +35,20 @@ EXTRN	?au_initialize_serial@@YAHXZ:PROC		; au_initialize_serial
 EXTRN	?_au_debug_print_@@YAXPEADZZ:PROC		; _au_debug_print_
 EXTRN	?au_initialize_acpi@@YAHXZ:PROC			; au_initialize_acpi
 EXTRN	?au_acpi_get_num_core@@YAIXZ:PROC		; au_acpi_get_num_core
+EXTRN	?kcalloc@@YAPEAX_K0@Z:PROC			; kcalloc
 pdata	SEGMENT
 $pdata$?kybrd_handler@@YAX_KPEAX@Z DD imagerel $LN3
 	DD	imagerel $LN3+31
 	DD	imagerel $unwind$?kybrd_handler@@YAX_KPEAX@Z
 $pdata$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD imagerel $LN11
-	DD	imagerel $LN11+229
+	DD	imagerel $LN11+266
 	DD	imagerel $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?kybrd_handler@@YAX_KPEAX@Z DD 010e01H
 	DD	0420eH
 $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD 010901H
-	DD	06209H
+	DD	08209H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\main.cpp
@@ -53,18 +56,19 @@ _TEXT	SEGMENT
 au_status$ = 32
 j$1 = 36
 i$2 = 40
-bootinfo$ = 64
+ptr$ = 48
+bootinfo$ = 80
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z PROC			; _kmain
 
 ; 60   : int _kmain(aurora_info_t *bootinfo) {
 
 $LN11:
 	mov	QWORD PTR [rsp+8], rcx
-	sub	rsp, 56					; 00000038H
+	sub	rsp, 72					; 00000048H
 
 ; 61   : 	bootinfo->auprint("Aurora Kernel \n");
 
-	lea	rcx, OFFSET FLAT:$SG3301
+	lea	rcx, OFFSET FLAT:$SG3309
 	mov	rax, QWORD PTR bootinfo$[rsp]
 	call	QWORD PTR [rax+90]
 
@@ -129,9 +133,22 @@ $LN11:
 	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
 
 ; 80   : 
-; 81   : 
-; 82   : 	/* just for debug purpose */
-; 83   : 	for (int i = 0; i < 100; i++) {
+; 81   : 	void* ptr = kcalloc(10, 20);
+
+	mov	edx, 20
+	mov	ecx, 10
+	call	?kcalloc@@YAPEAX_K0@Z			; kcalloc
+	mov	QWORD PTR ptr$[rsp], rax
+
+; 82   : 	printf("ptr -> %x \n", ptr);
+
+	mov	rdx, QWORD PTR ptr$[rsp]
+	lea	rcx, OFFSET FLAT:$SG3313
+	call	?printf@@YAXPEBDZZ			; printf
+
+; 83   : 
+; 84   : 	/* just for debug purpose */
+; 85   : 	for (int i = 0; i < 100; i++) {
 
 	mov	DWORD PTR i$2[rsp], 0
 	jmp	SHORT $LN8@kmain
@@ -143,7 +160,7 @@ $LN8@kmain:
 	cmp	DWORD PTR i$2[rsp], 100			; 00000064H
 	jge	SHORT $LN6@kmain
 
-; 84   : 		for (int j = 0; j < 100; j++) {
+; 86   : 		for (int j = 0; j < 100; j++) {
 
 	mov	DWORD PTR j$1[rsp], 0
 	jmp	SHORT $LN5@kmain
@@ -155,7 +172,7 @@ $LN5@kmain:
 	cmp	DWORD PTR j$1[rsp], 100			; 00000064H
 	jge	SHORT $LN3@kmain
 
-; 85   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
+; 87   : 			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
 
 	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
 	mov	ecx, DWORD PTR j$1[rsp]
@@ -166,29 +183,29 @@ $LN5@kmain:
 	mov	ecx, ecx
 	mov	DWORD PTR [rax+rcx*4], -1		; ffffffffH
 
-; 86   : 		}
+; 88   : 		}
 
 	jmp	SHORT $LN4@kmain
 $LN3@kmain:
 
-; 87   : 	}
+; 89   : 	}
 
 	jmp	SHORT $LN7@kmain
 $LN6@kmain:
 $LN2@kmain:
 
-; 88   : 	
-; 89   : 	for (;;);
+; 90   : 	
+; 91   : 	for (;;);
 
 	jmp	SHORT $LN2@kmain
 
-; 90   : 	return 0;
+; 92   : 	return 0;
 
 	xor	eax, eax
 
-; 91   : }
+; 93   : }
 
-	add	rsp, 56					; 00000038H
+	add	rsp, 72					; 00000048H
 	ret	0
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z ENDP			; _kmain
 _TEXT	ENDS
@@ -208,7 +225,7 @@ $LN3:
 
 ; 55   : 	_au_debug_print_("Key pressed \r\n");
 
-	lea	rcx, OFFSET FLAT:$SG3296
+	lea	rcx, OFFSET FLAT:$SG3304
 	call	?_au_debug_print_@@YAXPEADZZ		; _au_debug_print_
 
 ; 56   : }
