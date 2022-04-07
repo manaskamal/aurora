@@ -34,6 +34,12 @@
     <Filter Include="include\mm">
       <UniqueIdentifier>{20357562-6987-436a-a17c-425c4bb69240}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\atomic">
+      <UniqueIdentifier>{309453c8-d756-4b79-8e22-95d7f630e434}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="atomic">
+      <UniqueIdentifier>{72c0cc27-be46-4865-9c6b-e12bdef47451}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stdint.h">
@@ -102,6 +108,15 @@
     <ClInclude Include="include\mm\kmalloc.h">
       <Filter>include\mm</Filter>
     </ClInclude>
+    <ClInclude Include="include\pe.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\atomic\au_spinlock.h">
+      <Filter>include\atomic</Filter>
+    </ClInclude>
+    <ClInclude Include="include\aurora.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -145,6 +160,10 @@
     </ClCompile>
     <ClCompile Include="mm\kmalloc.cpp">
       <Filter>mm</Filter>
+    </ClCompile>
+    <ClCompile Include="pe.cpp" />
+    <ClCompile Include="atomic\au_spinlock.cpp">
+      <Filter>atomic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

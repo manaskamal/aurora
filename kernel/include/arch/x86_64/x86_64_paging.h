@@ -31,6 +31,7 @@
 #define __X86_64_PAGING_H__
 
 #include <stdint.h>
+#include <aurora.h>
 
 #define PAGING_PRESENT 0x1
 #define PAGING_WRITABLE 0x2
@@ -40,6 +41,10 @@
 #define PHYSICAL_MEMORY_MAX 0x0000400000000000
 
 #define FRAMEBUFFER_ADDRESS 0xFFFFD00000000000
+
+/* Kernel Virtual Address Base */
+#define KERNEL_VA  0xFFFFC00000000000
+
 /*
 * x86_64_paging_init -- initialise the paging structures
 */
@@ -58,13 +63,13 @@ extern bool early_map_page(uint64_t physical_address, uint64_t virtual_address, 
 * x86_64_phys_to_virt -- returns the virtual page of that physical
 * address
 */
-extern uint64_t x86_64_phys_to_virt(uint64_t phys_addr);
+AU_EXTERN AU_EXPORT uint64_t x86_64_phys_to_virt(uint64_t phys_addr);
 
 /*
 * x86_64_virt_to_phys -- returns the physical address of a virtual
 * address
 */
-extern uint64_t x86_64_virt_to_phys(uint64_t phys_addr);
+AU_EXTERN AU_EXPORT uint64_t x86_64_virt_to_phys(uint64_t phys_addr);
 
 /*
 * x86_64_map_page -- maps a page to virtual address
@@ -72,24 +77,24 @@ extern uint64_t x86_64_virt_to_phys(uint64_t phys_addr);
 * @param virt -- virtual address
 * @param attrib -- attributes
 */
-extern bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib);
+AU_EXTERN AU_EXPORT bool x86_64_map_page(uint64_t phys, uint64_t virt, uint8_t attrib);
 
 /*
 * x86_64_get_free_page -- search for free page
 * @param user -- set if return page is needed for user mode
 */
-extern uint64_t* x86_64_get_free_page(bool user);
+AU_EXTERN AU_EXPORT uint64_t* x86_64_get_free_page(bool user);
 
 /*
 * x86_64_check_free -- checks if page is free
 * @param address -- virtual address
 */
-extern bool x86_64_check_free(uint64_t address);
+AU_EXTERN AU_EXPORT bool x86_64_check_free(uint64_t address);
 
 /*
 * x86_64_get_boot_pml -- returns the boot pml4 table
 */
-extern uint64_t* x86_64_get_boot_pml();
+AU_EXTERN AU_EXPORT uint64_t* x86_64_get_boot_pml();
 
 /*
 * make the lower half available for userspace
@@ -100,5 +105,5 @@ extern void x86_64_boot_free();
 * x86_64_paging_free -- makes a page entry free
 * @param start -- virtual address
 */
-extern bool x86_64_paging_free(uint64_t start);
+AU_EXTERN AU_EXPORT bool x86_64_paging_free(uint64_t start);
 #endif

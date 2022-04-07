@@ -69,12 +69,53 @@ x64_write_msr:
 	 wrmsr
 	 ret
 
+
+;;=======================================================
+;; GS/FS Structures
+;;=======================================================
+
 global x64_read_gs_b
 x64_read_gs_b:
      xor rax,rax
      mov al, [gs:rcx]
 	 ret
 
+global x64_read_gs_w
+x64_read_gs_w:
+     xor rax, rax
+	 mov ax, [gs:rcx]
+	 ret
+
+global x64_read_gs_d
+x64_read_gs_d:
+     xor rax, rax
+	 mov eax, [gs:rcx]
+	 ret
+
+global x64_read_gs_q
+x64_read_gs_q:
+	 mov rax, [gs:rcx]
+	 ret
+
+global x64_write_gs_b
+x64_write_gs_b:
+     mov [gs:rcx], dl
+	 ret
+
+global x64_write_gs_w
+x64_write_gs_w:
+     mov [gs:rcx], dx
+	 ret
+
+global x64_write_gs_d
+x64_write_gs_d:
+     mov [gs:rcx], edx
+	 ret
+
+global x64_write_gs_q
+x64_write_gs_q:
+     mov [gs:rcx], rdx
+	 ret
 
 ;---------------------------------------------------------
 ; Control Register functions

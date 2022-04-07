@@ -31,10 +31,13 @@
 #define __X86_64_CPU_H__
 
 #include <stdint.h>
+#include <atomic\au_spinlock.h>
+#include <aurora.h>
 
 /* cpu structure */
 typedef struct _cpu_ {
-	uint8_t id;
+	uint8_t id;     // 0
+	au_spinlock_t *spinlock; //2
 }cpu_t;
 /*
 * x86_64_cpu_initialize -- initialize the cpu
@@ -44,7 +47,7 @@ extern void x86_64_cpu_initialize();
 /*
 * x86_64_cpu_print_brand -- prints brand strings
 */
-extern void x86_64_cpu_print_brand();
-extern void setvect(size_t vector, void(*function)(size_t vector, void* param));
+AU_EXTERN AU_EXPORT void x86_64_cpu_print_brand();
+AU_EXTERN AU_EXPORT void setvect(size_t vector, void(*function)(size_t vector, void* param));
 
 #endif

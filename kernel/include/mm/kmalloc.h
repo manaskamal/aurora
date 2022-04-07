@@ -32,6 +32,7 @@
 
 #include <stdint.h>
 #include <auinfo.h>
+#include <aurora.h>
 
 /* Meta data magic */
 #define MAGIC_USED  0x12112002
@@ -65,25 +66,26 @@ extern void au_free_page(void* ptr, int pages);
 * kmalloc -- allocate a small chunk of memory
 * @param size -- size in bytes
 */
-extern void* kmalloc(size_t size);
+AU_EXTERN AU_EXPORT void* kmalloc(size_t size);
 
 /*
 * free up a pointer
 *@param ptr -- pointer to the address block to free
 */
-extern void kfree(void* ptr);
+AU_EXTERN AU_EXPORT void kfree(void* ptr);
 
 /*
 * krealloc -- reallocate a block from the old block
 * @param ptr -- pointer to the old block
 * @param new_size -- size of the new block
 */
-extern void* krealloc(void* ptr, size_t new_size);
+AU_EXTERN AU_EXPORT void* krealloc(void* ptr, size_t new_size);
 
 /*
 * kcalloc -- allocates a memory filled with zeroes
 * @param n_item -- number of items
 * @param size -- size of each items
 */
-extern void* kcalloc(size_t n_item, size_t size);
+AU_EXTERN AU_EXPORT void* kcalloc(size_t n_item, size_t size);
+
 #endif

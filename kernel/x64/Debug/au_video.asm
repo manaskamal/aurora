@@ -14,7 +14,7 @@ PUBLIC	?au_video_get_fb@@YAPEAIXZ			; au_video_get_fb
 PUBLIC	?au_video_get_pixels_per_line@@YAGXZ		; au_video_get_pixels_per_line
 PUBLIC	?au_video_get_x_res@@YAIXZ			; au_video_get_x_res
 PUBLIC	?au_video_get_y_res@@YAIXZ			; au_video_get_y_res
-EXTRN	?x86_64_map_page@@YA_N_K0E@Z:PROC		; x86_64_map_page
+EXTRN	x86_64_map_page:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 pdata	SEGMENT
 $pdata$?au_fb_initialize@@YAHXZ DD imagerel $LN6
@@ -128,7 +128,7 @@ $LN3@au_fb_init:
 	mov	rcx, rdx
 	xor	r8d, r8d
 	mov	rdx, rax
-	call	?x86_64_map_page@@YA_N_K0E@Z		; x86_64_map_page
+	call	x86_64_map_page
 	jmp	SHORT $LN2@au_fb_init
 $LN1@au_fb_init:
 

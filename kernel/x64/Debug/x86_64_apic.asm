@@ -37,14 +37,14 @@ EXTRN	x64_write_msr:PROC
 EXTRN	x64_mfence:PROC
 EXTRN	x64_cpuid:PROC
 EXTRN	x64_pause:PROC
-EXTRN	?setvect@@YAX_KP6AX0PEAX@Z@Z:PROC		; setvect
-EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
-EXTRN	?x86_64_virt_to_phys@@YA_K_K@Z:PROC		; x86_64_virt_to_phys
-EXTRN	?x86_64_map_page@@YA_N_K0E@Z:PROC		; x86_64_map_page
-EXTRN	?x86_64_get_boot_pml@@YAPEA_KXZ:PROC		; x86_64_get_boot_pml
-EXTRN	?ioapic_init@@YAXPEAX@Z:PROC			; ioapic_init
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
-EXTRN	?x86_64_pmmngr_alloc@@YAPEAXXZ:PROC		; x86_64_pmmngr_alloc
+EXTRN	setvect:PROC
+EXTRN	x86_64_phys_to_virt:PROC
+EXTRN	x86_64_virt_to_phys:PROC
+EXTRN	x86_64_map_page:PROC
+EXTRN	x86_64_get_boot_pml:PROC
+EXTRN	?ioapic_init@@YAXPEAX@Z:PROC			; ioapic_init
+EXTRN	x86_64_pmmngr_alloc:PROC
 EXTRN	?x86_64_pmmngr_lock_page@@YAXPEAX@Z:PROC	; x86_64_pmmngr_lock_page
 EXTRN	?x86_64_ap_init@@YAXPEAX@Z:PROC			; x86_64_ap_init
 EXTRN	memcpy:PROC
@@ -396,7 +396,7 @@ $LN29:
 ; 238  : 	uint64_t* address = (uint64_t*)x86_64_phys_to_virt(0x9000);
 
 	mov	ecx, 36864				; 00009000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR address$[rsp], rax
 
 ; 239  : 	x86_64_pmmngr_lock_page((void*)0x9000);
@@ -408,7 +408,7 @@ $LN29:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rcx, QWORD PTR [rax+82]
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR ap_data$[rsp], rax
 
 ; 241  : 	memcpy(address, ap_data, 4096);
@@ -435,7 +435,7 @@ $LN29:
 
 ; 249  : 	*(uint64_t*)(aligned_address + 8) = (uint64_t)x86_64_get_boot_pml();
 
-	call	?x86_64_get_boot_pml@@YAPEA_KXZ		; x86_64_get_boot_pml
+	call	x86_64_get_boot_pml
 	mov	rcx, QWORD PTR aligned_address$[rsp]
 	mov	QWORD PTR [rcx+8], rax
 
@@ -462,12 +462,12 @@ $LN26@initialize:
 	mov	rcx, 17592186044416			; 0000100000000000H
 	sub	rax, rcx
 	mov	QWORD PTR tv83[rsp], rax
-	call	?x86_64_pmmngr_alloc@@YAPEAXXZ		; x86_64_pmmngr_alloc
+	call	x86_64_pmmngr_alloc
 	xor	r8d, r8d
 	mov	rcx, QWORD PTR tv83[rsp]
 	mov	rdx, rcx
 	mov	rcx, rax
-	call	?x86_64_map_page@@YA_N_K0E@Z		; x86_64_map_page
+	call	x86_64_map_page
 
 ; 254  : 	}
 
@@ -511,7 +511,7 @@ $LN20@initialize:
 ; 262  : 		
 ; 263  : 		void* stack_address = x86_64_pmmngr_alloc();
 
-	call	?x86_64_pmmngr_alloc@@YAPEAXXZ		; x86_64_pmmngr_alloc
+	call	x86_64_pmmngr_alloc
 	mov	QWORD PTR stack_address$9[rsp], rax
 
 ; 264  : 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
@@ -538,9 +538,9 @@ $LN20@initialize:
 
 ; 267  : 		void* cpu_struc = (void*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
 
-	call	?x86_64_pmmngr_alloc@@YAPEAXXZ		; x86_64_pmmngr_alloc
+	call	x86_64_pmmngr_alloc
 	mov	rcx, rax
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR cpu_struc$7[rsp], rax
 
 ; 268  : 		cpu_t *cpu = (cpu_t*)cpu_struc;
@@ -637,7 +637,7 @@ $LN11@initialize:
 	or	rax, 17920				; 00004600H
 	mov	QWORD PTR tv149[rsp], rax
 	mov	rcx, QWORD PTR address$[rsp]
-	call	?x86_64_virt_to_phys@@YA_K_K@Z		; x86_64_virt_to_phys
+	call	x86_64_virt_to_phys
 	shr	rax, 12
 	mov	rcx, QWORD PTR tv149[rsp]
 	or	rcx, rax
@@ -1005,7 +1005,7 @@ $LN9:
 ; 163  : 		apic_base = (size_t)x86_64_phys_to_virt(0xFEE00000);
 
 	mov	ecx, -18874368				; fee00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR apic_base$[rsp], rax
 
 ; 164  : 	else
@@ -1068,7 +1068,7 @@ $LN4@x86_64_ini:
 ; 179  : 		x64_write_msr(IA32_APIC_BASE_MSR,x86_64_virt_to_phys(apic_base));
 
 	mov	rcx, QWORD PTR apic_base$[rsp]
-	call	?x86_64_virt_to_phys@@YA_K_K@Z		; x86_64_virt_to_phys
+	call	x86_64_virt_to_phys
 	mov	rdx, rax
 	mov	ecx, 27
 	call	x64_write_msr
@@ -1090,7 +1090,7 @@ $LN2@x86_64_ini:
 
 	lea	rdx, OFFSET FLAT:?apic_spurious_interrupt@@YAX_KPEAX@Z ; apic_spurious_interrupt
 	mov	ecx, 255				; 000000ffH
-	call	?setvect@@YAX_KP6AX0PEAX@Z@Z		; setvect
+	call	setvect
 
 ; 184  : 	write_apic_register(LAPIC_REGISTER_SVR, read_apic_register(LAPIC_REGISTER_SVR) |
 ; 185  : 		IA32_APIC_SVR_ENABLE | 0xFF);
@@ -1122,7 +1122,7 @@ $LN2@x86_64_ini:
 
 	lea	rdx, OFFSET FLAT:?apic_timer_interrupt@@YAX_KPEAX@Z ; apic_timer_interrupt
 	mov	rcx, QWORD PTR timer_vector$[rsp]
-	call	?setvect@@YAX_KP6AX0PEAX@Z@Z		; setvect
+	call	setvect
 
 ; 194  : 
 ; 195  : 	size_t timer_reg = (1 << 17) | timer_vector;
@@ -1177,7 +1177,7 @@ $LN2@x86_64_ini:
 ; 208  : 		ioapic_init((void*)x86_64_phys_to_virt(0xfec00000));
 
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	rcx, rax
 	call	?ioapic_init@@YAXPEAX@Z			; ioapic_init
 $LN1@x86_64_ini:

@@ -31,6 +31,7 @@
 #define __X86_64_IOAPIC_H__
 
 #include <stdint.h>
+#include <aurora.h>
 
 #define IOAPIC_REG_ID  0x00
 #define IOAPIC_REG_VER 0x01
@@ -39,8 +40,8 @@
 
 //! Initialize I/O Apic
 extern void ioapic_init(void* address);
-extern void ioapic_register_irq(size_t vector, void(*fn)(size_t, void* p), uint8_t irq);
-extern void ioapic_mask_irq(uint8_t irq, bool value);
-extern void ioapic_redirect(uint8_t irq, uint32_t gsi, uint16_t flags, uint8_t apic);
+AU_EXTERN AU_EXPORT void ioapic_register_irq(size_t vector, void(*fn)(size_t, void* p), uint8_t irq);
+AU_EXTERN AU_EXPORT void ioapic_mask_irq(uint8_t irq, bool value);
+AU_EXTERN AU_EXPORT void ioapic_redirect(uint8_t irq, uint32_t gsi, uint16_t flags, uint8_t apic);
 
 #endif

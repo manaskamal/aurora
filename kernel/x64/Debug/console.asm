@@ -8,22 +8,22 @@ INCLUDELIB OLDNAMES
 _DATA	SEGMENT
 console_early DB 01H
 _DATA	ENDS
-PUBLIC	?printf@@YAXPEBDZZ				; printf
+PUBLIC	printf
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 pdata	SEGMENT
-$pdata$?printf@@YAXPEBDZZ DD imagerel $LN4
+$pdata$printf DD imagerel $LN4
 	DD	imagerel $LN4+53
-	DD	imagerel $unwind$?printf@@YAXPEBDZZ
+	DD	imagerel $unwind$printf
 pdata	ENDS
 xdata	SEGMENT
-$unwind$?printf@@YAXPEBDZZ DD 011801H
+$unwind$printf DD 011801H
 	DD	04218H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\console.cpp
 _TEXT	SEGMENT
 text$ = 48
-?printf@@YAXPEBDZZ PROC					; printf
+printf	PROC
 
 ; 38   : void printf(const char *text, ...) {
 
@@ -53,6 +53,6 @@ $LN1@printf:
 
 	add	rsp, 40					; 00000028H
 	ret	0
-?printf@@YAXPEBDZZ ENDP					; printf
+printf	ENDP
 _TEXT	ENDS
 END

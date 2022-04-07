@@ -31,6 +31,7 @@
 #define __X86_64_LOW_LEVEL_H__
 
 #include <stdint.h>
+#include <aurora.h>
 
 #define GDT_ENTRY_NULL 0
 #define GDT_ENTRY_KERNEL_CODE 1
@@ -159,23 +160,31 @@ struct interrupt_stack_frame {
 //!=======================================================
 //! G L O B A L     F U N C T I O N S
 //!=======================================================
-extern "C" void x64_cli();
-extern "C" void x64_sti();
-extern "C" void x64_hlt();
+AU_EXTERN AU_EXPORT void x64_cli();
+AU_EXTERN AU_EXPORT void x64_sti();
+AU_EXTERN AU_EXPORT void x64_hlt();
 //! in & out port functions
-extern "C" uint8_t x64_inportb(uint16_t port);
-extern "C" uint16_t x64_inportw(uint16_t port);
-extern "C" uint32_t x64_inportd(uint16_t port);
+AU_EXTERN AU_EXPORT uint8_t x64_inportb(uint16_t port);
+AU_EXTERN AU_EXPORT uint16_t x64_inportw(uint16_t port);
+AU_EXTERN AU_EXPORT uint32_t x64_inportd(uint16_t port);
 
-extern "C" void x64_outportb(uint16_t port, uint8_t data);
-extern "C" void x64_outportw(uint16_t port, uint16_t data);
-extern "C" void x64_outportd(uint16_t port, uint32_t data);
+AU_EXTERN AU_EXPORT void x64_outportb(uint16_t port, uint8_t data);
+AU_EXTERN AU_EXPORT void x64_outportw(uint16_t port, uint16_t data);
+AU_EXTERN AU_EXPORT void x64_outportd(uint16_t port, uint32_t data);
 
 //! MSR functions
-extern "C" uint64_t x64_read_msr(size_t msr);
-extern "C" void x64_write_msr(size_t msr, uint64_t data);
-extern "C" uint8_t x64_read_gs_b(uint8_t offset);
+AU_EXTERN AU_EXPORT uint64_t x64_read_msr(size_t msr);
+AU_EXTERN AU_EXPORT void x64_write_msr(size_t msr, uint64_t data);
 
+//! GS/FS Base functions
+extern "C" uint8_t  x64_read_gs_b(size_t offset);
+extern "C" uint16_t x64_read_gs_w(size_t offset);
+extern "C" uint32_t x64_read_gs_d(size_t offset);
+extern "C" uint64_t x64_read_gs_q(size_t offset);
+extern "C" void x64_write_gs_b(size_t offset, uint8_t value);
+extern "C" void x64_write_gs_w(size_t offset, uint16_t value);
+extern "C" void x64_write_gs_d(size_t offset, uint32_t value);
+extern "C" void x64_write_gs_q(size_t offset, uint64_t value);
 
 //!Mfench
 extern "C" void x64_mfence();
@@ -210,6 +219,6 @@ extern "C" void x64_write_xcr0(uint64_t);
 extern "C" void x64_stack_switch(size_t address);
 extern "C" size_t x64_get_stack();
 
-extern "C" void x64_lock_acquire(int * lock);
-extern "C" void x64_lock_release(int* lock);
+AU_EXTERN AU_EXPORT void x64_lock_acquire(int * lock);
+AU_EXTERN AU_EXPORT void x64_lock_release(int* lock);
 #endif

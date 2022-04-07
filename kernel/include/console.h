@@ -30,10 +30,10 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-
+#include <aurora.h>
 /*
 * printf -- printing functions
 */
-extern void printf(const char *text, ...);
+AU_EXTERN AU_EXPORT void printf(const char *text, ...);
 
 #endif

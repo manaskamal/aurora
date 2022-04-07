@@ -31,6 +31,7 @@
 #define __X86_64_PMMNGR_H__
 
 #include <auinfo.h>
+#include <aurora.h>
 
 /*
 * x86_64_pmmngr_init -- initialize the physical memory,
@@ -47,24 +48,24 @@ extern void x86_64_pmmngr_init(aurora_info_t *info);
 * allocate from free page stack
 * @return allocated address
 */
-extern void* x86_64_pmmngr_alloc();
+AU_EXTERN AU_EXPORT void* x86_64_pmmngr_alloc();
 
 /*
 * x86_64_pmmngr_alloc_blocks -- allocate more than
 * one physical 4k mem block
 */
-extern void* x86_64_pmmngr_alloc_blocks(int count);
+AU_EXTERN AU_EXPORT void* x86_64_pmmngr_alloc_blocks(int count);
 
 /*
 * x86_64_pmmngr_free -- frees up a physical address
 * @param addr - address to free
 */
-extern void x86_64_pmmngr_free(void* addr);
+AU_EXTERN AU_EXPORT void x86_64_pmmngr_free(void* addr);
 
 /*
 * x86_64_pmmngr_get_total_mem -- get total ram
 */
-extern uint64_t x86_64_pmmngr_get_total_mem();
+AU_EXTERN AU_EXPORT uint64_t x86_64_pmmngr_get_total_mem();
 
 /*
 * x86_64_pmmngr_set_high -- setup physical memory manager to use

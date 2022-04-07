@@ -35,6 +35,7 @@
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_ap_init.h>
 #include <arch\x86_64\x86_64_apic.h>
+#include <mm\kmalloc.h>
 #include <string.h>
 
 int lock = 0;
@@ -49,11 +50,21 @@ void x86_64_ap_init(void *cpu_data) {
 	x64_cli();
 	x86_64_cpu_initialize();
 	x86_64_initialize_apic(false);
+	x64_cli();
 	x86_64_cpu_print_brand();
 
-	x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu_data);
-	au_get_boot_info()->auprint("CPU: id %d \n", x64_read_gs_b(0));
 
+	x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu_data);
+
+	au_spinlock_t *spinlock = au_create_spinlock();
+	spinlock->value = 1;
+	x64_write_gs_q(1, (uint64_t)spinlock);
+	au_get_boot_info()->auprint("CPU: id %d \n", x64_read_gs_b(0));
+	au_spinlock_t *spin = (au_spinlock_t*)x64_read_gs_q(1);
+	au_get_boot_info()->auprint("Spinlock value -> %d \n", spin->value);
+
+
+	
 	lock = 0;
 	x86_64_ap_started();
 	for (;;);

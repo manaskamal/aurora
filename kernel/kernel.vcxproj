@@ -158,13 +158,16 @@
     <ClInclude Include="include\arch\x86_64\x86_64_lowlevel.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_paging.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h" />
+    <ClInclude Include="include\atomic\au_spinlock.h" />
     <ClInclude Include="include\auinfo.h" />
+    <ClInclude Include="include\aurora.h" />
     <ClInclude Include="include\console.h" />
     <ClInclude Include="include\kdrivers\au_acpi.h" />
     <ClInclude Include="include\kdrivers\au_video.h" />
     <ClInclude Include="include\kdrivers\serial.h" />
     <ClInclude Include="include\limits.h" />
     <ClInclude Include="include\mm\kmalloc.h" />
+    <ClInclude Include="include\pe.h" />
     <ClInclude Include="include\stdarg.h" />
     <ClInclude Include="include\stdint.h" />
     <ClInclude Include="include\stdlib.h" />
@@ -183,12 +186,14 @@
     <ClCompile Include="arch\x86_64\x86_64_ioapic.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_paging.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp" />
+    <ClCompile Include="atomic\au_spinlock.cpp" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="kdrivers\au_acpi.cpp" />
     <ClCompile Include="kdrivers\au_video.cpp" />
     <ClCompile Include="kdrivers\serial.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mm\kmalloc.cpp" />
+    <ClCompile Include="pe.cpp" />
     <ClCompile Include="stdlib.cpp" />
     <ClCompile Include="string.cpp" />
   </ItemGroup>

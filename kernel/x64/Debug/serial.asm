@@ -9,7 +9,7 @@ _BSS	SEGMENT
 _serial_initialized_ DB 01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG2949	DB	'.', 00H
+$SG2968	DB	'.', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_serial@@YAHXZ			; au_initialize_serial
 PUBLIC	?_au_debug_print_@@YAXPEADZZ			; _au_debug_print_
@@ -20,7 +20,7 @@ PUBLIC	?is_serial_initialized@@YA_NXZ			; is_serial_initialized
 EXTRN	?strlen@@YA_KPEBD@Z:PROC			; strlen
 EXTRN	x64_inportb:PROC
 EXTRN	x64_outportb:PROC
-EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
+EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	?sztoa@@YAPEAD_KPEADH@Z:PROC			; sztoa
 pdata	SEGMENT
 $pdata$?au_initialize_serial@@YAHXZ DD imagerel $LN3
@@ -135,7 +135,7 @@ $LN1@write_seri:
 ; 61   : 	x64_outportb(x86_64_phys_to_virt(PORT), a);
 
 	mov	ecx, 1016				; 000003f8H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	movzx	edx, BYTE PTR a$[rsp]
 	movzx	ecx, ax
 	call	x64_outportb
@@ -159,7 +159,7 @@ $LN3:
 ; 56   : 	return x64_inportb(x86_64_phys_to_virt(PORT + 5)) & 0x20;
 
 	mov	ecx, 1021				; 000003fdH
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	movzx	ecx, ax
 	call	x64_inportb
 	movzx	eax, al
@@ -470,7 +470,7 @@ $LN5@au_debug_p:
 ; 131  : 			{
 ; 132  : 				debug_serial(".");
 
-	lea	rcx, OFFSET FLAT:$SG2949
+	lea	rcx, OFFSET FLAT:$SG2968
 	call	?debug_serial@@YAXPEAD@Z		; debug_serial
 
 ; 133  : 			}
@@ -564,7 +564,7 @@ $LN3:
 ; 44   : 	x64_outportb(x86_64_phys_to_virt(PORT + 1), 0x00);
 
 	mov	ecx, 1017				; 000003f9H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	xor	edx, edx
 	movzx	ecx, ax
 	call	x64_outportb
@@ -572,7 +572,7 @@ $LN3:
 ; 45   : 	x64_outportb(x86_64_phys_to_virt(PORT + 3), 0x80);
 
 	mov	ecx, 1019				; 000003fbH
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	dl, 128					; 00000080H
 	movzx	ecx, ax
 	call	x64_outportb
@@ -580,7 +580,7 @@ $LN3:
 ; 46   : 	x64_outportb(x86_64_phys_to_virt(PORT + 0), 0x03);
 
 	mov	ecx, 1016				; 000003f8H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	dl, 3
 	movzx	ecx, ax
 	call	x64_outportb
@@ -588,7 +588,7 @@ $LN3:
 ; 47   : 	x64_outportb(x86_64_phys_to_virt(PORT + 1), 0x00);
 
 	mov	ecx, 1017				; 000003f9H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	xor	edx, edx
 	movzx	ecx, ax
 	call	x64_outportb
@@ -596,7 +596,7 @@ $LN3:
 ; 48   : 	x64_outportb(x86_64_phys_to_virt(PORT + 3), 0x03);
 
 	mov	ecx, 1019				; 000003fbH
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	dl, 3
 	movzx	ecx, ax
 	call	x64_outportb
@@ -604,7 +604,7 @@ $LN3:
 ; 49   : 	x64_outportb(x86_64_phys_to_virt(PORT + 2), 0xC7);
 
 	mov	ecx, 1018				; 000003faH
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	dl, 199					; 000000c7H
 	movzx	ecx, ax
 	call	x64_outportb
@@ -612,7 +612,7 @@ $LN3:
 ; 50   : 	x64_outportb(x86_64_phys_to_virt(PORT + 4), 0x0B);
 
 	mov	ecx, 1020				; 000003fcH
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	dl, 11
 	movzx	ecx, ax
 	call	x64_outportb

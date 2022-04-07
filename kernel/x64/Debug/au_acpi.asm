@@ -10,19 +10,19 @@ _BSS	SEGMENT
 ?au_acpi@@3U_aurora_acpi_@@A DB 031H DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3222	DB	'FACP', 00H
+$SG3255	DB	'FACP', 00H
 	ORG $+3
-$SG3223	DB	'FACP', 00H
+$SG3256	DB	'FACP', 00H
 	ORG $+3
-$SG3227	DB	'APIC', 00H
+$SG3260	DB	'APIC', 00H
 	ORG $+3
-$SG3228	DB	'APIC', 00H
+$SG3261	DB	'APIC', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
 PUBLIC	?au_acpi_get_num_core@@YAIXZ			; au_acpi_get_num_core
 PUBLIC	??$raw_diff@U_acpi_apic_header_@@UacpiMadt@@@@YAHPEAU_acpi_apic_header_@@PEAUacpiMadt@@@Z ; raw_diff<_acpi_apic_header_,acpiMadt>
 PUBLIC	??$raw_offset@PEAU_acpi_apic_header_@@PEAU1@@@YAPEAU_acpi_apic_header_@@PEAU0@H@Z ; raw_offset<_acpi_apic_header_ * __ptr64,_acpi_apic_header_ * __ptr64>
-EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
+EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	?strlen@@YA_KPEBD@Z:PROC			; strlen
 EXTRN	?strncmp@@YAHPEBD0_K@Z:PROC			; strncmp
@@ -127,7 +127,7 @@ $LN16:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rcx, QWORD PTR [rax+66]
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR acpi_base$[rsp], rax
 
 ; 47   : 	memset(&au_acpi, 0, sizeof(aurora_acpi));
@@ -148,14 +148,14 @@ $LN16:
 	mov	rax, QWORD PTR rsdp$[rsp]
 	mov	eax, DWORD PTR [rax+16]
 	mov	ecx, eax
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR rsdt$[rsp], rax
 
 ; 51   : 	acpiXsdt *xsdt = (acpiXsdt*)x86_64_phys_to_virt((uint64_t)rsdp->xsdtAddr);
 
 	mov	rax, QWORD PTR rsdp$[rsp]
 	mov	rcx, QWORD PTR [rax+24]
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR xsdt$[rsp], rax
 
 ; 52   : 	char sig[5];
@@ -194,7 +194,7 @@ $LN13@au_initial:
 	mov	rcx, QWORD PTR count$2[rsp]
 	mov	eax, DWORD PTR [rax+rcx*4+36]
 	mov	ecx, eax
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	QWORD PTR header$[rsp], rax
 
 ; 59   : 		strncpy(sig, header->signature, 4);
@@ -214,10 +214,10 @@ $LN13@au_initial:
 ; 61   : 
 ; 62   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3222
+	lea	rcx, OFFSET FLAT:$SG3255
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3223
+	lea	rdx, OFFSET FLAT:$SG3256
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -234,10 +234,10 @@ $LN10@au_initial:
 ; 65   : 
 ; 66   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3227
+	lea	rcx, OFFSET FLAT:$SG3260
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3228
+	lea	rdx, OFFSET FLAT:$SG3261
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax

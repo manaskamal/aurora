@@ -6,26 +6,26 @@ INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
 PUBLIC	?ioapic_init@@YAXPEAX@Z				; ioapic_init
-PUBLIC	?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z	; ioapic_register_irq
-PUBLIC	?ioapic_mask_irq@@YAXE_N@Z			; ioapic_mask_irq
-PUBLIC	?ioapic_redirect@@YAXEIGE@Z			; ioapic_redirect
+PUBLIC	ioapic_register_irq
+PUBLIC	ioapic_mask_irq
+PUBLIC	ioapic_redirect
 PUBLIC	??$raw_offset@PECIPEAX@@YAPECIPEAXH@Z		; raw_offset<unsigned int volatile * __ptr64,void * __ptr64>
-EXTRN	?setvect@@YAX_KP6AX0PEAX@Z@Z:PROC		; setvect
+EXTRN	setvect:PROC
 EXTRN	?read_apic_register@@YA_KG@Z:PROC		; read_apic_register
-EXTRN	?x86_64_phys_to_virt@@YA_K_K@Z:PROC		; x86_64_phys_to_virt
+EXTRN	x86_64_phys_to_virt:PROC
 pdata	SEGMENT
 $pdata$?ioapic_init@@YAXPEAX@Z DD imagerel $LN6
 	DD	imagerel $LN6+134
 	DD	imagerel $unwind$?ioapic_init@@YAXPEAX@Z
-$pdata$?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z DD imagerel $LN3
+$pdata$ioapic_register_irq DD imagerel $LN3
 	DD	imagerel $LN3+264
-	DD	imagerel $unwind$?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z
-$pdata$?ioapic_mask_irq@@YAXE_N@Z DD imagerel $LN5
+	DD	imagerel $unwind$ioapic_register_irq
+$pdata$ioapic_mask_irq DD imagerel $LN5
 	DD	imagerel $LN5+173
-	DD	imagerel $unwind$?ioapic_mask_irq@@YAXE_N@Z
-$pdata$?ioapic_redirect@@YAXEIGE@Z DD imagerel $LN5
+	DD	imagerel $unwind$ioapic_mask_irq
+$pdata$ioapic_redirect DD imagerel $LN5
 	DD	imagerel $LN5+229
-	DD	imagerel $unwind$?ioapic_redirect@@YAXEIGE@Z
+	DD	imagerel $unwind$ioapic_redirect
 $pdata$?read_ioapic_register@@YAIPEAXE@Z DD imagerel ?read_ioapic_register@@YAIPEAXE@Z
 	DD	imagerel ?read_ioapic_register@@YAIPEAXE@Z+67
 	DD	imagerel $unwind$?read_ioapic_register@@YAIPEAXE@Z
@@ -36,11 +36,11 @@ pdata	ENDS
 xdata	SEGMENT
 $unwind$?ioapic_init@@YAXPEAX@Z DD 010901H
 	DD	08209H
-$unwind$?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z DD 011301H
+$unwind$ioapic_register_irq DD 011301H
 	DD	08213H
-$unwind$?ioapic_mask_irq@@YAXE_N@Z DD 010c01H
+$unwind$ioapic_mask_irq DD 010c01H
 	DD	0820cH
-$unwind$?ioapic_redirect@@YAXEIGE@Z DD 011701H
+$unwind$ioapic_redirect DD 011701H
 	DD	08217H
 $unwind$?read_ioapic_register@@YAIPEAXE@Z DD 010d01H
 	DD	0620dH
@@ -176,7 +176,7 @@ irq$ = 80
 gsi$ = 88
 flags$ = 96
 apic$ = 104
-?ioapic_redirect@@YAXEIGE@Z PROC			; ioapic_redirect
+ioapic_redirect PROC
 
 ; 102  : void ioapic_redirect(uint8_t irq, uint32_t gsi, uint16_t flags, uint8_t apic) {
 
@@ -252,7 +252,7 @@ $LN1@ioapic_red:
 
 	mov	eax, DWORD PTR ioapic_base$[rsp]
 	mov	ecx, eax
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	r8d, DWORD PTR redirection$[rsp]
 	movzx	edx, BYTE PTR ioredtbl$[rsp]
 	mov	rcx, rax
@@ -268,7 +268,7 @@ $LN1@ioapic_red:
 	mov	DWORD PTR tv89[rsp], ecx
 	mov	edx, DWORD PTR ioapic_base$[rsp]
 	mov	ecx, edx
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	rcx, QWORD PTR tv86[rsp]
 	mov	r8d, ecx
 	mov	ecx, DWORD PTR tv89[rsp]
@@ -280,7 +280,7 @@ $LN1@ioapic_red:
 
 	add	rsp, 72					; 00000048H
 	ret	0
-?ioapic_redirect@@YAXEIGE@Z ENDP			; ioapic_redirect
+ioapic_redirect ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_ioapic.cpp
@@ -291,7 +291,7 @@ tv72 = 40
 tv69 = 48
 irq$ = 80
 value$ = 88
-?ioapic_mask_irq@@YAXE_N@Z PROC				; ioapic_mask_irq
+ioapic_mask_irq PROC
 
 ; 122  : void ioapic_mask_irq(uint8_t irq, bool value){
 
@@ -316,7 +316,7 @@ $LN5:
 	inc	ecx
 	mov	DWORD PTR tv72[rsp], ecx
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	rcx, QWORD PTR tv69[rsp]
 	mov	r8d, ecx
 	mov	ecx, DWORD PTR tv72[rsp]
@@ -360,7 +360,7 @@ $LN1@ioapic_mas:
 ; 132  : 	write_ioapic_register((void*)x86_64_phys_to_virt(0xfec00000), reg, low);   //vector + 32
 
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	r8d, DWORD PTR low$[rsp]
 	movzx	edx, BYTE PTR reg$[rsp]
 	mov	rcx, rax
@@ -370,7 +370,7 @@ $LN1@ioapic_mas:
 
 	add	rsp, 72					; 00000048H
 	ret	0
-?ioapic_mask_irq@@YAXE_N@Z ENDP				; ioapic_mask_irq
+ioapic_mask_irq ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_ioapic.cpp
@@ -382,7 +382,7 @@ tv69 = 48
 vector$ = 80
 fn$ = 88
 irq$ = 96
-?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z PROC		; ioapic_register_irq
+ioapic_register_irq PROC
 
 ; 81   : {
 
@@ -408,7 +408,7 @@ $LN3:
 	inc	ecx
 	mov	DWORD PTR tv72[rsp], ecx
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	rcx, QWORD PTR tv69[rsp]
 	mov	r8d, ecx
 	mov	ecx, DWORD PTR tv72[rsp]
@@ -419,7 +419,7 @@ $LN3:
 ; 84   : 	uint32_t low = read_ioapic_register((void*)x86_64_phys_to_virt(0xfec00000), reg);
 
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	movzx	edx, BYTE PTR reg$[rsp]
 	mov	rcx, rax
 	call	?read_ioapic_register@@YAIPEAXE@Z	; read_ioapic_register
@@ -476,7 +476,7 @@ $LN3:
 ; 97   : 	write_ioapic_register((void*)x86_64_phys_to_virt(0xfec00000), reg, low);   //vector + 32
 
 	mov	ecx, -20971520				; fec00000H
-	call	?x86_64_phys_to_virt@@YA_K_K@Z		; x86_64_phys_to_virt
+	call	x86_64_phys_to_virt
 	mov	r8d, DWORD PTR low$[rsp]
 	movzx	edx, BYTE PTR reg$[rsp]
 	mov	rcx, rax
@@ -488,13 +488,13 @@ $LN3:
 	add	rax, 32					; 00000020H
 	mov	rdx, QWORD PTR fn$[rsp]
 	mov	rcx, rax
-	call	?setvect@@YAX_KP6AX0PEAX@Z@Z		; setvect
+	call	setvect
 
 ; 99   : }
 
 	add	rsp, 72					; 00000048H
 	ret	0
-?ioapic_register_irq@@YAX_KP6AX0PEAX@ZE@Z ENDP		; ioapic_register_irq
+ioapic_register_irq ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_ioapic.cpp

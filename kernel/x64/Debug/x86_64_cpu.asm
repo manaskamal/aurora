@@ -10,19 +10,19 @@ _BSS	SEGMENT
 ?idtr@@3U_idtr@@A DB 0aH DUP (?)			; idtr
 _BSS	ENDS
 CONST	SEGMENT
-$SG2926	DB	'[aurora]: Default interrupt++', 0aH, 00H
+$SG2959	DB	'[aurora]: Default interrupt++', 0aH, 00H
 	ORG $+1
-$SG2968	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
+$SG3001	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
 	ORG $+2
-$SG2971	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
+$SG3004	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
 	ORG $+2
-$SG2983	DB	'CPU: Vendor -> %s ', 0aH, 00H
+$SG3016	DB	'CPU: Vendor -> %s ', 0aH, 00H
 	ORG $+4
-$SG2997	DB	'CPU: Brand = %s ', 0aH, 00H
+$SG3030	DB	'CPU: Brand = %s ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_cpu_initialize@@YAXXZ			; x86_64_cpu_initialize
-PUBLIC	?x86_64_cpu_print_brand@@YAXXZ			; x86_64_cpu_print_brand
-PUBLIC	?setvect@@YAX_KP6AX0PEAX@Z@Z			; setvect
+PUBLIC	x86_64_cpu_print_brand
+PUBLIC	setvect
 PUBLIC	load_default_sregs
 PUBLIC	?set_gdt_entry@@YAXAEAU_gdt@@_K1EE@Z		; set_gdt_entry
 PUBLIC	?save_sregs@@YAXXZ				; save_sregs
@@ -31,6 +31,7 @@ PUBLIC	interrupt_dispatcher
 PUBLIC	?default_irq@@YAX_KPEAX@Z			; default_irq
 PUBLIC	?x86_64_idt_initialize@@YAXXZ			; x86_64_idt_initialize
 PUBLIC	?x86_64_cpu_feature_enable@@YAXXZ		; x86_64_cpu_feature_enable
+EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	x64_cli:PROC
 EXTRN	x64_sti:PROC
 EXTRN	x64_read_msr:PROC
@@ -40,8 +41,7 @@ EXTRN	x64_read_cr4:PROC
 EXTRN	x64_write_cr4:PROC
 EXTRN	x64_lgdt:PROC
 EXTRN	x64_sgdt:PROC
-EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
-EXTRN	?printf@@YAXPEBDZZ:PROC				; printf
+EXTRN	printf:PROC
 EXTRN	?x86_64_exception_init@@YAXXZ:PROC		; x86_64_exception_init
 EXTRN	x64_get_segment_register:PROC
 EXTRN	x64_set_segment_register:PROC
@@ -66,9 +66,9 @@ pdata	SEGMENT
 $pdata$?x86_64_cpu_initialize@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+126
 	DD	imagerel $unwind$?x86_64_cpu_initialize@@YAXXZ
-$pdata$?x86_64_cpu_print_brand@@YAXXZ DD imagerel $LN3
+$pdata$x86_64_cpu_print_brand DD imagerel $LN3
 	DD	imagerel $LN3+514
-	DD	imagerel $unwind$?x86_64_cpu_print_brand@@YAXXZ
+	DD	imagerel $unwind$x86_64_cpu_print_brand
 $pdata$load_default_sregs DD imagerel $LN3
 	DD	imagerel $LN3+90
 	DD	imagerel $unwind$load_default_sregs
@@ -103,7 +103,7 @@ pdata	ENDS
 xdata	SEGMENT
 $unwind$?x86_64_cpu_initialize@@YAXXZ DD 010401H
 	DD	06204H
-$unwind$?x86_64_cpu_print_brand@@YAXXZ DD 020701H
+$unwind$x86_64_cpu_print_brand DD 020701H
 	DD	0150107H
 $unwind$load_default_sregs DD 010401H
 	DD	04204H
@@ -236,7 +236,7 @@ $LN6@x86_64_cpu:
 ; 224  : 		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2968
+	lea	rcx, OFFSET FLAT:$SG3001
 	call	QWORD PTR [rax+90]
 	jmp	SHORT $LN2@x86_64_cpu
 $LN3@x86_64_cpu:
@@ -252,7 +252,7 @@ $LN3@x86_64_cpu:
 ; 227  : 		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG2971
+	lea	rcx, OFFSET FLAT:$SG3004
 	call	QWORD PTR [rax+90]
 $LN1@x86_64_cpu:
 $LN2@x86_64_cpu:
@@ -513,8 +513,8 @@ $LN5:
 
 ; 160  : 	printf("[aurora]: Default interrupt++\n");
 
-	lea	rcx, OFFSET FLAT:$SG2926
-	call	?printf@@YAXPEBDZZ			; printf
+	lea	rcx, OFFSET FLAT:$SG2959
+	call	printf
 $LN2@default_ir:
 
 ; 161  : 	for (;;);
@@ -975,7 +975,7 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 vector$ = 8
 function$ = 16
-?setvect@@YAX_KP6AX0PEAX@Z@Z PROC			; setvect
+setvect	PROC
 
 ; 145  : {
 
@@ -992,7 +992,7 @@ function$ = 16
 ; 147  : };
 
 	ret	0
-?setvect@@YAX_KP6AX0PEAX@Z@Z ENDP			; setvect
+setvect	ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
@@ -1004,7 +1004,7 @@ a$ = 72
 vendor$ = 80
 bandstring$ = 96
 maxcpuid$ = 152
-?x86_64_cpu_print_brand@@YAXXZ PROC			; x86_64_cpu_print_brand
+x86_64_cpu_print_brand PROC
 
 ; 250  : void x86_64_cpu_print_brand() {
 
@@ -1055,7 +1055,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR vendor$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2983
+	lea	rcx, OFFSET FLAT:$SG3016
 	call	QWORD PTR [rax+90]
 
 ; 259  : 
@@ -1187,14 +1187,14 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR bandstring$[rsp]
-	lea	rcx, OFFSET FLAT:$SG2997
+	lea	rcx, OFFSET FLAT:$SG3030
 	call	QWORD PTR [rax+90]
 
 ; 278  : }
 
 	add	rsp, 168				; 000000a8H
 	ret	0
-?x86_64_cpu_print_brand@@YAXXZ ENDP			; x86_64_cpu_print_brand
+x86_64_cpu_print_brand ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
