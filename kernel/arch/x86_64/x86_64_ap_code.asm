@@ -9,7 +9,7 @@
 
 [section .text]
 [bits 16]
-[org 0x9000]
+[org 0xA000]
 _entry:
      cli
 	 cld
@@ -53,9 +53,6 @@ ap_32:
      cli
      mov ax, 0x20
 	 mov ds, ax
-	 mov es, ax
-	 mov fs, ax
-	 mov gs, ax
 	 mov ss, ax
 
 	 ; Enable PAE paging 

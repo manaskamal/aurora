@@ -35,6 +35,8 @@
 #include <arch\x86_64\x86_64_paging.h>
 #include <arch\x86_64\x86_64_apic.h>
 #include <arch\x86_64\x86_64_ioapic.h>
+#include <arch\x86_64\x86_64_per_cpu.h>
+#include <arch\x86_64\x86_64_scheduler.h>
 #include <string.h>
 
 #include <kdrivers\au_video.h>
@@ -51,20 +53,20 @@ aurora_info_t * au_get_boot_info() {
 	return &info;
 }
 
-void kybrd_handler(size_t v, void* p) {
-	_au_debug_print_("Key pressed \r\n");
-}
+
 
 extern "C" int _fltused = 1;
 
 
-void memory_alloc(size_t s) {
-	void* ptr = kmalloc(s);
-	printf("Locked, memory -> %x \n", ptr);
+void thread_test() {
+	printf("Thread test\n");
+	for (;;);
 }
-
+static int lock = 0;
 /* initialize the bsp from here!*/
 int _kmain(aurora_info_t *bootinfo) {
+	x64_cli();
+
 	bootinfo->auprint("Aurora Kernel \n");
 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
@@ -72,28 +74,28 @@ int _kmain(aurora_info_t *bootinfo) {
 
 
 	x86_64_pmmngr_init(bootinfo);
-	x86_64_cpu_initialize();
+	x86_64_cpu_initialize(true);
 
 	/* initialize early drivers*/
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
+	
 	au_status = au_initialize_serial();
 	au_status = x86_64_initialize_apic(true);
-	x64_cli();
 	au_status = au_initialize_acpi();
 
+	au_status = x86_64_kmalloc_initialize();
 	
+
+	x86_64_setup_cpu_data(0);
+
+	x86_64_boot_free();
+    x86_64_initialize_scheduler();
+#ifdef SMP
 	/* initialize all the AP's*/
 	initialize_cpu(au_acpi_get_num_core());
-
-
-	/* just for debug purpose */
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			au_video_get_fb()[i + j * info.x_res] = 0xffffffff;
-		}
-	}
-	
+#endif
+	x86_64_sched_start();
 	for (;;);
 	return 0;
 }

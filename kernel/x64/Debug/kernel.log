@@ -1,12 +1,16 @@
-﻿Build started 07-04-2022 আবেলি 8:47:59.
+﻿Build started 09-04-2022 ৰাতিপু 11:20:24.
      1>Project "E:\Aurora Kernel\kernel\kernel.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
+         arch\x86_64\x86_64_ctx_switch.asm
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp29561d94064b4f35b93fa535c6e4516c.cmd"
+         "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_ctx_switch.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_ctx_switch.asm"
+       _NASM:
          _fastcpy.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpd57d437e40634331bd8891dca26a2e33.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp19c378fd4e1641468ff91c89179b0dbd.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\_fastcpy.obj"  "E:\Aurora Kernel\kernel\_fastcpy.asm"
        _NASM:
          arch\x86_64\x86_64_interrupt.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp2ab5e2747c43496aa1036aca60d3cb15.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp51bd161027354a6a884b69296b16ec38.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_interrupt.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm"
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(128): warning : signed dword immediate exceeds bounds
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(129): warning : signed dword immediate exceeds bounds
@@ -258,10 +262,10 @@
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(152): warning : signed dword immediate exceeds bounds
        _NASM:
          arch\x86_64\x86_64_lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp4c42ead8f92a47759ac76d5bf133ebdb.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp1f747d390036483583333e0e6230c775.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_lowlevel.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_lowlevel.asm"
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_pmmngr.cpp atomic\au_spinlock.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp pe.cpp stdlib.cpp string.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_per_cpu.cpp arch\x86_64\x86_64_pmmngr.cpp arch\x86_64\x86_64_scheduler.cpp atomic\au_spinlock.cpp console.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp pe.cpp stdlib.cpp string.cpp
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          string.cpp
          stdlib.cpp
@@ -273,7 +277,9 @@
          au_acpi.cpp
          console.cpp
          au_spinlock.cpp
+         x86_64_scheduler.cpp
          x86_64_pmmngr.cpp
+         x86_64_per_cpu.cpp
          x86_64_paging.cpp
          x86_64_ioapic.cpp
          x86_64_exception.cpp
@@ -290,7 +296,9 @@
          x64\Debug\x86_64_exception.obj
          x64\Debug\x86_64_ioapic.obj
          x64\Debug\x86_64_paging.obj
+         x64\Debug\x86_64_per_cpu.obj
          x64\Debug\x86_64_pmmngr.obj
+         x64\Debug\x86_64_scheduler.obj
          x64\Debug\au_spinlock.obj
          x64\Debug\console.obj
          x64\Debug\au_acpi.obj
@@ -301,6 +309,7 @@
          x64\Debug\pe.obj
          x64\Debug\stdlib.obj
          x64\Debug\string.obj
+         x64\Debug\x86_64_ctx_switch.obj
          x64\Debug\_fastcpy.obj
          x64\Debug\x86_64_interrupt.obj
          x64\Debug\x86_64_lowlevel.obj
@@ -312,4 +321,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.70
+Time Elapsed 00:00:01.70

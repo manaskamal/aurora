@@ -117,6 +117,12 @@
     <ClInclude Include="include\aurora.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_per_cpu.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_scheduler.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -165,6 +171,12 @@
     <ClCompile Include="atomic\au_spinlock.cpp">
       <Filter>atomic</Filter>
     </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_per_cpu.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="arch\aarch64\bootstub.s">
@@ -184,6 +196,9 @@
     <NASM Include="_fastcpy.asm" />
     <NASM Include="arch\x86_64\x86_64_ap_code.asm">
       <Filter>arch\x86_64</Filter>
+    </NASM>
+    <NASM Include="arch\x86_64\x86_64_ctx_switch.asm">
+      <Filter>include\arch\x86_64</Filter>
     </NASM>
   </ItemGroup>
 </Project>

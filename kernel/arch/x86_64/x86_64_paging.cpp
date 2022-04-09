@@ -151,11 +151,11 @@ int x86_64_paging_init() {
 	
 
 	/* Copy the mappings to boot page tables */
-	boot_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
-
-	boot_cr3 = new_cr3;
+	old_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
 
 	x64_write_cr3((size_t)new_cr3);
+
+	boot_cr3 = new_cr3;
 
 	/* from here, every physical page = higher half virtual page */
 	x86_64_pmmngr_set_high(true);
@@ -355,5 +355,11 @@ bool x86_64_paging_free(uint64_t start) {
  */
 uint64_t* x86_64_get_boot_pml() {
 	return boot_cr3;
+}
+
+
+void paging_debug(uint64_t va) {
+	uint64_t* cr3 = (uint64_t*)x64_read_cr3();
+	printf("CR3[I] -> %x \n", cr3[pml4_index(va)]);
 }
 

@@ -31,6 +31,9 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_exception.h>
 #include <arch\x86_64\x86_64_pmmngr.h>
+#include <arch\x86_64\x86_64_per_cpu.h>
+#include <arch\x86_64\x86_64_paging.h>
+#include <mm\kmalloc.h>
 #include <console.h>
 #include <auinfo.h>
 #include <string.h>
@@ -276,17 +279,19 @@ void x86_64_cpu_print_brand() {
 	bandstring[48] = 0;
 	au_get_boot_info()->auprint("CPU: Brand = %s \n", bandstring);
 }
+
+
+
 /*
  * x86_64_cpu_initialize -- initialize the cpu
  */
-void x86_64_cpu_initialize() {
-	x64_cli();
-
+void x86_64_cpu_initialize(bool bsp) {
+	
 	x86_64_gdt_initialize();
 	x86_64_idt_initialize();
 	x86_64_exception_init();
+	/* setup BSP cpu data */
 	x86_64_cpu_feature_enable();
-
 
 	/* Enable SYSCALL extension */
 	size_t efer = x64_read_msr(IA32_EFER);
@@ -295,5 +300,37 @@ void x86_64_cpu_initialize() {
 	efer |= (1 << 0);
 	efer |= 1;
 	x64_write_msr(IA32_EFER, efer);
-	x64_sti();
+
+	/* setup BSP cpu data */
+	if (!bsp) {
+		gdtr *new_gdtr = (gdtr*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
+		memset(new_gdtr, 0, 4096);
+		gdt_entry* new_gdt = (gdt_entry*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
+		memset(new_gdtr, 0, 4096);
+		fill_gdt(new_gdt);
+		new_gdtr->gdtaddr = new_gdt;
+		new_gdtr->size = GDT_ENTRIES* sizeof(gdt_entry)-1;
+		x64_lgdt(new_gdtr);
+	}
+}
+
+/*
+ * x86_64_setup_cpu_data -- setup per cpu data to
+ * GS base
+ * @param data -- cpu data
+ */
+void x86_64_setup_cpu_data(void* data) {
+
+	size_t a, b, c, d;
+	x64_cpuid(0x1, &a, &b, &c, &d);
+	if ((b >> 24) == 0) {
+		cpu_t *cpu = (cpu_t*)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc());
+		memset(cpu, 0, 4096);
+		x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu);
+		per_cpu_set_cpu_id((b >> 24));
+	}
+	else {
+		x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)data);
+		per_cpu_set_cpu_id((b >> 24));
+	}
 }

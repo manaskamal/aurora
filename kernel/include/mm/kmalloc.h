@@ -49,10 +49,16 @@ typedef struct _meta_data_ {
 
 
 /*
+* x86_64_kmalloc_initialize -- initialize
+* kernel malloc library with two pages
+*/
+extern int x86_64_kmalloc_initialize();
+
+/*
 * au_request_page -- request contiguous 4k virtual pages
 * @param pages -- number of pages needs to be mapped
 */
-extern void* au_request_page(int pages);
+extern uint64_t* au_request_page(int pages);
 
 /*
 * au_free_page -- frees up pages, note that pages

@@ -30,6 +30,7 @@
 #include <arch\x86_64\x86_64_exception.h>
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_lowlevel.h>
+#include <arch\x86_64\x86_64_per_cpu.h>
 
 static int exception_lock = 0;
 
@@ -91,15 +92,18 @@ void bounds_check_fault(size_t v, void* p){
 
 //! exception function -- invalid_opcode_fault
 void invalid_opcode_fault(size_t v, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
 	panic("Invalid Opcode Fault\n");
+	printf("CPU ID -> %d \n", per_cpu_get_cpu_id());
 	printf("__PROCESSOR TRACE__\n");
 	printf("RIP -> %x\n", frame->rip);
 	printf("Stack -> %x\n", frame->rsp);
 	printf("RFLAGS -> %x\n", frame->rflags);
 	printf("CS -> %x\n", frame->cs);
 	printf("SS -> %x\n", frame->ss);
+	exception_lock = 0;
 	for (;;);
 }
 
@@ -145,6 +149,8 @@ void general_protection_fault(size_t v, void* p){
 	x64_cli();
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
 	panic ("Genral Protection Fault\n");
+	printf("Current CPU id -> %d \n", per_cpu_get_cpu_id());
+	printf("Current thread -> %x \n", per_cpu_get_c_thread());
 	printf ("__PROCESSOR TRACE__\n");
 	printf ("RIP -> %x\n",frame->rip);
 	printf ("Stack -> %x\n", frame->rsp);
@@ -172,6 +178,7 @@ void page_fault(size_t vector, void* param){
 
 	panic("[aurora]: page fault \n");
 	printf("[aurora]: page fault at -> %x \n", vaddr);
+	printf("[aurora]: current cpu -> %d \n", per_cpu_get_cpu_id());
 	if (present)
 		printf("bit: present \n");
 	else if (rw)

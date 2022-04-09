@@ -159,9 +159,9 @@ void  apic_timer_interrupt(size_t p, void* param) {
 int x86_64_initialize_apic(bool bsp) {
 
 	size_t apic_base;
-	if (bsp)
+	if (bsp){
 		apic_base = (size_t)x86_64_phys_to_virt(0xFEE00000);
-	else
+	}else
 		apic_base =  x64_read_msr(IA32_APIC_BASE_MSR);
 	apic_timer_count = 0;
 	//map_page (0xFEE00000, 0xFEE00000,0);
@@ -174,17 +174,17 @@ int x86_64_initialize_apic(bool bsp) {
 	}
 
 	apic_base |= IA32_APIC_BASE_MSR_ENABLE;
+
 	//! Sends EOI to APIC
-	if (bsp)
-		x64_write_msr(IA32_APIC_BASE_MSR,x86_64_virt_to_phys(apic_base));
+	if (bsp) 
+		x64_write_msr(IA32_APIC_BASE_MSR, x86_64_virt_to_phys(apic_base));
 	else
 		x64_write_msr(IA32_APIC_BASE_MSR, apic_base);
 	//! Sends EOI to APIC
 	setvect(0xFF, apic_spurious_interrupt);
 	write_apic_register(LAPIC_REGISTER_SVR, read_apic_register(LAPIC_REGISTER_SVR) |
 		IA32_APIC_SVR_ENABLE | 0xFF);
-
-
+	
 	//!Register the time speed
 	write_apic_register(LAPIC_REGISTER_TMRDIV, 0xa);  //0xa
 
@@ -224,72 +224,93 @@ uint64_t icr_dest(uint32_t processor) {
 		return ((uint64_t)processor << 56);
 }
 
+void apic_send_init(uint8_t id) {
+	while (read_apic_register(0x30) & (1 << 12))
+		;
+
+	write_apic_register(0x31, id << 24);
+	write_apic_register(0x30, 5<<8);
+}
+
+void apic_send_sipi(uint8_t id, uint8_t vector) {
+	while (read_apic_register(0x30) & (1 << 12))
+		;
+
+	write_apic_register(0x31, id << 24);
+	write_apic_register(0x30, vector | (6 << 8) | (1 << 14));
+}
+
 bool icr_busy() {
 	return (read_apic_register(LAPIC_REGISTER_ICR) & (1 << 12)) != 0;
 }
 
 bool ap_started = 0;
-bool ap_copied = false;
+
+void Stall(uint32_t millis) {
+	uint64_t current = apic_timer_count;
+	while (apic_timer_count - current < millis);
+}
 
 /* initialize other processors
  * @param processor -- other processor id
  */
 void initialize_cpu(uint32_t processor) {
-	uint64_t* address = (uint64_t*)x86_64_phys_to_virt(0x9000);
-	x86_64_pmmngr_lock_page((void*)0x9000);
+	x64_cli();
+	uint64_t* address = (uint64_t*)x86_64_phys_to_virt(0xA000);
+	x86_64_pmmngr_lock_page((void*)0xA000);
 	void* ap_data = (void*)x86_64_phys_to_virt((uint64_t)au_get_boot_info()->apcode);
 	memcpy(address, ap_data, 4096);
 
 	
 	uint64_t ap_init_address = (uint64_t)x86_64_ap_init;
 
-	
 
 	uint64_t aligned_address = (uint64_t)address;
-	*(uint64_t*)(aligned_address + 8) = (uint64_t)x86_64_get_boot_pml();
-
-	
-	for (int i = 0; i <= processor + 1; i++) {
-		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), 0xFFFFF00000000000 + i * 4096, 0);
-	}
 
 
-	uint64_t kstack_addr = 0xFFFFF00000000000;
+	uint64_t *old_pml = (uint64_t*)x86_64_get_boot_pml();
+	uint64_t* new_cr3 = (uint64_t*)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc());
+	memset(new_cr3, 0, 4096);
+	for (int i = 0; i < 512; i++)
+		new_cr3[i] = old_pml[i];
+
+
 	for (int i = 1; i <= processor; i++) {
 		if (i == 8) //MAX number of processor : 8 on SMP (non-NUMA system)
 			break;
 		ap_started = 0;
 		
 		void* stack_address = x86_64_pmmngr_alloc();
+		*(uint64_t*)(aligned_address + 8) = x86_64_virt_to_phys((size_t)new_cr3);
 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
 		*(uint64_t*)(aligned_address + 24) = ap_init_address;
-		*(uint64_t*)(aligned_address + 32) = (kstack_addr + i * 4096);
+		*(uint64_t*)(aligned_address + 32) = (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc());
 		void* cpu_struc = (void*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
 		cpu_t *cpu = (cpu_t*)cpu_struc;
-		cpu->id = i;
-		*(uint64_t*)(aligned_address + 40) = (uint64_t)cpu_struc;
+		cpu->cpu_id = i;
+		*(uint64_t*)(aligned_address + 40) = (uint64_t)0; // cpu_struc;
 		
-		for (int i = 0; i < 100000; i++)
-			;
+		
 
 		write_apic_register(LAPIC_REGISTER_ICR, icr_dest(i) | 0x4500);
 		while (icr_busy());
 
-		for (int i = 0; i < 100000; i++)
+	
+		size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
+		write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
+		while (icr_busy());
+		for (int i = 0; i < 100000000; i++)
+			;
+		write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
+		while (icr_busy());
+		
+		for (int i = 0; i < 100000000; i++)
 			;
 	
-		//!startup ipi
-		for (int j = 0; j < 2; j++) {
-			size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
-			write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
-			while (icr_busy());
-		}
 		
 		do {
 			x64_pause();
 		} while (!ap_started);
-		for (int i = 0; i < 100000; i++)
-			;
 	}
 
 }

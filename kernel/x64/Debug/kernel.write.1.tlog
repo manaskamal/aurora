@@ -1,3 +1,5 @@
+^arch\x86_64\x86_64_ctx_switch.asm
+E:\Aurora Kernel\kernel\x64\Debug\x86_64_ctx_switch.obj
 ^_fastcpy.asm
 E:\Aurora Kernel\kernel\x64\Debug\_fastcpy.obj
 ^arch\x86_64\x86_64_interrupt.asm

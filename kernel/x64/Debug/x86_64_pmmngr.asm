@@ -19,23 +19,23 @@ higher_half_mapped DB 01H DUP (?)
 ?ram_bitmap@@3VBitmap@@A DB 010H DUP (?)		; ram_bitmap
 _BSS	ENDS
 CONST	SEGMENT
-$SG3002	DB	'B', 00H
+$SG3004	DB	'B', 00H
 	ORG $+2
-$SG3004	DB	'KB', 00H
+$SG3006	DB	'KB', 00H
 	ORG $+1
-$SG3006	DB	'MB', 00H
+$SG3008	DB	'MB', 00H
 	ORG $+5
-$SG3007	DB	'[aurora]: usable memory -> %x length -> %d %s', 0aH, 00H
+$SG3009	DB	'[aurora]: usable memory -> %x length -> %d %s', 0aH, 00H
 	ORG $+1
-$SG3008	DB	'[aurora]: total memory -> %d GB ', 0aH, 00H
+$SG3010	DB	'[aurora]: total memory -> %d GB ', 0aH, 00H
 	ORG $+6
-$SG3010	DB	'[aurora]: bitmap initialized %d bytes', 0aH, 00H
+$SG3012	DB	'[aurora]: bitmap initialized %d bytes', 0aH, 00H
 	ORG $+1
-$SG3030	DB	'[aurora]: x86_64 pmmngr initialized', 0aH, 00H
+$SG3032	DB	'[aurora]: x86_64 pmmngr initialized', 0aH, 00H
 	ORG $+3
-$SG3040	DB	'RAM bitmap buffer -> %x ', 0aH, 00H
+$SG3042	DB	'RAM bitmap buffer -> %x ', 0aH, 00H
 	ORG $+6
-$SG3043	DB	'after RAM bitmap buffer -> %x ', 0aH, 00H
+$SG3045	DB	'after RAM bitmap buffer -> %x ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z	; x86_64_pmmngr_init
 PUBLIC	x86_64_pmmngr_alloc
@@ -580,7 +580,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
-	lea	rcx, OFFSET FLAT:$SG3040
+	lea	rcx, OFFSET FLAT:$SG3042
 	call	QWORD PTR [rax+90]
 
 ; 260  : 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
@@ -593,7 +593,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
-	lea	rcx, OFFSET FLAT:$SG3043
+	lea	rcx, OFFSET FLAT:$SG3045
 	call	QWORD PTR [rax+90]
 
 ; 262  : 	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
@@ -972,7 +972,7 @@ $LN9@x86_64_pmm:
 
 ; 189  : 			char* unit = "B";
 
-	lea	rax, OFFSET FLAT:$SG3002
+	lea	rax, OFFSET FLAT:$SG3004
 	mov	QWORD PTR unit$6[rsp], rax
 
 ; 190  : 			if ((efi_mem->num_pages * 4096 / 1024 / 1024) == 0) {
@@ -999,7 +999,7 @@ $LN9@x86_64_pmm:
 
 ; 192  : 				unit = "KB";
 
-	lea	rax, OFFSET FLAT:$SG3004
+	lea	rax, OFFSET FLAT:$SG3006
 	mov	QWORD PTR unit$6[rsp], rax
 
 ; 193  : 			}
@@ -1022,7 +1022,7 @@ $LN8@x86_64_pmm:
 
 ; 196  : 				unit = "MB";
 
-	lea	rax, OFFSET FLAT:$SG3006
+	lea	rax, OFFSET FLAT:$SG3008
 	mov	QWORD PTR unit$6[rsp], rax
 $LN7@x86_64_pmm:
 
@@ -1033,7 +1033,7 @@ $LN7@x86_64_pmm:
 	mov	r8, QWORD PTR size_in_mb_kb$5[rsp]
 	mov	rax, QWORD PTR efi_mem$1[rsp]
 	mov	rdx, QWORD PTR [rax+8]
-	lea	rcx, OFFSET FLAT:$SG3007
+	lea	rcx, OFFSET FLAT:$SG3009
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 $LN10@x86_64_pmm:
@@ -1058,7 +1058,7 @@ $LN11@x86_64_pmm:
 	mov	ecx, 1024				; 00000400H
 	div	rcx
 	mov	rdx, rax
-	lea	rcx, OFFSET FLAT:$SG3008
+	lea	rcx, OFFSET FLAT:$SG3010
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 
@@ -1085,7 +1085,7 @@ $LN11@x86_64_pmm:
 ; 207  : 	info->auprint("[aurora]: bitmap initialized %d bytes\n", bitmap_size);
 
 	mov	rdx, QWORD PTR bitmap_size$[rsp]
-	lea	rcx, OFFSET FLAT:$SG3010
+	lea	rcx, OFFSET FLAT:$SG3012
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 
@@ -1205,7 +1205,7 @@ $LN1@x86_64_pmm:
 ; 230  : 
 ; 231  : 	info->auprint("[aurora]: x86_64 pmmngr initialized\n");
 
-	lea	rcx, OFFSET FLAT:$SG3030
+	lea	rcx, OFFSET FLAT:$SG3032
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 

@@ -35,37 +35,39 @@
 #include <arch\x86_64\x86_64_cpu.h>
 #include <arch\x86_64\x86_64_ap_init.h>
 #include <arch\x86_64\x86_64_apic.h>
+#include <arch\x86_64\x86_64_per_cpu.h>
+#include <arch\x86_64\x86_64_scheduler.h>
 #include <mm\kmalloc.h>
 #include <string.h>
 
-int lock = 0;
+static int ap_lock = 0;
 
 void x86_64_apic_handler(size_t v, void* p) {
-	au_get_boot_info()->auprint("APIC interrupt \n");
+	x64_lock_acquire(&ap_lock);
+	uint8_t cpu_id = per_cpu_get_cpu_id();
+	au_get_boot_info()->auprint("APIC interrupt from cpu id -> %d\n", cpu_id);
 	apic_local_eoi();
+	ap_lock = 0;
 }
 
 void x86_64_ap_init(void *cpu_data) {
-	x64_lock_acquire(&lock);
+	x64_lock_acquire(&ap_lock);
 	x64_cli();
-	x86_64_cpu_initialize();
+	x86_64_setup_cpu_data(cpu_data);
+	x86_64_cpu_initialize(false);
 	x86_64_initialize_apic(false);
-	x64_cli();
-	x86_64_cpu_print_brand();
+	x86_64_initialize_idle();
 
+	meta_data_t *meta = (meta_data_t*)0xFFFFB00000000000;
 
-	x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)cpu_data);
-
-	au_spinlock_t *spinlock = au_create_spinlock();
-	spinlock->value = 1;
-	x64_write_gs_q(1, (uint64_t)spinlock);
-	au_get_boot_info()->auprint("CPU: id %d \n", x64_read_gs_b(0));
-	au_spinlock_t *spin = (au_spinlock_t*)x64_read_gs_q(1);
-	au_get_boot_info()->auprint("Spinlock value -> %d \n", spin->value);
-
-
+	au_get_boot_info()->auprint("***addr[i] -> %x\n", meta->magic);
+	uint64_t *a = (uint64_t*)0x14000;
+	au_get_boot_info()->auprint("A[i] -> %d\n", a[1]);
+	x86_64_ap_started();	
+	ap_lock = 0;
+	//au_get_boot_info()->auprint("Idle thr rip -> %x \n", x86_64_get_idle_thr()->rip);
 	
-	lock = 0;
-	x86_64_ap_started();
+	/* initialize processor specific functions here !!*/
+	/* from here we'll jump to scheduler */
 	for (;;);
 }

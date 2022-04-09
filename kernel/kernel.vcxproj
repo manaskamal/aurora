@@ -157,7 +157,9 @@
     <ClInclude Include="include\arch\x86_64\x86_64_ioapic.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_lowlevel.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_paging.h" />
+    <ClInclude Include="include\arch\x86_64\x86_64_per_cpu.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h" />
+    <ClInclude Include="include\arch\x86_64\x86_64_scheduler.h" />
     <ClInclude Include="include\atomic\au_spinlock.h" />
     <ClInclude Include="include\auinfo.h" />
     <ClInclude Include="include\aurora.h" />
@@ -185,7 +187,9 @@
     <ClCompile Include="arch\x86_64\x86_64_exception.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_ioapic.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_paging.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_per_cpu.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp" />
     <ClCompile Include="atomic\au_spinlock.cpp" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="kdrivers\au_acpi.cpp" />
@@ -201,6 +205,7 @@
     <NASM Include="arch\x86_64\x86_64_ap_code.asm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </NASM>
+    <NASM Include="arch\x86_64\x86_64_ctx_switch.asm" />
     <NASM Include="_fastcpy.asm" />
     <None Include="arch\aarch64\bootstub.s">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

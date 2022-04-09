@@ -9,6 +9,9 @@ PUBLIC	?boot_cr3@@3PEA_KEA				; boot_cr3
 _BSS	SEGMENT
 ?boot_cr3@@3PEA_KEA DQ 01H DUP (?)			; boot_cr3
 _BSS	ENDS
+CONST	SEGMENT
+$SG3104	DB	'CR3[I] -> %x ', 0aH, 00H
+CONST	ENDS
 PUBLIC	?x86_64_paging_init@@YAHXZ			; x86_64_paging_init
 PUBLIC	?early_map_page@@YA_N_K0E@Z			; early_map_page
 PUBLIC	x86_64_phys_to_virt
@@ -19,6 +22,7 @@ PUBLIC	x86_64_check_free
 PUBLIC	x86_64_get_boot_pml
 PUBLIC	?x86_64_boot_free@@YAXXZ			; x86_64_boot_free
 PUBLIC	x86_64_paging_free
+PUBLIC	?paging_debug@@YAX_K@Z				; paging_debug
 PUBLIC	?pml4_index@@YA_K_K@Z				; pml4_index
 PUBLIC	?pdp_index@@YA_K_K@Z				; pdp_index
 PUBLIC	?pd_index@@YA_K_K@Z				; pd_index
@@ -33,10 +37,11 @@ EXTRN	x64_mfence:PROC
 EXTRN	x64_read_cr3:PROC
 EXTRN	x64_write_cr3:PROC
 EXTRN	flush_tlb:PROC
+EXTRN	printf:PROC
 EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 pdata	SEGMENT
 $pdata$?x86_64_paging_init@@YAHXZ DD imagerel $LN12
-	DD	imagerel $LN12+457
+	DD	imagerel $LN12+455
 	DD	imagerel $unwind$?x86_64_paging_init@@YAHXZ
 $pdata$?early_map_page@@YA_N_K0E@Z DD imagerel $LN6
 	DD	imagerel $LN6+562
@@ -62,6 +67,9 @@ $pdata$?x86_64_boot_free@@YAXXZ DD imagerel $LN6
 $pdata$x86_64_paging_free DD imagerel $LN7
 	DD	imagerel $LN7+339
 	DD	imagerel $unwind$x86_64_paging_free
+$pdata$?paging_debug@@YAX_K@Z DD imagerel $LN3
+	DD	imagerel $LN3+55
+	DD	imagerel $unwind$?paging_debug@@YAX_K@Z
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?x86_64_paging_init@@YAHXZ DD 010401H
@@ -82,6 +90,8 @@ $unwind$?x86_64_boot_free@@YAXXZ DD 010401H
 	DD	06204H
 $unwind$x86_64_paging_free DD 010901H
 	DD	0a209H
+$unwind$?paging_debug@@YAX_K@Z DD 010901H
+	DD	06209H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
@@ -186,6 +196,39 @@ addr$ = 8
 
 	ret	0
 ?pml4_index@@YA_K_K@Z ENDP				; pml4_index
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
+_TEXT	SEGMENT
+cr3$ = 32
+va$ = 64
+?paging_debug@@YAX_K@Z PROC				; paging_debug
+
+; 361  : void paging_debug(uint64_t va) {
+
+$LN3:
+	mov	QWORD PTR [rsp+8], rcx
+	sub	rsp, 56					; 00000038H
+
+; 362  : 	uint64_t* cr3 = (uint64_t*)x64_read_cr3();
+
+	call	x64_read_cr3
+	mov	QWORD PTR cr3$[rsp], rax
+
+; 363  : 	printf("CR3[I] -> %x \n", cr3[pml4_index(va)]);
+
+	mov	rcx, QWORD PTR va$[rsp]
+	call	?pml4_index@@YA_K_K@Z			; pml4_index
+	mov	rcx, QWORD PTR cr3$[rsp]
+	mov	rdx, QWORD PTR [rcx+rax*8]
+	lea	rcx, OFFSET FLAT:$SG3104
+	call	printf
+
+; 364  : }
+
+	add	rsp, 56					; 00000038H
+	ret	0
+?paging_debug@@YAX_K@Z ENDP				; paging_debug
 _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_paging.cpp
@@ -1523,30 +1566,30 @@ $LN1@x86_64_pag:
 ; 151  : 	
 ; 152  : 
 ; 153  : 	/* Copy the mappings to boot page tables */
-; 154  : 	boot_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
+; 154  : 	old_cr3[pml4_index(PHYSICAL_MEMORY_BASE)] = new_cr3[pml4_index(PHYSICAL_MEMORY_BASE)];
 
 	mov	rcx, -140737488355328			; ffff800000000000H
 	call	?pml4_index@@YA_K_K@Z			; pml4_index
 	mov	QWORD PTR tv145[rsp], rax
 	mov	rcx, -140737488355328			; ffff800000000000H
 	call	?pml4_index@@YA_K_K@Z			; pml4_index
-	mov	rcx, QWORD PTR ?boot_cr3@@3PEA_KEA	; boot_cr3
+	mov	rcx, QWORD PTR old_cr3$[rsp]
 	mov	rdx, QWORD PTR new_cr3$[rsp]
 	mov	r8, QWORD PTR tv145[rsp]
 	mov	rdx, QWORD PTR [rdx+r8*8]
 	mov	QWORD PTR [rcx+rax*8], rdx
 
 ; 155  : 
-; 156  : 	boot_cr3 = new_cr3;
-
-	mov	rax, QWORD PTR new_cr3$[rsp]
-	mov	QWORD PTR ?boot_cr3@@3PEA_KEA, rax	; boot_cr3
-
-; 157  : 
-; 158  : 	x64_write_cr3((size_t)new_cr3);
+; 156  : 	x64_write_cr3((size_t)new_cr3);
 
 	mov	rcx, QWORD PTR new_cr3$[rsp]
 	call	x64_write_cr3
+
+; 157  : 
+; 158  : 	boot_cr3 = new_cr3;
+
+	mov	rax, QWORD PTR new_cr3$[rsp]
+	mov	QWORD PTR ?boot_cr3@@3PEA_KEA, rax	; boot_cr3
 
 ; 159  : 
 ; 160  : 	/* from here, every physical page = higher half virtual page */

@@ -106,4 +106,6 @@ extern void x86_64_boot_free();
 * @param start -- virtual address
 */
 AU_EXTERN AU_EXPORT bool x86_64_paging_free(uint64_t start);
+
+extern void paging_debug(uint64_t va);
 #endif

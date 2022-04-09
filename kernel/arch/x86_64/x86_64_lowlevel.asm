@@ -419,8 +419,7 @@ x64_lock_acquire:
 
 global x64_lock_release
 x64_lock_release:
-	 mov rax, [rcx]
-	 mov qword [rax], 0
+	 mov qword [rcx], 0
 	 ret
 
 

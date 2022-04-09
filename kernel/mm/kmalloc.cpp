@@ -38,7 +38,26 @@ meta_data_t *first_block = NULL;
 meta_data_t *last_block = NULL;
 
 
-
+/*
+ * x86_64_kmalloc_initialize -- initialize
+ * kernel malloc library with two pages
+ */
+int x86_64_kmalloc_initialize() {
+	uint64_t* page = au_request_page(4);
+	/* setup the first meta data block */
+	uint8_t* desc_addr = (uint8_t*)page;
+	meta_data_t *meta = (meta_data_t*)desc_addr;
+	meta->free = true;
+	meta->next = NULL;
+	meta->prev = NULL;
+	meta->magic = MAGIC_FREE;
+	meta->eob_mark = (desc_addr + 4095);
+	/* meta->size holds only the usable area size for user */
+	meta->size = (4*4096) - sizeof(meta_data_t);
+	first_block = meta;
+	last_block = meta;
+	return 0;
+}
 /* 
  * au_split_block -- split block into two block
  */
@@ -96,24 +115,6 @@ void au_expand_kmalloc(size_t req_size) {
  * @param size -- size in bytes
  */
 void* kmalloc(size_t size) {
-
-	/* kmalloc is not initialized, so initialize it*/
-	if (first_block == NULL) {
-		void* page = au_request_page(1);
-		/* setup the first meta data block */
-		uint8_t* desc_addr = (uint8_t*)page;
-		meta_data_t *meta = (meta_data_t*)desc_addr;
-		meta->free = true;
-		meta->next = NULL;
-		meta->prev = NULL;
-		meta->magic = MAGIC_FREE;
-		meta->eob_mark = (desc_addr + 4095);
-		/* meta->size holds only the usable area size for user */
-		meta->size = 4096 - sizeof(meta_data_t); 
-		first_block = meta;
-		last_block = meta;
-	}
-
 	
 	/* now search begins */
 	for (meta_data_t *meta = first_block; meta != NULL; meta = meta->next) {
@@ -200,10 +201,10 @@ void* kcalloc(size_t n_item, size_t size) {
  * au_request_page -- request contiguous 4k virtual pages
  * @param pages -- number of pages needs to be mapped
  */
-void* au_request_page(int pages) {
-	void* page = x86_64_get_free_page(false);
-	for (int i = 0; i < pages; i++)
-		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), (uint64_t)page + i * 4096, 0);
+uint64_t* au_request_page(int pages) {
+	uint64_t* page = x86_64_get_free_page(false);
+	for (int i = 0; i <= pages; i++)
+		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), (uint64_t)(page + i * 4096), 0);
 
 	return page;
 }

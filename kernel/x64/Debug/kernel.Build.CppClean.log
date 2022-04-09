@@ -1,3 +1,4 @@
+e:\aurora kernel\kernel\x64\debug\x86_64_ctx_switch.obj
 e:\aurora kernel\kernel\x64\debug\_fastcpy.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_interrupt.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_lowlevel.obj
@@ -15,8 +16,12 @@ e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_per_cpu.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_per_cpu.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_scheduler.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_scheduler.asm
 e:\aurora kernel\kernel\x64\debug\au_spinlock.obj
 e:\aurora kernel\kernel\x64\debug\au_spinlock.asm
 e:\aurora kernel\kernel\x64\debug\console.obj
