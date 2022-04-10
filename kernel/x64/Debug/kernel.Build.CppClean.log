@@ -4,8 +4,6 @@ e:\aurora kernel\kernel\x64\debug\x86_64_interrupt.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_lowlevel.obj
 e:\aurora kernel\kernel\x64\debug\vc120.pdb
 e:\aurora kernel\kernel\x64\debug\vc120.idb
-e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.obj
-e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_cpu.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_exception.obj
@@ -24,6 +22,8 @@ e:\aurora kernel\kernel\x64\debug\au_spinlock.obj
 e:\aurora kernel\kernel\x64\debug\au_spinlock.asm
 e:\aurora kernel\kernel\x64\debug\console.obj
 e:\aurora kernel\kernel\x64\debug\console.asm
+e:\aurora kernel\kernel\x64\debug\devfs.obj
+e:\aurora kernel\kernel\x64\debug\devfs.asm
 e:\aurora kernel\kernel\x64\debug\vfs.obj
 e:\aurora kernel\kernel\x64\debug\vfs.asm
 e:\aurora kernel\kernel\x64\debug\au_acpi.obj
@@ -46,6 +46,8 @@ e:\aurora kernel\kernel\x64\debug\list.obj
 e:\aurora kernel\kernel\x64\debug\list.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_apic.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_apic.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.asm
 e:\aurora kernel\kernel\x64\debug\kernel.lib
 e:\aurora kernel\kernel\x64\debug\kernel.exp
 f:\efi\xeneva\xnkrnl.exe

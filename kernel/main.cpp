@@ -45,6 +45,7 @@
 
 #include <mm\kmalloc.h>
 #include <fs\vfs.h>
+#include <fs\devfs.h>
 
 
 
@@ -89,8 +90,10 @@ int _kmain(aurora_info_t *bootinfo) {
 	au_status = x86_64_kmalloc_initialize();
 	x86_64_setup_cpu_data(0);
 
-	/* initialize the vfs root directory */
+	/* initialize the kernel subsystems */
 	vfs_initialize();
+	devfs_initialize();
+
 
 	//x86_64_boot_free();
     x86_64_initialize_scheduler();

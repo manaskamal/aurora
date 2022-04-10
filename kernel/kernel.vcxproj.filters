@@ -141,6 +141,9 @@
     <ClInclude Include="include\utils\list.h">
       <Filter>include\utils</Filter>
     </ClInclude>
+    <ClInclude Include="include\fs\devfs.h">
+      <Filter>include\fs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -200,6 +203,9 @@
     </ClCompile>
     <ClCompile Include="utils\list.cpp">
       <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="fs\devfs.cpp">
+      <Filter>fs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

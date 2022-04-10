@@ -164,6 +164,7 @@
     <ClInclude Include="include\auinfo.h" />
     <ClInclude Include="include\aurora.h" />
     <ClInclude Include="include\console.h" />
+    <ClInclude Include="include\fs\devfs.h" />
     <ClInclude Include="include\fs\vfs.h" />
     <ClInclude Include="include\kdrivers\au_acpi.h" />
     <ClInclude Include="include\kdrivers\au_video.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp" />
     <ClCompile Include="atomic\au_spinlock.cpp" />
     <ClCompile Include="console.cpp" />
+    <ClCompile Include="fs\devfs.cpp" />
     <ClCompile Include="fs\vfs.cpp" />
     <ClCompile Include="kdrivers\au_acpi.cpp" />
     <ClCompile Include="kdrivers\au_video.cpp" />
