@@ -228,6 +228,11 @@ void x86_64_pmmngr_init(aurora_info_t *info) {
 		allocated_count--;
 	}
 
+	uint64_t *address = (uint64_t*)0xA000;
+	x86_64_pmmngr_lock_page((void*)0xA000);
+	memset(address, 0, 4096);
+	memcpy(address, info->apcode, 4096);
+
 	info->auprint("[aurora]: x86_64 pmmngr initialized\n");
 }
 

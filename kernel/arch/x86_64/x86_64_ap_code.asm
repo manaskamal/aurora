@@ -108,6 +108,6 @@ ap_64:
 	 mov rsp, rax
 
 	 mov rcx, qword [cpu_data]
-	 ;mov rcx, [cpu_id]
+	
 	 mov r9, qword [kentry]
 	 jmp r9

@@ -5,16 +5,23 @@ include listing.inc
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
+PUBLIC	scheduler_lock
 PUBLIC	?thread_list_head@@3PEAU_thread_@@EA		; thread_list_head
 PUBLIC	?thread_list_last@@3PEAU_thread_@@EA		; thread_list_last
 PUBLIC	?idle@@3PEAU_thread_@@EA			; idle
 _BSS	SEGMENT
+sched_start_lock DD 01H DUP (?)
 scheduler_lock DD 01H DUP (?)
 idle_lock DD	01H DUP (?)
+	ALIGN	8
+
 ?thread_list_head@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_head
 ?thread_list_last@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_last
 ?idle@@3PEAU_thread_@@EA DQ 01H DUP (?)			; idle
 _BSS	ENDS
+CONST	SEGMENT
+$SG3092	DB	'Idle thread from cpu-id  %d', 0aH, 00H
+CONST	ENDS
 PUBLIC	thread_insert
 PUBLIC	thread_delete
 PUBLIC	x86_64_create_kthread
@@ -25,18 +32,17 @@ PUBLIC	?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ	; x86_64_get_idle_thr
 PUBLIC	?x86_64_next_thread@@YAXXZ			; x86_64_next_thread
 PUBLIC	?x86_64_sceduler_isr@@YAX_KPEAX@Z		; x86_64_sceduler_isr
 PUBLIC	?x86_64_idle_thread@@YAXXZ			; x86_64_idle_thread
+EXTRN	printf:PROC
 EXTRN	?per_cpu_set_c_thread@@YAXPEAX@Z:PROC		; per_cpu_set_c_thread
+EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
 EXTRN	?per_cpu_get_c_thread@@YAPEAXXZ:PROC		; per_cpu_get_c_thread
 EXTRN	setvect:PROC
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
 EXTRN	x64_cli:PROC
 EXTRN	x64_sti:PROC
 EXTRN	x64_read_cr3:PROC
-EXTRN	x64_lock_acquire:PROC
 EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	x86_64_pmmngr_alloc:PROC
-EXTRN	?au_video_get_fb@@YAPEAIXZ:PROC			; au_video_get_fb
-EXTRN	?au_video_get_x_res@@YAIXZ:PROC			; au_video_get_x_res
 EXTRN	kmalloc:PROC
 EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 EXTRN	x86_64_save_context:PROC
@@ -46,7 +52,7 @@ $pdata$x86_64_create_kthread DD imagerel $LN3
 	DD	imagerel $LN3+460
 	DD	imagerel $unwind$x86_64_create_kthread
 $pdata$?x86_64_initialize_scheduler@@YAHXZ DD imagerel $LN3
-	DD	imagerel $LN3+98
+	DD	imagerel $LN3+76
 	DD	imagerel $unwind$?x86_64_initialize_scheduler@@YAHXZ
 $pdata$?x86_64_sched_start@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+43
@@ -58,10 +64,10 @@ $pdata$?x86_64_next_thread@@YAXXZ DD imagerel $LN7
 	DD	imagerel $LN7+83
 	DD	imagerel $unwind$?x86_64_next_thread@@YAXXZ
 $pdata$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD imagerel $LN4
-	DD	imagerel $LN4+137
+	DD	imagerel $LN4+105
 	DD	imagerel $unwind$?x86_64_sceduler_isr@@YAX_KPEAX@Z
-$pdata$?x86_64_idle_thread@@YAXXZ DD imagerel $LN11
-	DD	imagerel $LN11+122
+$pdata$?x86_64_idle_thread@@YAXXZ DD imagerel $LN5
+	DD	imagerel $LN5+40
 	DD	imagerel $unwind$?x86_64_idle_thread@@YAXXZ
 pdata	ENDS
 xdata	SEGMENT
@@ -78,88 +84,44 @@ $unwind$?x86_64_next_thread@@YAXXZ DD 010401H
 $unwind$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD 010e01H
 	DD	0620eH
 $unwind$?x86_64_idle_thread@@YAXXZ DD 010401H
-	DD	06204H
+	DD	04204H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
 _TEXT	SEGMENT
-j$1 = 32
-i$2 = 36
-tv68 = 40
 ?x86_64_idle_thread@@YAXXZ PROC				; x86_64_idle_thread
 
-; 180  : void x86_64_idle_thread() {
+; 177  : void x86_64_idle_thread() {
 
-$LN11:
-	sub	rsp, 56					; 00000038H
+$LN5:
+	sub	rsp, 40					; 00000028H
 
-; 181  : 	//x64_lock_acquire(&idle_lock);
-; 182  : 	//idle_lock = 0;
-; 183  : 	for (int i = 0; i < 100; i++) {
+; 178  : 	//idle_lock = 0;
+; 179  : 	
+; 180  : 	printf("Idle thread from cpu-id  %d\n", per_cpu_get_cpu_id());
 
-	mov	DWORD PTR i$2[rsp], 0
-	jmp	SHORT $LN8@x86_64_idl
-$LN7@x86_64_idl:
-	mov	eax, DWORD PTR i$2[rsp]
-	inc	eax
-	mov	DWORD PTR i$2[rsp], eax
-$LN8@x86_64_idl:
-	cmp	DWORD PTR i$2[rsp], 100			; 00000064H
-	jge	SHORT $LN6@x86_64_idl
-
-; 184  : 		for (int j = 0; j < 100; j++) {
-
-	mov	DWORD PTR j$1[rsp], 0
-	jmp	SHORT $LN5@x86_64_idl
-$LN4@x86_64_idl:
-	mov	eax, DWORD PTR j$1[rsp]
-	inc	eax
-	mov	DWORD PTR j$1[rsp], eax
-$LN5@x86_64_idl:
-	cmp	DWORD PTR j$1[rsp], 100			; 00000064H
-	jge	SHORT $LN3@x86_64_idl
-
-; 185  : 			au_video_get_fb()[i + j*au_video_get_x_res()] = 0xffffffff;
-
-	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
-	mov	QWORD PTR tv68[rsp], rax
-	call	?au_video_get_x_res@@YAIXZ		; au_video_get_x_res
-	mov	ecx, DWORD PTR j$1[rsp]
-	imul	ecx, eax
-	mov	eax, ecx
-	mov	ecx, DWORD PTR i$2[rsp]
-	add	ecx, eax
-	mov	eax, ecx
-	mov	eax, eax
-	mov	rcx, QWORD PTR tv68[rsp]
-	mov	DWORD PTR [rcx+rax*4], -1		; ffffffffH
-
-; 186  : 		}
-
-	jmp	SHORT $LN4@x86_64_idl
-$LN3@x86_64_idl:
-
-; 187  : 			
-; 188  : 	}
-
-	jmp	SHORT $LN7@x86_64_idl
-$LN6@x86_64_idl:
+	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
+	movzx	eax, al
+	mov	edx, eax
+	lea	rcx, OFFSET FLAT:$SG3092
+	call	printf
 $LN2@x86_64_idl:
 
-; 189  : 	while (1) {
+; 181  : 
+; 182  : 	while (1) {
 
 	xor	eax, eax
 	cmp	eax, 1
 	je	SHORT $LN1@x86_64_idl
 
-; 190  : 	}
+; 183  : 	}
 
 	jmp	SHORT $LN2@x86_64_idl
 $LN1@x86_64_idl:
 
-; 191  : }
+; 184  : }
 
-	add	rsp, 56					; 00000038H
+	add	rsp, 40					; 00000028H
 	ret	0
 ?x86_64_idle_thread@@YAXXZ ENDP				; x86_64_idle_thread
 _TEXT	ENDS
@@ -171,17 +133,12 @@ v$ = 64
 p$ = 72
 ?x86_64_sceduler_isr@@YAX_KPEAX@Z PROC			; x86_64_sceduler_isr
 
-; 156  : void x86_64_sceduler_isr(size_t v, void* p) {
+; 157  : void x86_64_sceduler_isr(size_t v, void* p) {
 
 $LN4:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
-
-; 157  : 	x64_lock_acquire(&scheduler_lock);
-
-	lea	rcx, OFFSET FLAT:scheduler_lock
-	call	x64_lock_acquire
 
 ; 158  : 	x64_cli();
 
@@ -205,49 +162,40 @@ $LN4:
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	mov	QWORD PTR [rcx+192], rax
 
-; 162  : 		//printf("Scheduler Saved thread \n");
-; 163  : 
-; 164  : 		x86_64_next_thread();
+; 162  : 
+; 163  : 		x86_64_next_thread();
 
 	call	?x86_64_next_thread@@YAXXZ		; x86_64_next_thread
 
-; 165  : 
-; 166  : 		apic_local_eoi();
+; 164  : 		
+; 165  : 		apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 167  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
+; 166  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR current_thr$[rsp], rax
 
-; 168  : 		//printf("Next thread choosen -> %x\n", current_thr);
-; 169  : 		scheduler_lock = 0;
-
-	mov	DWORD PTR scheduler_lock, 0
-
-; 170  : 		x86_64_execute_context(current_thr);
+; 167  : 		//scheduler_lock = 0;
+; 168  : 		x86_64_execute_context(current_thr);
 
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	call	x86_64_execute_context
 $LN1@x86_64_sce:
 
-; 171  : 	}
-; 172  : 
-; 173  : 	apic_local_eoi();
+; 169  : 	}
+; 170  : 	
+; 171  : 	apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 174  : 	//printf("Scheduler isr -> %d \n", per_cpu_get_cpu_id());
-; 175  : 	scheduler_lock = 0;
-
-	mov	DWORD PTR scheduler_lock, 0
-
-; 176  : 	x64_sti();
+; 172  : 	//scheduler_lock = 0;
+; 173  : 	x64_sti();
 
 	call	x64_sti
 
-; 177  : }
+; 174  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -314,11 +262,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ PROC		; x86_64_get_idle_thr
 
-; 223  : 	return idle;
+; 215  : 	return idle;
 
 	mov	rax, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 
-; 224  : }
+; 216  : }
 
 	ret	0
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ ENDP		; x86_64_get_idle_thr
@@ -328,17 +276,17 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_initialize_idle@@YAXXZ PROC			; x86_64_initialize_idle
 
-; 209  : void x86_64_initialize_idle() {
+; 200  : void x86_64_initialize_idle() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 210  : 	per_cpu_set_c_thread((void*)idle);
+; 201  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 211  : }
+; 202  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -349,27 +297,27 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_sched_start@@YAXXZ PROC				; x86_64_sched_start
 
-; 216  : void x86_64_sched_start() {
+; 207  : void x86_64_sched_start() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 217  : 	x64_cli();
+; 208  : 	x64_cli();
 
 	call	x64_cli
 
-; 218  : 	setvect(0x40, x86_64_sceduler_isr);
+; 209  : 	setvect(0x40, x86_64_sceduler_isr);
 
 	lea	rdx, OFFSET FLAT:?x86_64_sceduler_isr@@YAX_KPEAX@Z ; x86_64_sceduler_isr
 	mov	ecx, 64					; 00000040H
 	call	setvect
 
-; 219  : 	x86_64_execute_context(idle);
+; 210  : 	x86_64_execute_context(idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	x86_64_execute_context
 
-; 220  : }
+; 211  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -378,48 +326,39 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
 _TEXT	SEGMENT
-tv66 = 32
+tv65 = 32
 ?x86_64_initialize_scheduler@@YAHXZ PROC		; x86_64_initialize_scheduler
 
-; 197  : int x86_64_initialize_scheduler() {
+; 190  : int x86_64_initialize_scheduler() {
 
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 198  : 	x64_lock_acquire(&scheduler_lock);
-
-	lea	rcx, OFFSET FLAT:scheduler_lock
-	call	x64_lock_acquire
-
-; 199  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
-; 200  : 		x64_read_cr3());
+; 191  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+; 192  : 		x64_read_cr3());
 
 	call	x64_read_cr3
-	mov	QWORD PTR tv66[rsp], rax
+	mov	QWORD PTR tv65[rsp], rax
 	call	x86_64_pmmngr_alloc
 	mov	rcx, rax
 	call	x86_64_phys_to_virt
-	mov	rcx, QWORD PTR tv66[rsp]
+	mov	rcx, QWORD PTR tv65[rsp]
 	mov	r8, rcx
 	mov	rdx, rax
 	lea	rcx, OFFSET FLAT:?x86_64_idle_thread@@YAXXZ ; x86_64_idle_thread
 	call	x86_64_create_kthread
 	mov	QWORD PTR ?idle@@3PEAU_thread_@@EA, rax	; idle
 
-; 201  : 	per_cpu_set_c_thread((void*)idle);
+; 193  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 202  : 	scheduler_lock = 0;
-
-	mov	DWORD PTR scheduler_lock, 0
-
-; 203  : 	return 0;
+; 194  : 	return 0;
 
 	xor	eax, eax
 
-; 204  : }
+; 195  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0

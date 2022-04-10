@@ -87,7 +87,7 @@
       </SDLCheck>
       <AdditionalIncludeDirectories>E:\Aurora Kernel\kernel\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>true</OmitFramePointers>
-      <PreprocessorDefinitions>ARCH_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ARCH_X64;SMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <ExceptionHandling>false</ExceptionHandling>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -164,6 +164,7 @@
     <ClInclude Include="include\auinfo.h" />
     <ClInclude Include="include\aurora.h" />
     <ClInclude Include="include\console.h" />
+    <ClInclude Include="include\fs\vfs.h" />
     <ClInclude Include="include\kdrivers\au_acpi.h" />
     <ClInclude Include="include\kdrivers\au_video.h" />
     <ClInclude Include="include\kdrivers\serial.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="include\stdint.h" />
     <ClInclude Include="include\stdlib.h" />
     <ClInclude Include="include\string.h" />
+    <ClInclude Include="include\utils\list.h" />
     <ClInclude Include="include\va_list.h" />
     <ClInclude Include="include\_null.h" />
   </ItemGroup>
@@ -192,6 +194,7 @@
     <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp" />
     <ClCompile Include="atomic\au_spinlock.cpp" />
     <ClCompile Include="console.cpp" />
+    <ClCompile Include="fs\vfs.cpp" />
     <ClCompile Include="kdrivers\au_acpi.cpp" />
     <ClCompile Include="kdrivers\au_video.cpp" />
     <ClCompile Include="kdrivers\serial.cpp" />
@@ -200,6 +203,7 @@
     <ClCompile Include="pe.cpp" />
     <ClCompile Include="stdlib.cpp" />
     <ClCompile Include="string.cpp" />
+    <ClCompile Include="utils\list.cpp" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="arch\x86_64\x86_64_ap_code.asm">

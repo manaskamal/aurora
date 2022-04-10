@@ -43,7 +43,7 @@ meta_data_t *last_block = NULL;
  * kernel malloc library with two pages
  */
 int x86_64_kmalloc_initialize() {
-	uint64_t* page = au_request_page(4);
+	uint64_t* page = au_request_page(1);
 	/* setup the first meta data block */
 	uint8_t* desc_addr = (uint8_t*)page;
 	meta_data_t *meta = (meta_data_t*)desc_addr;
@@ -53,7 +53,7 @@ int x86_64_kmalloc_initialize() {
 	meta->magic = MAGIC_FREE;
 	meta->eob_mark = (desc_addr + 4095);
 	/* meta->size holds only the usable area size for user */
-	meta->size = (4*4096) - sizeof(meta_data_t);
+	meta->size = (1*4096) - sizeof(meta_data_t);
 	first_block = meta;
 	last_block = meta;
 	return 0;
@@ -203,10 +203,10 @@ void* kcalloc(size_t n_item, size_t size) {
  */
 uint64_t* au_request_page(int pages) {
 	uint64_t* page = x86_64_get_free_page(false);
-	for (int i = 0; i <= pages; i++)
+	for (int i = 0; i < pages; i++)
 		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), (uint64_t)(page + i * 4096), 0);
 
-	return page;
+	return (uint64_t*)0xFFFFE00000000000;
 }
 
 /*

@@ -74,7 +74,7 @@ $pdata$x86_64_cpu_print_brand DD imagerel $LN3
 	DD	imagerel $LN3+514
 	DD	imagerel $unwind$x86_64_cpu_print_brand
 $pdata$?x86_64_setup_cpu_data@@YAXPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+174
+	DD	imagerel $LN5+157
 	DD	imagerel $unwind$?x86_64_setup_cpu_data@@YAXPEAX@Z
 $pdata$load_default_sregs DD imagerel $LN3
 	DD	imagerel $LN3+90
@@ -982,8 +982,8 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_cpu.cpp
 _TEXT	SEGMENT
-b$ = 48
-cpu$1 = 56
+cpu$1 = 48
+b$ = 56
 d$ = 64
 c$ = 72
 a$ = 80
@@ -1054,15 +1054,9 @@ $LN2@x86_64_set:
 	mov	rdx, QWORD PTR data$[rsp]
 	mov	ecx, -1073741567			; c0000101H
 	call	x64_write_msr
-
-; 334  : 		per_cpu_set_cpu_id((b >> 24));
-
-	mov	rax, QWORD PTR b$[rsp]
-	shr	rax, 24
-	movzx	ecx, al
-	call	?per_cpu_set_cpu_id@@YAXE@Z		; per_cpu_set_cpu_id
 $LN1@x86_64_set:
 
+; 334  : 		//per_cpu_set_cpu_id((b >> 24));
 ; 335  : 	}
 ; 336  : }
 

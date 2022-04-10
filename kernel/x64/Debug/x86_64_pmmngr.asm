@@ -31,11 +31,11 @@ $SG3010	DB	'[aurora]: total memory -> %d GB ', 0aH, 00H
 	ORG $+6
 $SG3012	DB	'[aurora]: bitmap initialized %d bytes', 0aH, 00H
 	ORG $+1
-$SG3032	DB	'[aurora]: x86_64 pmmngr initialized', 0aH, 00H
+$SG3035	DB	'[aurora]: x86_64 pmmngr initialized', 0aH, 00H
 	ORG $+3
-$SG3042	DB	'RAM bitmap buffer -> %x ', 0aH, 00H
+$SG3045	DB	'RAM bitmap buffer -> %x ', 0aH, 00H
 	ORG $+6
-$SG3045	DB	'after RAM bitmap buffer -> %x ', 0aH, 00H
+$SG3048	DB	'after RAM bitmap buffer -> %x ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z	; x86_64_pmmngr_init
 PUBLIC	x86_64_pmmngr_alloc
@@ -54,9 +54,11 @@ PUBLIC	?x86_64_pmmngr_lock_pages@@YAXPEAX_K@Z		; x86_64_pmmngr_lock_pages
 PUBLIC	?x86_64_pmmngr_unreserve_page@@YAXPEAX@Z	; x86_64_pmmngr_unreserve_page
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
 EXTRN	x86_64_phys_to_virt:PROC
+EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
+EXTRN	memcpy:PROC
 pdata	SEGMENT
 $pdata$?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z DD imagerel $LN16
-	DD	imagerel $LN16+860
+	DD	imagerel $LN16+931
 	DD	imagerel $unwind$?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z
 $pdata$x86_64_pmmngr_alloc DD imagerel $LN7
 	DD	imagerel $LN7+128
@@ -109,7 +111,7 @@ $unwind$??ABitmap@@QEAA_N_K@Z DD 010e01H
 xdata	ENDS
 xdata	SEGMENT
 $unwind$?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z DD 020c01H
-	DD	011010cH
+	DD	013010cH
 $unwind$x86_64_pmmngr_alloc DD 010401H
 	DD	04204H
 $unwind$x86_64_pmmngr_alloc_blocks DD 010801H
@@ -571,33 +573,33 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_high_mem_bitmap@@YAXXZ PROC		; x86_64_pmmngr_high_mem_bitmap
 
-; 258  : void x86_64_pmmngr_high_mem_bitmap() {
+; 263  : void x86_64_pmmngr_high_mem_bitmap() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 259  : 	au_get_boot_info()->auprint("RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
-
-	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
-	lea	rcx, OFFSET FLAT:$SG3042
-	call	QWORD PTR [rax+90]
-
-; 260  : 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
-
-	mov	rcx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
-	call	x86_64_phys_to_virt
-	mov	QWORD PTR ?ram_bitmap@@3VBitmap@@A+8, rax
-
-; 261  : 	au_get_boot_info()->auprint("after RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
+; 264  : 	au_get_boot_info()->auprint("RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
 	lea	rcx, OFFSET FLAT:$SG3045
 	call	QWORD PTR [rax+90]
 
-; 262  : 	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
-; 263  : }
+; 265  : 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
+
+	mov	rcx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
+	call	x86_64_phys_to_virt
+	mov	QWORD PTR ?ram_bitmap@@3VBitmap@@A+8, rax
+
+; 266  : 	au_get_boot_info()->auprint("after RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
+
+	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
+	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
+	lea	rcx, OFFSET FLAT:$SG3048
+	call	QWORD PTR [rax+90]
+
+; 267  : 	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
+; 268  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -608,11 +610,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_is_high_mem@@YA_NXZ PROC			; x86_64_pmmngr_is_high_mem
 
-; 269  : 	return higher_half_mapped;
+; 274  : 	return higher_half_mapped;
 
 	movzx	eax, BYTE PTR higher_half_mapped
 
-; 270  : }
+; 275  : }
 
 	ret	0
 ?x86_64_pmmngr_is_high_mem@@YA_NXZ ENDP			; x86_64_pmmngr_is_high_mem
@@ -622,11 +624,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_get_bitmap_size@@YA_KXZ PROC		; x86_64_pmmngr_get_bitmap_size
 
-; 246  : 	return ram_bitmap_size;
+; 251  : 	return ram_bitmap_size;
 
 	mov	rax, QWORD PTR ram_bitmap_size
 
-; 247  : }
+; 252  : }
 
 	ret	0
 ?x86_64_pmmngr_get_bitmap_size@@YA_KXZ ENDP		; x86_64_pmmngr_get_bitmap_size
@@ -637,16 +639,16 @@ _TEXT	SEGMENT
 value$ = 8
 ?x86_64_pmmngr_set_high@@YAX_N@Z PROC			; x86_64_pmmngr_set_high
 
-; 254  : void x86_64_pmmngr_set_high(bool value) {
+; 259  : void x86_64_pmmngr_set_high(bool value) {
 
 	mov	BYTE PTR [rsp+8], cl
 
-; 255  : 	higher_half_mapped = value;
+; 260  : 	higher_half_mapped = value;
 
 	movzx	eax, BYTE PTR value$[rsp]
 	mov	BYTE PTR higher_half_mapped, al
 
-; 256  : }
+; 261  : }
 
 	ret	0
 ?x86_64_pmmngr_set_high@@YAX_N@Z ENDP			; x86_64_pmmngr_set_high
@@ -656,11 +658,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 x86_64_pmmngr_get_total_mem PROC
 
-; 238  : 	return total_ram;
+; 243  : 	return total_ram;
 
 	mov	rax, QWORD PTR total_ram
 
-; 239  : }
+; 244  : }
 
 	ret	0
 x86_64_pmmngr_get_total_mem ENDP
@@ -860,24 +862,25 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 efi_mem$1 = 32
 allocated_count$ = 40
-efi_mem$2 = 48
+i$2 = 48
 i$3 = 56
 bitmap_area$ = 64
-i$4 = 72
-size_in_mb_kb$5 = 80
+efi_mem$4 = 72
+unit$5 = 80
 allocated_stack$ = 88
-unit$6 = 96
-bitmap_size$ = 104
+bitmap_size$ = 96
+size_in_mb_kb$6 = 104
 memmap_entries$ = 112
-address$7 = 120
-info$ = 144
+address$ = 120
+address$7 = 128
+info$ = 160
 ?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z PROC	; x86_64_pmmngr_init
 
 ; 171  : void x86_64_pmmngr_init(aurora_info_t *info) {
 
 $LN16:
 	mov	QWORD PTR [rsp+8], rcx
-	sub	rsp, 136				; 00000088H
+	sub	rsp, 152				; 00000098H
 
 ; 172  : 	free_memory = 0;
 
@@ -913,21 +916,21 @@ $LN16:
 ; 180  : 	/* Scan a suitable area for the bitmap */
 ; 181  : 	for (size_t i = 0; i < memmap_entries; i++) {
 
-	mov	QWORD PTR i$4[rsp], 0
+	mov	QWORD PTR i$2[rsp], 0
 	jmp	SHORT $LN13@x86_64_pmm
 $LN12@x86_64_pmm:
-	mov	rax, QWORD PTR i$4[rsp]
+	mov	rax, QWORD PTR i$2[rsp]
 	inc	rax
-	mov	QWORD PTR i$4[rsp], rax
+	mov	QWORD PTR i$2[rsp], rax
 $LN13@x86_64_pmm:
 	mov	rax, QWORD PTR memmap_entries$[rsp]
-	cmp	QWORD PTR i$4[rsp], rax
+	cmp	QWORD PTR i$2[rsp], rax
 	jae	$LN11@x86_64_pmm
 
 ; 182  : 		EFI_MEMORY_DESCRIPTOR *efi_mem = (EFI_MEMORY_DESCRIPTOR*)((uint64_t)info->mem_map + i * info->mem_desc_size);
 
 	mov	rax, QWORD PTR info$[rsp]
-	mov	rcx, QWORD PTR i$4[rsp]
+	mov	rcx, QWORD PTR i$2[rsp]
 	imul	rcx, QWORD PTR [rax+8]
 	mov	rax, rcx
 	mov	rcx, QWORD PTR info$[rsp]
@@ -968,12 +971,12 @@ $LN9@x86_64_pmm:
 ; 187  : 			}
 ; 188  : 			uint64_t size_in_mb_kb = 0;
 
-	mov	QWORD PTR size_in_mb_kb$5[rsp], 0
+	mov	QWORD PTR size_in_mb_kb$6[rsp], 0
 
 ; 189  : 			char* unit = "B";
 
 	lea	rax, OFFSET FLAT:$SG3004
-	mov	QWORD PTR unit$6[rsp], rax
+	mov	QWORD PTR unit$5[rsp], rax
 
 ; 190  : 			if ((efi_mem->num_pages * 4096 / 1024 / 1024) == 0) {
 
@@ -995,12 +998,12 @@ $LN9@x86_64_pmm:
 	xor	edx, edx
 	mov	ecx, 1024				; 00000400H
 	div	rcx
-	mov	QWORD PTR size_in_mb_kb$5[rsp], rax
+	mov	QWORD PTR size_in_mb_kb$6[rsp], rax
 
 ; 192  : 				unit = "KB";
 
 	lea	rax, OFFSET FLAT:$SG3006
-	mov	QWORD PTR unit$6[rsp], rax
+	mov	QWORD PTR unit$5[rsp], rax
 
 ; 193  : 			}
 ; 194  : 			else {
@@ -1018,19 +1021,19 @@ $LN8@x86_64_pmm:
 	xor	edx, edx
 	mov	ecx, 1024				; 00000400H
 	div	rcx
-	mov	QWORD PTR size_in_mb_kb$5[rsp], rax
+	mov	QWORD PTR size_in_mb_kb$6[rsp], rax
 
 ; 196  : 				unit = "MB";
 
 	lea	rax, OFFSET FLAT:$SG3008
-	mov	QWORD PTR unit$6[rsp], rax
+	mov	QWORD PTR unit$5[rsp], rax
 $LN7@x86_64_pmm:
 
 ; 197  : 			}
 ; 198  : 			info->auprint("[aurora]: usable memory -> %x length -> %d %s\n", efi_mem->phys_start, size_in_mb_kb, unit);
 
-	mov	r9, QWORD PTR unit$6[rsp]
-	mov	r8, QWORD PTR size_in_mb_kb$5[rsp]
+	mov	r9, QWORD PTR unit$5[rsp]
+	mov	r8, QWORD PTR size_in_mb_kb$6[rsp]
 	mov	rax, QWORD PTR efi_mem$1[rsp]
 	mov	rdx, QWORD PTR [rax+8]
 	lea	rcx, OFFSET FLAT:$SG3009
@@ -1118,11 +1121,11 @@ $LN6@x86_64_pmm:
 	mov	rax, rcx
 	mov	rcx, QWORD PTR info$[rsp]
 	add	rax, QWORD PTR [rcx]
-	mov	QWORD PTR efi_mem$2[rsp], rax
+	mov	QWORD PTR efi_mem$4[rsp], rax
 
 ; 213  : 		total_ram += efi_mem->num_pages;
 
-	mov	rax, QWORD PTR efi_mem$2[rsp]
+	mov	rax, QWORD PTR efi_mem$4[rsp]
 	mov	rax, QWORD PTR [rax+24]
 	mov	rcx, QWORD PTR total_ram
 	add	rcx, rax
@@ -1131,15 +1134,15 @@ $LN6@x86_64_pmm:
 
 ; 214  : 		if (efi_mem->type != 7) {
 
-	mov	rax, QWORD PTR efi_mem$2[rsp]
+	mov	rax, QWORD PTR efi_mem$4[rsp]
 	cmp	DWORD PTR [rax], 7
 	je	SHORT $LN3@x86_64_pmm
 
 ; 215  : 			x86_64_pmmngr_lock_pages((void*)efi_mem->phys_start, efi_mem->num_pages);
 
-	mov	rax, QWORD PTR efi_mem$2[rsp]
+	mov	rax, QWORD PTR efi_mem$4[rsp]
 	mov	rdx, QWORD PTR [rax+24]
-	mov	rax, QWORD PTR efi_mem$2[rsp]
+	mov	rax, QWORD PTR efi_mem$4[rsp]
 	mov	rcx, QWORD PTR [rax+8]
 	call	?x86_64_pmmngr_lock_pages@@YAXPEAX_K@Z	; x86_64_pmmngr_lock_pages
 $LN3@x86_64_pmm:
@@ -1203,15 +1206,40 @@ $LN2@x86_64_pmm:
 $LN1@x86_64_pmm:
 
 ; 230  : 
-; 231  : 	info->auprint("[aurora]: x86_64 pmmngr initialized\n");
+; 231  : 	uint64_t *address = (uint64_t*)0xA000;
 
-	lea	rcx, OFFSET FLAT:$SG3032
+	mov	QWORD PTR address$[rsp], 40960		; 0000a000H
+
+; 232  : 	x86_64_pmmngr_lock_page((void*)0xA000);
+
+	mov	ecx, 40960				; 0000a000H
+	call	?x86_64_pmmngr_lock_page@@YAXPEAX@Z	; x86_64_pmmngr_lock_page
+
+; 233  : 	memset(address, 0, 4096);
+
+	mov	r8d, 4096				; 00001000H
+	xor	edx, edx
+	mov	rcx, QWORD PTR address$[rsp]
+	call	?memset@@YAXPEAXEI@Z			; memset
+
+; 234  : 	memcpy(address, info->apcode, 4096);
+
+	mov	r8d, 4096				; 00001000H
+	mov	rax, QWORD PTR info$[rsp]
+	mov	rdx, QWORD PTR [rax+82]
+	mov	rcx, QWORD PTR address$[rsp]
+	call	memcpy
+
+; 235  : 
+; 236  : 	info->auprint("[aurora]: x86_64 pmmngr initialized\n");
+
+	lea	rcx, OFFSET FLAT:$SG3035
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 
-; 232  : }
+; 237  : }
 
-	add	rsp, 136				; 00000088H
+	add	rsp, 152				; 00000098H
 	ret	0
 ?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z ENDP	; x86_64_pmmngr_init
 _TEXT	ENDS

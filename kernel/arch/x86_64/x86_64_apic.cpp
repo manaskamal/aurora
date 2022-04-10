@@ -37,6 +37,7 @@
 #include <arch\x86_64\x86_64_ap_init.h>
 #include <string.h>
 #include <kdrivers\serial.h>
+#include <console.h>
 
 
 #define IA32_APIC_BASE_MSR  0x1B
@@ -256,61 +257,55 @@ void Stall(uint32_t millis) {
  */
 void initialize_cpu(uint32_t processor) {
 	x64_cli();
-	uint64_t* address = (uint64_t*)x86_64_phys_to_virt(0xA000);
-	x86_64_pmmngr_lock_page((void*)0xA000);
-	void* ap_data = (void*)x86_64_phys_to_virt((uint64_t)au_get_boot_info()->apcode);
-	memcpy(address, ap_data, 4096);
-
+	uint64_t* address = (uint64_t*)0xA000;
+	
 	
 	uint64_t ap_init_address = (uint64_t)x86_64_ap_init;
 
+	
 
 	uint64_t aligned_address = (uint64_t)address;
 
+	
 
 	uint64_t *old_pml = (uint64_t*)x86_64_get_boot_pml();
-	uint64_t* new_cr3 = (uint64_t*)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc());
-	memset(new_cr3, 0, 4096);
-	for (int i = 0; i < 512; i++)
-		new_cr3[i] = old_pml[i];
-
-
+	
 	for (int i = 1; i <= processor; i++) {
 		if (i == 8) //MAX number of processor : 8 on SMP (non-NUMA system)
 			break;
 		ap_started = 0;
 		
 		void* stack_address = x86_64_pmmngr_alloc();
-		*(uint64_t*)(aligned_address + 8) = x86_64_virt_to_phys((size_t)new_cr3);
+		*(uint64_t*)(aligned_address + 8) = (uint64_t)old_pml;
 		*(uint64_t*)(aligned_address + 16) = (uint64_t)stack_address;
 		*(uint64_t*)(aligned_address + 24) = ap_init_address;
 		*(uint64_t*)(aligned_address + 32) = (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc());
 		void* cpu_struc = (void*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
 		cpu_t *cpu = (cpu_t*)cpu_struc;
 		cpu->cpu_id = i;
-		*(uint64_t*)(aligned_address + 40) = (uint64_t)0; // cpu_struc;
+		*(uint64_t*)(aligned_address + 40) = (uint64_t)cpu_struc;
 		
 		
 
 		write_apic_register(LAPIC_REGISTER_ICR, icr_dest(i) | 0x4500);
 		while (icr_busy());
 
-	
-		size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)x86_64_virt_to_phys((size_t)address) >> 12);
+
+		size_t startup_ipi = icr_dest(i) | 0x4600 | ((size_t)address >> 12);
 		write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
 		while (icr_busy());
-		for (int i = 0; i < 100000000; i++)
+		for (int i = 0; i < 10000000; i++)
 			;
 		write_apic_register(LAPIC_REGISTER_ICR, startup_ipi);
 		while (icr_busy());
 		
-		for (int i = 0; i < 100000000; i++)
+		for (int i = 0; i < 10000000; i++)
 			;
 	
-		
 		do {
 			x64_pause();
 		} while (!ap_started);
+
 	}
 
 }

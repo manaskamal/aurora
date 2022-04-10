@@ -44,6 +44,7 @@
 #include <kdrivers\au_acpi.h>
 
 #include <mm\kmalloc.h>
+#include <fs\vfs.h>
 
 
 
@@ -60,7 +61,9 @@ extern "C" int _fltused = 1;
 
 void thread_test() {
 	printf("Thread test\n");
-	for (;;);
+	for (;;) {
+		
+	}
 }
 static int lock = 0;
 /* initialize the bsp from here!*/
@@ -83,18 +86,22 @@ int _kmain(aurora_info_t *bootinfo) {
 	au_status = au_initialize_serial();
 	au_status = x86_64_initialize_apic(true);
 	au_status = au_initialize_acpi();
-
 	au_status = x86_64_kmalloc_initialize();
-	
-
 	x86_64_setup_cpu_data(0);
 
-	x86_64_boot_free();
+	/* initialize the vfs root directory */
+	vfs_initialize();
+
+	//x86_64_boot_free();
     x86_64_initialize_scheduler();
 #ifdef SMP
 	/* initialize all the AP's*/
 	initialize_cpu(au_acpi_get_num_core());
 #endif
+
+	printf("Aurora kernel started \n");
+	thread_t *thr = x86_64_create_kthread(thread_test, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+		x64_read_cr3());
 	x86_64_sched_start();
 	for (;;);
 	return 0;

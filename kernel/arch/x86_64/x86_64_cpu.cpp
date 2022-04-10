@@ -331,6 +331,6 @@ void x86_64_setup_cpu_data(void* data) {
 	}
 	else {
 		x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)data);
-		per_cpu_set_cpu_id((b >> 24));
+		//per_cpu_set_cpu_id((b >> 24));
 	}
 }

@@ -40,6 +40,18 @@
     <Filter Include="atomic">
       <UniqueIdentifier>{72c0cc27-be46-4865-9c6b-e12bdef47451}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\fs">
+      <UniqueIdentifier>{3a62e880-22de-475f-a557-3eea7ba1bab1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fs">
+      <UniqueIdentifier>{668ea4e5-cf02-4ef1-b065-69e5928c41eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\utils">
+      <UniqueIdentifier>{cbceb6ae-2160-409f-8324-23ff72679251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{6b9930ad-de4e-40d0-aef8-db09733d122f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stdint.h">
@@ -123,6 +135,12 @@
     <ClInclude Include="include\arch\x86_64\x86_64_scheduler.h">
       <Filter>include\arch\x86_64</Filter>
     </ClInclude>
+    <ClInclude Include="include\fs\vfs.h">
+      <Filter>include\fs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utils\list.h">
+      <Filter>include\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -176,6 +194,12 @@
     </ClCompile>
     <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp">
       <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="fs\vfs.cpp">
+      <Filter>fs</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\list.cpp">
+      <Filter>utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

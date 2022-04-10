@@ -40,7 +40,7 @@
 #include <mm\kmalloc.h>
 #include <kdrivers\serial.h>
 #include <string.h>
-
+#include <kdrivers\serial.h>
 
 extern "C" int x86_64_save_context(thread_t* thread);
 extern "C" void x86_64_execute_context(thread_t *thread);
@@ -149,43 +149,36 @@ end:
 }
 
 
-static int scheduler_lock = 0;
+static int sched_start_lock = 0;
+extern "C" int scheduler_lock = 0;
 /*
  * the main scheduler, heart of aurora
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
-	x64_lock_acquire(&scheduler_lock);
 	x64_cli();
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 	if (x86_64_save_context(current_thr) == 0) {
 		current_thr->cr3 = x64_read_cr3();
-		//printf("Scheduler Saved thread \n");
 
 		x86_64_next_thread();
-
+		
 		apic_local_eoi();
 		current_thr = (thread_t*)per_cpu_get_c_thread();
-		//printf("Next thread choosen -> %x\n", current_thr);
-		scheduler_lock = 0;
+		//scheduler_lock = 0;
 		x86_64_execute_context(current_thr);
 	}
-
+	
 	apic_local_eoi();
-	//printf("Scheduler isr -> %d \n", per_cpu_get_cpu_id());
-	scheduler_lock = 0;
+	//scheduler_lock = 0;
 	x64_sti();
 }
 
 static int idle_lock = 0;
 void x86_64_idle_thread() {
-	//x64_lock_acquire(&idle_lock);
 	//idle_lock = 0;
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			au_video_get_fb()[i + j*au_video_get_x_res()] = 0xffffffff;
-		}
-			
-	}
+	
+	printf("Idle thread from cpu-id  %d\n", per_cpu_get_cpu_id());
+
 	while (1) {
 	}
 }
@@ -195,11 +188,9 @@ void x86_64_idle_thread() {
  * engine in BSP
  */
 int x86_64_initialize_scheduler() {
-	x64_lock_acquire(&scheduler_lock);
 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
 		x64_read_cr3());
 	per_cpu_set_c_thread((void*)idle);
-	scheduler_lock = 0;
 	return 0;
 }
 
@@ -218,6 +209,7 @@ void x86_64_sched_start() {
 	setvect(0x40, x86_64_sceduler_isr);
 	x86_64_execute_context(idle);
 }
+
 
 thread_t * x86_64_get_idle_thr() {
 	return idle;

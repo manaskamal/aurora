@@ -27,43 +27,27 @@
 *
 **/
 
-#include <arch\x86_64\x86_64_cpu.h>
-#include <arch\x86_64\x86_64_lowlevel.h>
-#include <arch\x86_64\x86_64_pmmngr.h>
-#include <arch\x86_64\x86_64_paging.h>
-#include <kdrivers\serial.h>
-#include <arch\x86_64\x86_64_cpu.h>
-#include <arch\x86_64\x86_64_ap_init.h>
-#include <arch\x86_64\x86_64_apic.h>
-#include <arch\x86_64\x86_64_per_cpu.h>
-#include <arch\x86_64\x86_64_scheduler.h>
-#include <mm\kmalloc.h>
-#include <string.h>
-#include <console.h>
+#ifndef __LIST_H__
+#define __LIST_H__
 
-static int ap_lock = 0;
+#include <aurora.h>
 
-void x86_64_apic_handler(size_t v, void* p) {
-	x64_lock_acquire(&ap_lock);
-	uint8_t cpu_id = per_cpu_get_cpu_id();
-	au_get_boot_info()->auprint("APIC interrupt from cpu id -> %d\n", cpu_id);
-	apic_local_eoi();
-	ap_lock = 0;
-}
+typedef struct _data_ {
+	_data_ *next;
+	_data_ *prev;
+	void* data;
+}dataentry;
 
-void x86_64_ap_init(void *cpu_data) {
-	x64_cli();
-	
-	x86_64_cpu_initialize(false);
-	x86_64_cpu_print_brand();
-	x86_64_initialize_apic(false);
-	x86_64_initialize_idle();
-	x86_64_setup_cpu_data(cpu_data);
-	
-	x86_64_ap_started();
 
-	//x86_64_sched_start();
-	/* initialize processor specific functions here !!*/
-	/* from here we'll jump to scheduler */
-	for (;;);
-}
+typedef struct _list_ {
+	unsigned int pointer;
+	dataentry *entry_current;
+}list_t;
+
+
+AU_EXTERN AU_EXPORT list_t* initialize_list();
+AU_EXTERN AU_EXPORT void list_add(list_t* list, void* data);
+AU_EXTERN AU_EXPORT void* list_remove(list_t* list, unsigned int);
+AU_EXTERN AU_EXPORT void * list_get_at(list_t* list, unsigned int index);
+
+#endif
