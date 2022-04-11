@@ -58,15 +58,17 @@ aurora_info_t * au_get_boot_info() {
 
 
 extern "C" int _fltused = 1;
-
+static uint64_t thr_lock = 0;
 
 void thread_test() {
-	printf("Thread test\n");
+	x64_lock_acquire(&thr_lock);
+	printf("Thread test %d\n", per_cpu_get_cpu_id());
+	if (thr_lock == 1)
+		thr_lock = 0;
 	for (;;) {
-		
 	}
 }
-static int lock = 0;
+
 /* initialize the bsp from here!*/
 int _kmain(aurora_info_t *bootinfo) {
 	x64_cli();
@@ -103,8 +105,14 @@ int _kmain(aurora_info_t *bootinfo) {
 #endif
 
 	printf("Aurora kernel started \n");
+
+	/* Start Scheduler, and notify all cpu's 
+	 * that scheduler has started and they can
+	 * start their jobs
+	 */
 	thread_t *thr = x86_64_create_kthread(thread_test, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
 		x64_read_cr3());
+	x86_64_sched_enable(true);
 	x86_64_sched_start();
 	for (;;);
 	return 0;

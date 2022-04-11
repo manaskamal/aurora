@@ -9,15 +9,14 @@ PUBLIC	?info@@3U_AURORA_INFO_@@A			; info
 PUBLIC	_fltused
 _BSS	SEGMENT
 ?info@@3U_AURORA_INFO_@@A DB 062H DUP (?)		; info
-	ALIGN	4
+	ALIGN	8
 
-lock	DD	01H DUP (?)
+thr_lock DQ	01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG3486	DB	'Thread test', 0aH, 00H
-	ORG $+3
-$SG3494	DB	'Aurora Kernel ', 0aH, 00H
-$SG3497	DB	'Aurora kernel started ', 0aH, 00H
+$SG3489	DB	'Thread test %d', 0aH, 00H
+$SG3497	DB	'Aurora Kernel ', 0aH, 00H
+$SG3500	DB	'Aurora kernel started ', 0aH, 00H
 CONST	ENDS
 _DATA	SEGMENT
 _fltused DD	01H
@@ -31,14 +30,17 @@ EXTRN	?x86_64_cpu_initialize@@YAX_N@Z:PROC		; x86_64_cpu_initialize
 EXTRN	?x86_64_setup_cpu_data@@YAXPEAX@Z:PROC		; x86_64_setup_cpu_data
 EXTRN	x64_cli:PROC
 EXTRN	x64_read_cr3:PROC
+EXTRN	x64_lock_acquire:PROC
 EXTRN	printf:PROC
 EXTRN	?x86_64_paging_init@@YAHXZ:PROC			; x86_64_paging_init
 EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
+EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
 EXTRN	x86_64_create_kthread:PROC
 EXTRN	?x86_64_initialize_scheduler@@YAHXZ:PROC	; x86_64_initialize_scheduler
 EXTRN	?x86_64_sched_start@@YAXXZ:PROC			; x86_64_sched_start
+EXTRN	?x86_64_sched_enable@@YAX_N@Z:PROC		; x86_64_sched_enable
 EXTRN	memcpy:PROC
 EXTRN	?au_fb_initialize@@YAHXZ:PROC			; au_fb_initialize
 EXTRN	?au_initialize_serial@@YAHXZ:PROC		; au_initialize_serial
@@ -48,11 +50,11 @@ EXTRN	?x86_64_kmalloc_initialize@@YAHXZ:PROC		; x86_64_kmalloc_initialize
 EXTRN	?vfs_initialize@@YAXXZ:PROC			; vfs_initialize
 EXTRN	?devfs_initialize@@YAXXZ:PROC			; devfs_initialize
 pdata	SEGMENT
-$pdata$?thread_test@@YAXXZ DD imagerel $LN5
-	DD	imagerel $LN5+23
+$pdata$?thread_test@@YAXXZ DD imagerel $LN6
+	DD	imagerel $LN6+66
 	DD	imagerel $unwind$?thread_test@@YAXXZ
 $pdata$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD imagerel $LN5
-	DD	imagerel $LN5+244
+	DD	imagerel $LN5+251
 	DD	imagerel $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z
 pdata	ENDS
 xdata	SEGMENT
@@ -70,120 +72,125 @@ thr$ = 48
 bootinfo$ = 80
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z PROC			; _kmain
 
-; 71   : int _kmain(aurora_info_t *bootinfo) {
+; 73   : int _kmain(aurora_info_t *bootinfo) {
 
 $LN5:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 72					; 00000048H
 
-; 72   : 	x64_cli();
+; 74   : 	x64_cli();
 
 	call	x64_cli
 
-; 73   : 
-; 74   : 	bootinfo->auprint("Aurora Kernel \n");
+; 75   : 
+; 76   : 	bootinfo->auprint("Aurora Kernel \n");
 
-	lea	rcx, OFFSET FLAT:$SG3494
+	lea	rcx, OFFSET FLAT:$SG3497
 	mov	rax, QWORD PTR bootinfo$[rsp]
 	call	QWORD PTR [rax+90]
 
-; 75   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
+; 77   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
 	mov	r8d, 98					; 00000062H
 	mov	rdx, QWORD PTR bootinfo$[rsp]
 	lea	rcx, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 	call	memcpy
 
-; 76   : 
-; 77   : 	int au_status = 0;
+; 78   : 
+; 79   : 	int au_status = 0;
 
 	mov	DWORD PTR au_status$[rsp], 0
 
-; 78   : 
-; 79   : 
-; 80   : 	x86_64_pmmngr_init(bootinfo);
+; 80   : 
+; 81   : 
+; 82   : 	x86_64_pmmngr_init(bootinfo);
 
 	mov	rcx, QWORD PTR bootinfo$[rsp]
 	call	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z ; x86_64_pmmngr_init
 
-; 81   : 	x86_64_cpu_initialize(true);
+; 83   : 	x86_64_cpu_initialize(true);
 
 	mov	cl, 1
 	call	?x86_64_cpu_initialize@@YAX_N@Z		; x86_64_cpu_initialize
 
-; 82   : 
-; 83   : 	/* initialize early drivers*/
-; 84   : 	au_status = au_fb_initialize();
+; 84   : 
+; 85   : 	/* initialize early drivers*/
+; 86   : 	au_status = au_fb_initialize();
 
 	call	?au_fb_initialize@@YAHXZ		; au_fb_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 85   : 	au_status = x86_64_paging_init();
+; 87   : 	au_status = x86_64_paging_init();
 
 	call	?x86_64_paging_init@@YAHXZ		; x86_64_paging_init
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 86   : 	
-; 87   : 	au_status = au_initialize_serial();
+; 88   : 	
+; 89   : 	au_status = au_initialize_serial();
 
 	call	?au_initialize_serial@@YAHXZ		; au_initialize_serial
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 88   : 	au_status = x86_64_initialize_apic(true);
+; 90   : 	au_status = x86_64_initialize_apic(true);
 
 	mov	cl, 1
 	call	?x86_64_initialize_apic@@YAH_N@Z	; x86_64_initialize_apic
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 89   : 	au_status = au_initialize_acpi();
+; 91   : 	au_status = au_initialize_acpi();
 
 	call	?au_initialize_acpi@@YAHXZ		; au_initialize_acpi
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 90   : 	au_status = x86_64_kmalloc_initialize();
+; 92   : 	au_status = x86_64_kmalloc_initialize();
 
 	call	?x86_64_kmalloc_initialize@@YAHXZ	; x86_64_kmalloc_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 91   : 	x86_64_setup_cpu_data(0);
+; 93   : 	x86_64_setup_cpu_data(0);
 
 	xor	ecx, ecx
 	call	?x86_64_setup_cpu_data@@YAXPEAX@Z	; x86_64_setup_cpu_data
 
-; 92   : 
-; 93   : 	/* initialize the kernel subsystems */
-; 94   : 	vfs_initialize();
+; 94   : 
+; 95   : 	/* initialize the kernel subsystems */
+; 96   : 	vfs_initialize();
 
 	call	?vfs_initialize@@YAXXZ			; vfs_initialize
 
-; 95   : 	devfs_initialize();
+; 97   : 	devfs_initialize();
 
 	call	?devfs_initialize@@YAXXZ		; devfs_initialize
 
-; 96   : 
-; 97   : 
-; 98   : 	//x86_64_boot_free();
-; 99   :     x86_64_initialize_scheduler();
+; 98   : 
+; 99   : 
+; 100  : 	//x86_64_boot_free();
+; 101  :     x86_64_initialize_scheduler();
 
 	call	?x86_64_initialize_scheduler@@YAHXZ	; x86_64_initialize_scheduler
 
-; 100  : #ifdef SMP
-; 101  : 	/* initialize all the AP's*/
-; 102  : 	initialize_cpu(au_acpi_get_num_core());
+; 102  : #ifdef SMP
+; 103  : 	/* initialize all the AP's*/
+; 104  : 	initialize_cpu(au_acpi_get_num_core());
 
 	call	?au_acpi_get_num_core@@YAIXZ		; au_acpi_get_num_core
 	mov	ecx, eax
 	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
 
-; 103  : #endif
-; 104  : 
-; 105  : 	printf("Aurora kernel started \n");
+; 105  : #endif
+; 106  : 
+; 107  : 	printf("Aurora kernel started \n");
 
-	lea	rcx, OFFSET FLAT:$SG3497
+	lea	rcx, OFFSET FLAT:$SG3500
 	call	printf
 
-; 106  : 	thread_t *thr = x86_64_create_kthread(thread_test, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
-; 107  : 		x64_read_cr3());
+; 108  : 
+; 109  : 	/* Start Scheduler, and notify all cpu's 
+; 110  : 	 * that scheduler has started and they can
+; 111  : 	 * start their jobs
+; 112  : 	 */
+; 113  : 	thread_t *thr = x86_64_create_kthread(thread_test, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+; 114  : 		x64_read_cr3());
 
 	call	x64_read_cr3
 	mov	QWORD PTR tv83[rsp], rax
@@ -197,20 +204,25 @@ $LN5:
 	call	x86_64_create_kthread
 	mov	QWORD PTR thr$[rsp], rax
 
-; 108  : 	x86_64_sched_start();
+; 115  : 	x86_64_sched_enable(true);
+
+	mov	cl, 1
+	call	?x86_64_sched_enable@@YAX_N@Z		; x86_64_sched_enable
+
+; 116  : 	x86_64_sched_start();
 
 	call	?x86_64_sched_start@@YAXXZ		; x86_64_sched_start
 $LN2@kmain:
 
-; 109  : 	for (;;);
+; 117  : 	for (;;);
 
 	jmp	SHORT $LN2@kmain
 
-; 110  : 	return 0;
+; 118  : 	return 0;
 
 	xor	eax, eax
 
-; 111  : }
+; 119  : }
 
 	add	rsp, 72					; 00000048H
 	ret	0
@@ -223,22 +235,39 @@ _TEXT	SEGMENT
 
 ; 63   : void thread_test() {
 
-$LN5:
+$LN6:
 	sub	rsp, 40					; 00000028H
 
-; 64   : 	printf("Thread test\n");
+; 64   : 	x64_lock_acquire(&thr_lock);
 
-	lea	rcx, OFFSET FLAT:$SG3486
+	lea	rcx, OFFSET FLAT:thr_lock
+	call	x64_lock_acquire
+
+; 65   : 	printf("Thread test %d\n", per_cpu_get_cpu_id());
+
+	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
+	movzx	eax, al
+	mov	edx, eax
+	lea	rcx, OFFSET FLAT:$SG3489
 	call	printf
+
+; 66   : 	if (thr_lock == 1)
+
+	cmp	QWORD PTR thr_lock, 1
+	jne	SHORT $LN3@thread_tes
+
+; 67   : 		thr_lock = 0;
+
+	mov	QWORD PTR thr_lock, 0
+$LN3@thread_tes:
 $LN2@thread_tes:
 
-; 65   : 	for (;;) {
-; 66   : 		
-; 67   : 	}
+; 68   : 	for (;;) {
+; 69   : 	}
 
 	jmp	SHORT $LN2@thread_tes
 
-; 68   : }
+; 70   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0

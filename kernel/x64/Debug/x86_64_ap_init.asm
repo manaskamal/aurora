@@ -5,11 +5,12 @@ include listing.inc
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
+PUBLIC	ap_lock
 _BSS	SEGMENT
-ap_lock	DD	01H DUP (?)
+ap_lock	DQ	01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG3024	DB	'APIC interrupt from cpu id -> %d', 0aH, 00H
+$SG3026	DB	'APIC interrupt from cpu id -> %d', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_ap_init@@YAXPEAX@Z			; x86_64_ap_init
 PUBLIC	?x86_64_apic_handler@@YAX_KPEAX@Z		; x86_64_apic_handler
@@ -23,13 +24,14 @@ EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
 EXTRN	?x86_64_ap_started@@YAXXZ:PROC			; x86_64_ap_started
 EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
+EXTRN	?x86_64_sched_start@@YAXXZ:PROC			; x86_64_sched_start
 EXTRN	?x86_64_initialize_idle@@YAXXZ:PROC		; x86_64_initialize_idle
 pdata	SEGMENT
 $pdata$?x86_64_ap_init@@YAXPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+60
+	DD	imagerel $LN5+65
 	DD	imagerel $unwind$?x86_64_ap_init@@YAXPEAX@Z
 $pdata$?x86_64_apic_handler@@YAX_KPEAX@Z DD imagerel $LN3
-	DD	imagerel $LN3+85
+	DD	imagerel $LN3+86
 	DD	imagerel $unwind$?x86_64_apic_handler@@YAX_KPEAX@Z
 pdata	ENDS
 xdata	SEGMENT
@@ -71,7 +73,7 @@ $LN3:
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	ecx, DWORD PTR tv68[rsp]
 	mov	edx, ecx
-	lea	rcx, OFFSET FLAT:$SG3024
+	lea	rcx, OFFSET FLAT:$SG3026
 	call	QWORD PTR [rax+90]
 
 ; 50   : 	apic_local_eoi();
@@ -80,7 +82,7 @@ $LN3:
 
 ; 51   : 	ap_lock = 0;
 
-	mov	DWORD PTR ap_lock, 0
+	mov	QWORD PTR ap_lock, 0
 
 ; 52   : }
 
@@ -104,45 +106,46 @@ $LN5:
 
 	call	x64_cli
 
-; 56   : 	
-; 57   : 	x86_64_cpu_initialize(false);
+; 56   : 	x86_64_cpu_initialize(false);
 
 	xor	ecx, ecx
 	call	?x86_64_cpu_initialize@@YAX_N@Z		; x86_64_cpu_initialize
 
-; 58   : 	x86_64_cpu_print_brand();
+; 57   : 	x86_64_cpu_print_brand();
 
 	call	x86_64_cpu_print_brand
 
-; 59   : 	x86_64_initialize_apic(false);
+; 58   : 	x86_64_initialize_apic(false);
 
 	xor	ecx, ecx
 	call	?x86_64_initialize_apic@@YAH_N@Z	; x86_64_initialize_apic
 
-; 60   : 	x86_64_initialize_idle();
+; 59   : 	x86_64_initialize_idle();
 
 	call	?x86_64_initialize_idle@@YAXXZ		; x86_64_initialize_idle
 
-; 61   : 	x86_64_setup_cpu_data(cpu_data);
+; 60   : 	x86_64_setup_cpu_data(cpu_data);
 
 	mov	rcx, QWORD PTR cpu_data$[rsp]
 	call	?x86_64_setup_cpu_data@@YAXPEAX@Z	; x86_64_setup_cpu_data
 
-; 62   : 	
-; 63   : 	x86_64_ap_started();
+; 61   : 	
+; 62   : 	x86_64_ap_started();
 
 	call	?x86_64_ap_started@@YAXXZ		; x86_64_ap_started
+
+; 63   : 	x86_64_sched_start();
+
+	call	?x86_64_sched_start@@YAXXZ		; x86_64_sched_start
 $LN2@x86_64_ap_:
 
-; 64   : 
-; 65   : 	//x86_64_sched_start();
-; 66   : 	/* initialize processor specific functions here !!*/
-; 67   : 	/* from here we'll jump to scheduler */
-; 68   : 	for (;;);
+; 64   : 	/* initialize processor specific functions here !!*/
+; 65   : 	/* from here we'll jump to scheduler */
+; 66   : 	for (;;);
 
 	jmp	SHORT $LN2@x86_64_ap_
 
-; 69   : }
+; 67   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0

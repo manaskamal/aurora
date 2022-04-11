@@ -41,7 +41,7 @@
 #include <string.h>
 #include <console.h>
 
-static int ap_lock = 0;
+extern "C" uint64_t ap_lock = 0;
 
 void x86_64_apic_handler(size_t v, void* p) {
 	x64_lock_acquire(&ap_lock);
@@ -53,7 +53,6 @@ void x86_64_apic_handler(size_t v, void* p) {
 
 void x86_64_ap_init(void *cpu_data) {
 	x64_cli();
-	
 	x86_64_cpu_initialize(false);
 	x86_64_cpu_print_brand();
 	x86_64_initialize_apic(false);
@@ -61,8 +60,7 @@ void x86_64_ap_init(void *cpu_data) {
 	x86_64_setup_cpu_data(cpu_data);
 	
 	x86_64_ap_started();
-
-	//x86_64_sched_start();
+	x86_64_sched_start();
 	/* initialize processor specific functions here !!*/
 	/* from here we'll jump to scheduler */
 	for (;;);

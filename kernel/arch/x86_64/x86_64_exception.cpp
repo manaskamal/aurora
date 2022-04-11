@@ -32,7 +32,7 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_per_cpu.h>
 
-static int exception_lock = 0;
+static uint64_t exception_lock = 0;
 
 void panic(const char* msg, ...) {
 	printf("***ARCH x86_64 : Exception Occured ***\n");

@@ -1,16 +1,16 @@
-﻿Build started 10-04-2022 আবেলি 11:14:33.
+﻿Build started 11-04-2022 আবেলি 12:38:02.
      1>Project "E:\Aurora Kernel\kernel\kernel.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
          arch\x86_64\x86_64_ctx_switch.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp751cbea5af8d4d2ab3a70948ef450dce.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp263e345c94984612abaed586d1fe2bee.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_ctx_switch.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_ctx_switch.asm"
        _NASM:
          _fastcpy.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpf821661ab19144168f46a07cf14a1fa3.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp4e8ef197a6ac4916ab372fcbb1e02788.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\_fastcpy.obj"  "E:\Aurora Kernel\kernel\_fastcpy.asm"
        _NASM:
          arch\x86_64\x86_64_interrupt.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp28b2f5c223864525a6d24355d92d2125.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpc547b15f98354cd497e22ebdcd825e24.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_interrupt.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm"
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(128): warning : signed dword immediate exceeds bounds
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(129): warning : signed dword immediate exceeds bounds
@@ -262,7 +262,7 @@
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(152): warning : signed dword immediate exceeds bounds
        _NASM:
          arch\x86_64\x86_64_lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp08f0a7d3bf6248e0ab5e8c6f965f4a1b.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp4b2806ff42f94a4389dceaf5a5abbfb3.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_lowlevel.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_lowlevel.asm"
        ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D SMP /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_per_cpu.cpp arch\x86_64\x86_64_pmmngr.cpp arch\x86_64\x86_64_scheduler.cpp atomic\au_spinlock.cpp console.cpp fs\devfs.cpp fs\vfs.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp pe.cpp stdlib.cpp string.cpp utils\list.cpp
@@ -329,4 +329,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.22
+Time Elapsed 00:00:05.55

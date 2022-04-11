@@ -148,10 +148,13 @@ void apic_spurious_interrupt(size_t p, void* param) {
 #define ICW4_SFNM  0x10
 
 static int apic_timer_count = 0;
+static uint64_t apic_timer_lock = 0;
 //! Interrupt Vector Functions for APIC
 void  apic_timer_interrupt(size_t p, void* param) {
+	x64_lock_acquire(&apic_timer_lock);
 	apic_timer_count++;
 	apic_local_eoi();
+	apic_timer_lock = 0;
 }
 
 

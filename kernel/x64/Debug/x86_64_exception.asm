@@ -6,7 +6,7 @@ INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
 _BSS	SEGMENT
-exception_lock DD 01H DUP (?)
+exception_lock DQ 01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
 $SG2847	DB	'***ARCH x86_64 : Exception Occured ***', 0aH, 00H
@@ -157,7 +157,7 @@ $pdata$?bounds_check_fault@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+38
 	DD	imagerel $unwind$?bounds_check_fault@@YAX_KPEAX@Z
 $pdata$?invalid_opcode_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+209
+	DD	imagerel $LN5+210
 	DD	imagerel $unwind$?invalid_opcode_fault@@YAX_KPEAX@Z
 $pdata$?no_device_fault@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+38
@@ -175,13 +175,13 @@ $pdata$?stack_fault@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+38
 	DD	imagerel $unwind$?stack_fault@@YAX_KPEAX@Z
 $pdata$?general_protection_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+217
+	DD	imagerel $LN5+218
 	DD	imagerel $unwind$?general_protection_fault@@YAX_KPEAX@Z
 $pdata$?page_fault@@YAX_KPEAX@Z DD imagerel $LN16
-	DD	imagerel $LN16+355
+	DD	imagerel $LN16+356
 	DD	imagerel $unwind$?page_fault@@YAX_KPEAX@Z
 $pdata$?fpu_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+60
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?fpu_fault@@YAX_KPEAX@Z
 $pdata$?alignment_check_fault@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+38
@@ -367,7 +367,7 @@ $LN5:
 
 ; 206  : 	exception_lock = 0;
 
-	mov	DWORD PTR exception_lock, 0
+	mov	QWORD PTR exception_lock, 0
 $LN2@fpu_fault:
 
 ; 207  : 	for (;;);
@@ -560,7 +560,7 @@ $LN10@page_fault:
 ; 194  : 
 ; 195  : 	exception_lock = 0;
 
-	mov	DWORD PTR exception_lock, 0
+	mov	QWORD PTR exception_lock, 0
 $LN2@page_fault:
 
 ; 196  : 
@@ -660,7 +660,7 @@ $LN5:
 
 ; 159  : 	exception_lock = 0;
 
-	mov	DWORD PTR exception_lock, 0
+	mov	QWORD PTR exception_lock, 0
 $LN2@general_pr:
 
 ; 160  : 	for(;;);
@@ -927,7 +927,7 @@ $LN5:
 
 ; 106  : 	exception_lock = 0;
 
-	mov	DWORD PTR exception_lock, 0
+	mov	QWORD PTR exception_lock, 0
 $LN2@invalid_op:
 
 ; 107  : 	for (;;);

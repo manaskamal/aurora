@@ -109,4 +109,6 @@ extern void x86_64_sched_start();
 extern void x86_64_initialize_idle();
 
 extern thread_t * x86_64_get_idle_thr();
+
+extern void x86_64_sched_enable(bool value);
 #endif

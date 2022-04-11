@@ -219,6 +219,6 @@ extern "C" void x64_write_xcr0(uint64_t);
 extern "C" void x64_stack_switch(size_t address);
 extern "C" size_t x64_get_stack();
 
-AU_EXTERN AU_EXPORT void x64_lock_acquire(int * lock);
-AU_EXTERN AU_EXPORT void x64_lock_release(int* lock);
+AU_EXTERN AU_EXPORT void x64_lock_acquire(uint64_t * lock);
+AU_EXTERN AU_EXPORT void x64_lock_release(uint64_t* lock);
 #endif

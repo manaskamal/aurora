@@ -149,37 +149,60 @@ end:
 }
 
 
-static int sched_start_lock = 0;
-extern "C" int scheduler_lock = 0;
+static uint64_t sched_start_lock = 0;
+extern "C" uint64_t scheduler_lock = 0;
+static bool start_scheduler = false;
+
 /*
  * the main scheduler, heart of aurora
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
+	
+	if (start_scheduler == false)
+		return;
+	x64_lock_acquire(&sched_start_lock);
 	x64_cli();
+
+
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 	if (x86_64_save_context(current_thr) == 0) {
 		current_thr->cr3 = x64_read_cr3();
-
+	
 		x86_64_next_thread();
 		
 		apic_local_eoi();
 		current_thr = (thread_t*)per_cpu_get_c_thread();
-		//scheduler_lock = 0;
+	
+		if (sched_start_lock == 1)
+			sched_start_lock = 0;
 		x86_64_execute_context(current_thr);
 	}
-	
+end:
 	apic_local_eoi();
-	//scheduler_lock = 0;
+	
+	if (sched_start_lock == 1) {
+		sched_start_lock = 0;
+	}
 	x64_sti();
 }
 
-static int idle_lock = 0;
-void x86_64_idle_thread() {
-	//idle_lock = 0;
-	
-	printf("Idle thread from cpu-id  %d\n", per_cpu_get_cpu_id());
+static uint64_t idle_lock = 0;
+extern "C" uint64_t ap_lock;
 
-	while (1) {
+/*
+ * x86_64_idle_thread -- when no thread is left to execute or simply,
+ * there is no threads in ready queue except idle thread, cpu's jump
+ * to idle thread and thus, processing never stops
+ */
+void x86_64_idle_thread() {
+	x64_cli();
+	printf("Idle thread from cpu-id  %d, lock-> %d\n", per_cpu_get_cpu_id(), scheduler_lock);
+	
+	if (scheduler_lock == 1)
+		scheduler_lock = 0;
+	x64_sti();
+	
+	while (1) {	
 	}
 }
 
@@ -205,6 +228,7 @@ void x86_64_initialize_idle() {
  *x86_64_sched_start -- start the scheduler engine
 */
 void x86_64_sched_start() {
+	x64_lock_acquire(&scheduler_lock);
 	x64_cli();
 	setvect(0x40, x86_64_sceduler_isr);
 	x86_64_execute_context(idle);
@@ -213,4 +237,8 @@ void x86_64_sched_start() {
 
 thread_t * x86_64_get_idle_thr() {
 	return idle;
+}
+
+void x86_64_sched_enable(bool value) {
+	start_scheduler = true;
 }
