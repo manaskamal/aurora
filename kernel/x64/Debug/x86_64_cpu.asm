@@ -10,15 +10,15 @@ _BSS	SEGMENT
 ?idtr@@3U_idtr@@A DB 0aH DUP (?)			; idtr
 _BSS	ENDS
 CONST	SEGMENT
-$SG3081	DB	'CPU: Vendor -> %s ', 0aH, 00H
-	ORG $+4
-$SG3095	DB	'CPU: Brand = %s ', 0aH, 00H
-	ORG $+6
-$SG3024	DB	'[aurora]: Default interrupt++', 0aH, 00H
-	ORG $+1
-$SG3066	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
+$SG3073	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
 	ORG $+2
-$SG3069	DB	'[aurora]: SSE3 is supported ', 0aH, 00H
+$SG3085	DB	'CPU: Vendor -> %s ', 0aH, 00H
+	ORG $+4
+$SG3099	DB	'CPU: Brand = %s ', 0aH, 00H
+	ORG $+6
+$SG3028	DB	'[aurora]: Default interrupt++', 0aH, 00H
+	ORG $+1
+$SG3070	DB	'[aurora]: SSE2 is supported ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_cpu_initialize@@YAX_N@Z			; x86_64_cpu_initialize
 PUBLIC	x86_64_cpu_print_brand
@@ -245,7 +245,7 @@ $LN6@x86_64_cpu:
 ; 227  : 		au_get_boot_info()->auprint("[aurora]: SSE2 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG3066
+	lea	rcx, OFFSET FLAT:$SG3070
 	call	QWORD PTR [rax+90]
 	jmp	SHORT $LN2@x86_64_cpu
 $LN3@x86_64_cpu:
@@ -261,7 +261,7 @@ $LN3@x86_64_cpu:
 ; 230  : 		au_get_boot_info()->auprint("[aurora]: SSE3 is supported \n");
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
-	lea	rcx, OFFSET FLAT:$SG3069
+	lea	rcx, OFFSET FLAT:$SG3073
 	call	QWORD PTR [rax+90]
 $LN1@x86_64_cpu:
 $LN2@x86_64_cpu:
@@ -522,7 +522,7 @@ $LN5:
 
 ; 163  : 	printf("[aurora]: Default interrupt++\n");
 
-	lea	rcx, OFFSET FLAT:$SG3024
+	lea	rcx, OFFSET FLAT:$SG3028
 	call	printf
 $LN2@default_ir:
 
@@ -1149,7 +1149,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR vendor$[rsp]
-	lea	rcx, OFFSET FLAT:$SG3081
+	lea	rcx, OFFSET FLAT:$SG3085
 	call	QWORD PTR [rax+90]
 
 ; 262  : 
@@ -1281,7 +1281,7 @@ $LN3:
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	lea	rdx, QWORD PTR bandstring$[rsp]
-	lea	rcx, OFFSET FLAT:$SG3095
+	lea	rcx, OFFSET FLAT:$SG3099
 	call	QWORD PTR [rax+90]
 
 ; 281  : }

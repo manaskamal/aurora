@@ -29,6 +29,7 @@
 
 #include <atomic\au_spinlock.h>
 #include <mm\kmalloc.h>
+#include <arch\x86_64\x86_64_lowlevel.h>
 
 /*
  * au_create_spinlock -- creates a spinlock and return
@@ -45,4 +46,21 @@ au_spinlock_t * au_create_spinlock() {
  */
 void au_remove_spinlock(au_spinlock_t* spinlock) {
 	kfree(spinlock);
+}
+
+/*
+ * au_acquire_spinlock -- acquire a spinlock
+ * @param spinlock -- spinlock to acquire
+ */
+void au_acquire_spinlock(au_spinlock_t *spinlock) {
+	x64_lock_acquire(&spinlock->value);
+}
+
+/*
+ * au_free_spinlock -- free a spinlock
+ * @param spinlock -- spinlock to free
+ */
+void au_free_spinlock(au_spinlock_t* spinlock) {
+	if (spinlock->value == 1)
+		spinlock->value = 0;
 }

@@ -36,7 +36,7 @@
 
 /* au_spinlock -- spinlock structure*/
 typedef struct _au_spinlock_ {
-	size_t value;
+	uint64_t value;
 }au_spinlock_t;
 
 
@@ -50,5 +50,17 @@ AU_EXTERN AU_EXPORT au_spinlock_t * au_create_spinlock();
 * @param spinlock -- spinlock to remove
 */
 AU_EXTERN AU_EXPORT void au_remove_spinlock(au_spinlock_t* spinlock);
+
+/*
+* au_acquire_spinlock -- acquire a spinlock
+* @param spinlock -- spinlock to acquire
+*/
+AU_EXTERN AU_EXPORT void au_acquire_spinlock(au_spinlock_t *spinlock);
+
+/*
+* au_free_spinlock -- free a spinlock
+* @param spinlock -- spinlock to free
+*/
+AU_EXTERN AU_EXPORT void au_free_spinlock(au_spinlock_t* spinlock);
 
 #endif

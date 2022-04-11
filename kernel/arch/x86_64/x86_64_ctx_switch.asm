@@ -11,7 +11,6 @@
 section .text
 [BITS 64]
 
-extern scheduler_lock
 
 ;;-------------------------------------------------------
 ;; SAVE CONTEXTS

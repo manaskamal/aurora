@@ -149,8 +149,10 @@ end:
 }
 
 
-static uint64_t sched_start_lock = 0;
-extern "C" uint64_t scheduler_lock = 0;
+//static uint64_t sched_start_lock = 0;
+//extern "C" uint64_t scheduler_lock = 0;
+au_spinlock_t *sched_start_lock;
+au_spinlock_t *scheduler_lock;
 static bool start_scheduler = false;
 
 /*
@@ -158,11 +160,15 @@ static bool start_scheduler = false;
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
 	
-	if (start_scheduler == false)
+	if (start_scheduler == false) {
+		apic_local_eoi();
 		return;
-	x64_lock_acquire(&sched_start_lock);
+	}
+
+	au_acquire_spinlock(sched_start_lock);
 	x64_cli();
 
+	
 
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 	if (x86_64_save_context(current_thr) == 0) {
@@ -172,17 +178,15 @@ void x86_64_sceduler_isr(size_t v, void* p) {
 		
 		apic_local_eoi();
 		current_thr = (thread_t*)per_cpu_get_c_thread();
+
 	
-		if (sched_start_lock == 1)
-			sched_start_lock = 0;
+		au_free_spinlock(sched_start_lock);
 		x86_64_execute_context(current_thr);
 	}
 end:
 	apic_local_eoi();
 	
-	if (sched_start_lock == 1) {
-		sched_start_lock = 0;
-	}
+	au_free_spinlock(sched_start_lock);
 	x64_sti();
 }
 
@@ -196,10 +200,12 @@ extern "C" uint64_t ap_lock;
  */
 void x86_64_idle_thread() {
 	x64_cli();
-	printf("Idle thread from cpu-id  %d, lock-> %d\n", per_cpu_get_cpu_id(), scheduler_lock);
+	printf("Idle thread from cpu-id  %d, lock-> %d\n", per_cpu_get_cpu_id(), scheduler_lock->value);
 	
-	if (scheduler_lock == 1)
-		scheduler_lock = 0;
+	/*if (scheduler_lock == 1)
+		scheduler_lock = 0;*/
+	
+	au_free_spinlock(scheduler_lock);
 	x64_sti();
 	
 	while (1) {	
@@ -213,6 +219,8 @@ void x86_64_idle_thread() {
 int x86_64_initialize_scheduler() {
 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
 		x64_read_cr3());
+	scheduler_lock = au_create_spinlock();
+	sched_start_lock = au_create_spinlock();
 	per_cpu_set_c_thread((void*)idle);
 	return 0;
 }
@@ -228,7 +236,7 @@ void x86_64_initialize_idle() {
  *x86_64_sched_start -- start the scheduler engine
 */
 void x86_64_sched_start() {
-	x64_lock_acquire(&scheduler_lock);
+	au_acquire_spinlock(scheduler_lock);
 	x64_cli();
 	setvect(0x40, x86_64_sceduler_isr);
 	x86_64_execute_context(idle);

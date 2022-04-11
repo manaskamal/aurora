@@ -10,7 +10,7 @@ _BSS	SEGMENT
 ?boot_cr3@@3PEA_KEA DQ 01H DUP (?)			; boot_cr3
 _BSS	ENDS
 CONST	SEGMENT
-$SG3104	DB	'CR3[I] -> %x ', 0aH, 00H
+$SG3108	DB	'CR3[I] -> %x ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_paging_init@@YAHXZ			; x86_64_paging_init
 PUBLIC	?early_map_page@@YA_N_K0E@Z			; early_map_page
@@ -30,9 +30,7 @@ PUBLIC	?pt_index@@YA_K_K@Z				; pt_index
 PUBLIC	?p_index@@YA_K_K@Z				; p_index
 EXTRN	x86_64_pmmngr_alloc:PROC
 EXTRN	x86_64_pmmngr_free:PROC
-EXTRN	?x86_64_pmmngr_set_high@@YAX_N@Z:PROC		; x86_64_pmmngr_set_high
 EXTRN	?x86_64_pmmngr_is_high_mem@@YA_NXZ:PROC		; x86_64_pmmngr_is_high_mem
-EXTRN	?x86_64_pmmngr_high_mem_bitmap@@YAXXZ:PROC	; x86_64_pmmngr_high_mem_bitmap
 EXTRN	x64_mfence:PROC
 EXTRN	x64_read_cr3:PROC
 EXTRN	x64_write_cr3:PROC
@@ -41,7 +39,7 @@ EXTRN	printf:PROC
 EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 pdata	SEGMENT
 $pdata$?x86_64_paging_init@@YAHXZ DD imagerel $LN12
-	DD	imagerel $LN12+455
+	DD	imagerel $LN12+443
 	DD	imagerel $unwind$?x86_64_paging_init@@YAHXZ
 $pdata$?early_map_page@@YA_N_K0E@Z DD imagerel $LN6
 	DD	imagerel $LN6+562
@@ -221,7 +219,7 @@ $LN3:
 	call	?pml4_index@@YA_K_K@Z			; pml4_index
 	mov	rcx, QWORD PTR cr3$[rsp]
 	mov	rdx, QWORD PTR [rcx+rax*8]
-	lea	rcx, OFFSET FLAT:$SG3104
+	lea	rcx, OFFSET FLAT:$SG3108
 	call	printf
 
 ; 364  : }
@@ -1593,15 +1591,8 @@ $LN1@x86_64_pag:
 
 ; 159  : 
 ; 160  : 	/* from here, every physical page = higher half virtual page */
-; 161  : 	x86_64_pmmngr_set_high(true);
-
-	mov	cl, 1
-	call	?x86_64_pmmngr_set_high@@YAX_N@Z	; x86_64_pmmngr_set_high
-
-; 162  : 	x86_64_pmmngr_high_mem_bitmap();
-
-	call	?x86_64_pmmngr_high_mem_bitmap@@YAXXZ	; x86_64_pmmngr_high_mem_bitmap
-
+; 161  : 	//x86_64_pmmngr_set_high(true);
+; 162  : 	//x86_64_pmmngr_high_mem_bitmap();
 ; 163  : 
 ; 164  : 	return 0;
 

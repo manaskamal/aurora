@@ -158,8 +158,8 @@ int x86_64_paging_init() {
 	boot_cr3 = new_cr3;
 
 	/* from here, every physical page = higher half virtual page */
-	x86_64_pmmngr_set_high(true);
-	x86_64_pmmngr_high_mem_bitmap();
+	//x86_64_pmmngr_set_high(true);
+	//x86_64_pmmngr_high_mem_bitmap();
 
 	return 0;
 }

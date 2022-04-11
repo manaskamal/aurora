@@ -66,6 +66,19 @@ void thread_test() {
 	if (thr_lock == 1)
 		thr_lock = 0;
 	for (;;) {
+		x64_cli();
+		x64_lock_acquire(&thr_lock);
+		if (per_cpu_get_cpu_id() != 0)
+			printf("Thr tst in cpu %d\n", per_cpu_get_cpu_id());
+		if (per_cpu_get_cpu_id() == 0)
+			printf("Thr tst in bsp\n");
+
+		for (int i = 0; i < 100000; i++)
+			;
+		x64_sti();
+		if (thr_lock == 1)
+			thr_lock = 0;
+		
 	}
 }
 
@@ -85,11 +98,11 @@ int _kmain(aurora_info_t *bootinfo) {
 	/* initialize early drivers*/
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
-	
+	au_status = x86_64_kmalloc_initialize();
 	au_status = au_initialize_serial();
 	au_status = x86_64_initialize_apic(true);
 	au_status = au_initialize_acpi();
-	au_status = x86_64_kmalloc_initialize();
+	
 	x86_64_setup_cpu_data(0);
 
 	/* initialize the kernel subsystems */
