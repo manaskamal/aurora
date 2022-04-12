@@ -48,6 +48,8 @@ extern "C" void x86_64_execute_context(thread_t *thread);
 thread_t *thread_list_head = NULL;
 thread_t *thread_list_last = NULL;
 thread_t * idle = NULL;
+
+au_spinlock_t *scheduler_lock = NULL;
 /*
  * thread_insert -- insert a thread to thread list
  * @param new_thread -- newly created thread address
@@ -99,6 +101,9 @@ void thread_delete(thread_t * thread) {
  * @param cr3 -- pml4 of the thread
  */
 thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr3) {
+	
+	au_acquire_spinlock(scheduler_lock);
+	printf("Create kthr lock -> %d, set by cpu -> %d\n", scheduler_lock->value, scheduler_lock->set_by_cpu);
 	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
 	memset(thread, 0, sizeof(thread_t));
 	thread->ss = 0x10;
@@ -129,14 +134,18 @@ thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr
 	thread->kern_esp = stack;
 	thread->state = THREAD_STATE_READY;
 	thread_insert(thread);
+	scheduler_lock->value = 0;
 	return thread;
 }
+
+au_spinlock_t *queue_lock;
 
 /* 
  * x86_64_next_thread -- the main arranger
  * of threads, switch to next thread
  */
 void x86_64_next_thread() {
+	au_acquire_spinlock(scheduler_lock);
 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
 	do {
 		thr = thr->next;
@@ -146,48 +155,54 @@ void x86_64_next_thread() {
 
 end:
 	per_cpu_set_c_thread(thr);
+	au_free_spinlock(scheduler_lock);
 }
 
 
 //static uint64_t sched_start_lock = 0;
 //extern "C" uint64_t scheduler_lock = 0;
 au_spinlock_t *sched_start_lock;
-au_spinlock_t *scheduler_lock;
+
+
 static bool start_scheduler = false;
 
 /*
  * the main scheduler, heart of aurora
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
-	
-	if (start_scheduler == false) {
+	if (!start_scheduler) {
+		au_acquire_spinlock(queue_lock);
 		apic_local_eoi();
+		au_free_spinlock(queue_lock);
 		return;
 	}
-
-	au_acquire_spinlock(sched_start_lock);
+	au_acquire_spinlock(queue_lock);
 	x64_cli();
 
-	
-
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
+	
 	if (x86_64_save_context(current_thr) == 0) {
 		current_thr->cr3 = x64_read_cr3();
 	
+		
 		x86_64_next_thread();
 		
 		apic_local_eoi();
 		current_thr = (thread_t*)per_cpu_get_c_thread();
 
-	
-		au_free_spinlock(sched_start_lock);
+		/*if (current_thr == (thread_t*)0xFFFFE00000000500)
+			printf("Current thr2 choosed by cpu -> %d \n", per_cpu_get_cpu_id());*/
+
+
+		au_free_spinlock(queue_lock);
 		x86_64_execute_context(current_thr);
 	}
 end:
-	apic_local_eoi();
 	
-	au_free_spinlock(sched_start_lock);
+	apic_local_eoi();
 	x64_sti();
+	au_free_spinlock(queue_lock);
+	//
 }
 
 static uint64_t idle_lock = 0;
@@ -199,15 +214,6 @@ extern "C" uint64_t ap_lock;
  * to idle thread and thus, processing never stops
  */
 void x86_64_idle_thread() {
-	x64_cli();
-	printf("Idle thread from cpu-id  %d, lock-> %d\n", per_cpu_get_cpu_id(), scheduler_lock->value);
-	
-	/*if (scheduler_lock == 1)
-		scheduler_lock = 0;*/
-	
-	au_free_spinlock(scheduler_lock);
-	x64_sti();
-	
 	while (1) {	
 	}
 }
@@ -219,8 +225,10 @@ void x86_64_idle_thread() {
 int x86_64_initialize_scheduler() {
 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
 		x64_read_cr3());
+	printf("idle addr -> %x\n", idle);
 	scheduler_lock = au_create_spinlock();
 	sched_start_lock = au_create_spinlock();
+	queue_lock = au_create_spinlock();
 	per_cpu_set_c_thread((void*)idle);
 	return 0;
 }
@@ -236,17 +244,25 @@ void x86_64_initialize_idle() {
  *x86_64_sched_start -- start the scheduler engine
 */
 void x86_64_sched_start() {
-	au_acquire_spinlock(scheduler_lock);
 	x64_cli();
 	setvect(0x40, x86_64_sceduler_isr);
-	x86_64_execute_context(idle);
 }
 
-
+/*
+ * x86_64_execute_idle -- execute the first thread
+ * idle
+ */
+void x86_64_execute_idle() {
+	x86_64_execute_context(idle);
+}
 thread_t * x86_64_get_idle_thr() {
 	return idle;
 }
 
 void x86_64_sched_enable(bool value) {
 	start_scheduler = true;
+}
+
+au_spinlock_t *x86_64_get_scheduler_lock() {
+	return scheduler_lock;
 }

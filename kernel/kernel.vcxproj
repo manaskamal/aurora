@@ -158,6 +158,8 @@
     <ClInclude Include="include\arch\x86_64\x86_64_lowlevel.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_paging.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_per_cpu.h" />
+    <ClInclude Include="include\arch\x86_64\x86_64_pic.h" />
+    <ClInclude Include="include\arch\x86_64\x86_64_pit.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_pmmngr.h" />
     <ClInclude Include="include\arch\x86_64\x86_64_scheduler.h" />
     <ClInclude Include="include\atomic\au_spinlock.h" />
@@ -191,6 +193,8 @@
     <ClCompile Include="arch\x86_64\x86_64_ioapic.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_paging.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_per_cpu.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_pic.cpp" />
+    <ClCompile Include="arch\x86_64\x86_64_pit.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_pmmngr.cpp" />
     <ClCompile Include="arch\x86_64\x86_64_scheduler.cpp" />
     <ClCompile Include="atomic\au_spinlock.cpp" />

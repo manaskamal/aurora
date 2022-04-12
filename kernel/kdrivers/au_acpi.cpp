@@ -71,7 +71,6 @@ int au_initialize_acpi() {
 				switch (apic_header->type) {
                     case ACPI_APICTYPE_LAPIC: {
 						acpiLocalApic *lapic = (acpiLocalApic*)apic_header;
-					//	au_get_boot_info()->auprint("LAPIC id -> %x, %x \n", lapic->lapicId, lapic->procId);
 						if (lapic->procId != 0)
 							au_acpi.num_core = lapic->procId;
 						 break;

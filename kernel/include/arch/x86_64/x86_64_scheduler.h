@@ -32,6 +32,7 @@
 
 #include <stdint.h>
 #include <aurora.h>
+#include <atomic\au_spinlock.h>
 
 #define THREAD_STATE_READY  1
 #define THREAD_STATE_BLOCKED 3
@@ -111,4 +112,12 @@ extern void x86_64_initialize_idle();
 extern thread_t * x86_64_get_idle_thr();
 
 extern void x86_64_sched_enable(bool value);
+
+extern au_spinlock_t *x86_64_get_scheduler_lock();
+
+/*
+* x86_64_execute_idle -- execute the first thread
+* idle
+*/
+extern void x86_64_execute_idle();
 #endif

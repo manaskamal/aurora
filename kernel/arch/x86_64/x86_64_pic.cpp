@@ -27,62 +27,80 @@
 *
 **/
 
-#include <kdrivers\au_video.h>
-#include <arch\x86_64\x86_64_paging.h>
-#include <arch\x86_64\x86_64_pmmngr.h>
-#include <auinfo.h>
 #include <arch\x86_64\x86_64_lowlevel.h>
+#include <arch\x86_64\x86_64_cpu.h>
+#include <stdint.h>
+#include <arch\x86_64\x86_64_pit.h>
 
-au_fb_t fb_;
-static uint64_t fb_lock = 0;
 
-/*
- * au_fb_initialize -- initialize the framebuffer
- */
-int au_fb_initialize() {
-	uint32_t* phys_fb = au_get_boot_info()->fb_addr;
+void x86_64_pic_clear_mask(unsigned char irq) {
+	uint16_t port;
+	uint8_t value;
 
-	for (size_t i = 0; i < au_get_boot_info()->fb_size / 4096; i++)
-		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
+	if (irq < 8) {
+		port = PIC1_DATA;
+	}
+	else {
+		port = PIC2_DATA;
+		irq -= 8;
+	}
 
-	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
-	fb_.pixels_per_scanline = au_get_boot_info()->pixels_per_line;
-	fb_.x_resolution = au_get_boot_info()->x_res;
-	fb_.y_resolution = au_get_boot_info()->y_res;
-	return 0;
+	value = x64_inportb(port) & ~(1 << irq);
+	x64_outportb(port, value);
 }
 
-/*
- * au_video_get_fb -- return the framebuffer address
- */
-uint32_t* au_video_get_fb() {
-	x64_lock_acquire(&fb_lock);
-	uint32_t *fb = fb_.framebuffer;
-	fb_lock = 0;
-	return fb;
+
+void x86_64_pic_eoi(unsigned int intno) {
+
+	if (intno > 16)
+		return;
+
+	if (intno >= 8)
+		x64_outportb(PIC2_COMMAND, PIC_EOI);
+
+	x64_outportb(PIC1_COMMAND, PIC_EOI);
 }
 
-/*
- * au_video_get_pixels_per_line -- return the screen pixels
- * per line information
- */
-uint16_t au_video_get_pixels_per_line() {
-	return fb_.pixels_per_scanline;
-}
+void x86_64_pic_initialize() {
+	uint8_t base0 = 0x20;
+	uint8_t base1 = 0x28;
 
-/*
- * au_video_get_x_res -- return screen width
- */
-uint32_t au_video_get_x_res() {
-	x64_lock_acquire(&fb_lock);
-	uint32_t x_res = fb_.x_resolution;
-	fb_lock = 0;
-	return x_res;
-}
+	unsigned char a1, a2;
+	a1 = x64_inportb(PIC1_DATA);
+	a2 = x64_inportb(PIC2_DATA);
 
-/*
- * au_video_get_y_res -- return screen height
- */
-uint32_t au_video_get_y_res() {
-	return fb_.y_resolution;
+	x64_outportb(PIC1_COMMAND, ICW1_INIT | ICW1_ICW4);
+	for (int i = 0; i < 1000; i++)
+		;
+	x64_outportb(PIC2_COMMAND, ICW1_INIT | ICW1_ICW4);
+	for (int i = 0; i < 1000; i++)
+		;
+	x64_outportb(PIC1_DATA, base0);
+	for (int i = 0; i < 1000; i++)
+		;
+	x64_outportb(PIC2_DATA, base1);
+	for (int i = 0; i < 1000; i++)
+		;
+	x64_outportb(PIC1_DATA, 4);
+	for (int i = 0; i < 1000; i++)
+		;
+	x64_outportb(PIC2_DATA, 2);
+
+	for (int i = 0; i < 1000; i++)
+		;
+
+	x64_outportb(PIC1_DATA, ICW4_8086);
+	for (int i = 0; i < 1000; i++)
+		;
+
+	x64_outportb(PIC2_DATA, ICW4_8086);
+	for (int i = 0; i < 1000; i++)
+		;
+
+	x64_outportb(PIC1_DATA, a1);
+	x64_outportb(PIC2_DATA, a2);
+
+	
+	x86_64_pit_initialize();
+	x86_64_pic_clear_mask(0);
 }

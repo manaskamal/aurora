@@ -4,16 +4,16 @@ e:\aurora kernel\kernel\x64\debug\x86_64_interrupt.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_lowlevel.obj
 e:\aurora kernel\kernel\x64\debug\vc120.pdb
 e:\aurora kernel\kernel\x64\debug\vc120.idb
-e:\aurora kernel\kernel\x64\debug\x86_64_cpu.obj
-e:\aurora kernel\kernel\x64\debug\x86_64_cpu.asm
-e:\aurora kernel\kernel\x64\debug\x86_64_exception.obj
-e:\aurora kernel\kernel\x64\debug\x86_64_exception.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_ioapic.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_paging.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_per_cpu.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_per_cpu.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_pic.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_pic.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_pit.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_pit.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_pmmngr.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_scheduler.obj
@@ -48,6 +48,10 @@ e:\aurora kernel\kernel\x64\debug\x86_64_apic.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_apic.asm
 e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.obj
 e:\aurora kernel\kernel\x64\debug\x86_64_ap_init.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_cpu.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_cpu.asm
+e:\aurora kernel\kernel\x64\debug\x86_64_exception.obj
+e:\aurora kernel\kernel\x64\debug\x86_64_exception.asm
 e:\aurora kernel\kernel\x64\debug\kernel.lib
 e:\aurora kernel\kernel\x64\debug\kernel.exp
 f:\efi\xeneva\xnkrnl.exe

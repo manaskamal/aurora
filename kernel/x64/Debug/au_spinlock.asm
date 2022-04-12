@@ -12,16 +12,20 @@ PUBLIC	au_free_spinlock
 EXTRN	kmalloc:PROC
 EXTRN	kfree:PROC
 EXTRN	x64_lock_acquire:PROC
+EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
 pdata	SEGMENT
 $pdata$au_create_spinlock DD imagerel $LN3
-	DD	imagerel $LN3+41
+	DD	imagerel $LN3+50
 	DD	imagerel $unwind$au_create_spinlock
 $pdata$au_remove_spinlock DD imagerel $LN3
 	DD	imagerel $LN3+24
 	DD	imagerel $unwind$au_remove_spinlock
-$pdata$au_acquire_spinlock DD imagerel $LN3
-	DD	imagerel $LN3+27
+$pdata$au_acquire_spinlock DD imagerel $LN4
+	DD	imagerel $LN4+63
 	DD	imagerel $unwind$au_acquire_spinlock
+$pdata$au_free_spinlock DD imagerel $LN4
+	DD	imagerel $LN4+52
+	DD	imagerel $unwind$au_free_spinlock
 pdata	ENDS
 xdata	SEGMENT
 $unwind$au_create_spinlock DD 010401H
@@ -30,31 +34,50 @@ $unwind$au_remove_spinlock DD 010901H
 	DD	04209H
 $unwind$au_acquire_spinlock DD 010901H
 	DD	04209H
+$unwind$au_free_spinlock DD 010901H
+	DD	04209H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\atomic\au_spinlock.cpp
 _TEXT	SEGMENT
-spinlock$ = 8
+spinlock$ = 48
 au_free_spinlock PROC
 
-; 63   : void au_free_spinlock(au_spinlock_t* spinlock) {
+; 70   : void au_free_spinlock(au_spinlock_t* spinlock) {
 
+$LN4:
 	mov	QWORD PTR [rsp+8], rcx
+	sub	rsp, 40					; 00000028H
 
-; 64   : 	if (spinlock->value == 1)
+; 71   : 	if (spinlock->value > 1){ //corrupted spinlock
 
 	mov	rax, QWORD PTR spinlock$[rsp]
 	cmp	QWORD PTR [rax], 1
-	jne	SHORT $LN1@au_free_sp
+	jbe	SHORT $LN1@au_free_sp
 
-; 65   : 		spinlock->value = 0;
+; 72   : 		return;
+
+	jmp	SHORT $LN2@au_free_sp
+$LN1@au_free_sp:
+
+; 73   : 	}
+; 74   : 
+; 75   : 	spinlock->set_by_cpu = per_cpu_get_cpu_id();
+
+	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
+	mov	rcx, QWORD PTR spinlock$[rsp]
+	mov	BYTE PTR [rcx+8], al
+
+; 76   : 	spinlock->value = 0;
 
 	mov	rax, QWORD PTR spinlock$[rsp]
 	mov	QWORD PTR [rax], 0
-$LN1@au_free_sp:
+$LN2@au_free_sp:
 
-; 66   : }
+; 77   : 	
+; 78   : }
 
+	add	rsp, 40					; 00000028H
 	ret	0
 au_free_spinlock ENDP
 _TEXT	ENDS
@@ -64,19 +87,37 @@ _TEXT	SEGMENT
 spinlock$ = 48
 au_acquire_spinlock PROC
 
-; 55   : void au_acquire_spinlock(au_spinlock_t *spinlock) {
+; 59   : void au_acquire_spinlock(au_spinlock_t *spinlock) {
 
-$LN3:
+$LN4:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 56   : 	x64_lock_acquire(&spinlock->value);
+; 60   : 	if (spinlock->value > 1)
+
+	mov	rax, QWORD PTR spinlock$[rsp]
+	cmp	QWORD PTR [rax], 1
+	jbe	SHORT $LN1@au_acquire
+
+; 61   : 		spinlock->value = 0;
+
+	mov	rax, QWORD PTR spinlock$[rsp]
+	mov	QWORD PTR [rax], 0
+$LN1@au_acquire:
+
+; 62   : 	x64_lock_acquire(&spinlock->value);
 
 	mov	rax, QWORD PTR spinlock$[rsp]
 	mov	rcx, rax
 	call	x64_lock_acquire
 
-; 57   : }
+; 63   : 	spinlock->set_by_cpu = per_cpu_get_cpu_id();
+
+	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
+	mov	rcx, QWORD PTR spinlock$[rsp]
+	mov	BYTE PTR [rcx+8], al
+
+; 64   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -88,18 +129,18 @@ _TEXT	SEGMENT
 spinlock$ = 48
 au_remove_spinlock PROC
 
-; 47   : void au_remove_spinlock(au_spinlock_t* spinlock) {
+; 51   : void au_remove_spinlock(au_spinlock_t* spinlock) {
 
 $LN3:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 48   : 	kfree(spinlock);
+; 52   : 	kfree(spinlock);
 
 	mov	rcx, QWORD PTR spinlock$[rsp]
 	call	kfree
 
-; 49   : }
+; 53   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -111,27 +152,32 @@ _TEXT	SEGMENT
 spinlock$ = 32
 au_create_spinlock PROC
 
-; 37   : au_spinlock_t * au_create_spinlock() {
+; 40   : au_spinlock_t * au_create_spinlock() {
 
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 38   : 	au_spinlock_t *spinlock = (au_spinlock_t*)kmalloc(sizeof(au_spinlock_t));
+; 41   : 	au_spinlock_t *spinlock = (au_spinlock_t*)kmalloc(sizeof(au_spinlock_t));
 
-	mov	ecx, 8
+	mov	ecx, 16
 	call	kmalloc
 	mov	QWORD PTR spinlock$[rsp], rax
 
-; 39   : 	spinlock->value = 0;
+; 42   : 	spinlock->value = 0;
 
 	mov	rax, QWORD PTR spinlock$[rsp]
 	mov	QWORD PTR [rax], 0
 
-; 40   : 	return spinlock;
+; 43   : 	spinlock->set_by_cpu = 0;
+
+	mov	rax, QWORD PTR spinlock$[rsp]
+	mov	BYTE PTR [rax+8], 0
+
+; 44   : 	return spinlock;
 
 	mov	rax, QWORD PTR spinlock$[rsp]
 
-; 41   : }
+; 45   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0

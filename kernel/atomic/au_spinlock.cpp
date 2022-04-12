@@ -30,6 +30,9 @@
 #include <atomic\au_spinlock.h>
 #include <mm\kmalloc.h>
 #include <arch\x86_64\x86_64_lowlevel.h>
+#include <arch\x86_64\x86_64_per_cpu.h>
+#include <console.h>
+#include <kdrivers\serial.h>
 
 /*
  * au_create_spinlock -- creates a spinlock and return
@@ -37,6 +40,7 @@
 au_spinlock_t * au_create_spinlock() {
 	au_spinlock_t *spinlock = (au_spinlock_t*)kmalloc(sizeof(au_spinlock_t));
 	spinlock->value = 0;
+	spinlock->set_by_cpu = 0;
 	return spinlock;
 }
 
@@ -53,7 +57,10 @@ void au_remove_spinlock(au_spinlock_t* spinlock) {
  * @param spinlock -- spinlock to acquire
  */
 void au_acquire_spinlock(au_spinlock_t *spinlock) {
+	if (spinlock->value > 1)
+		spinlock->value = 0;
 	x64_lock_acquire(&spinlock->value);
+	spinlock->set_by_cpu = per_cpu_get_cpu_id();
 }
 
 /*
@@ -61,6 +68,11 @@ void au_acquire_spinlock(au_spinlock_t *spinlock) {
  * @param spinlock -- spinlock to free
  */
 void au_free_spinlock(au_spinlock_t* spinlock) {
-	if (spinlock->value == 1)
-		spinlock->value = 0;
+	if (spinlock->value > 1){ //corrupted spinlock
+		return;
+	}
+
+	spinlock->set_by_cpu = per_cpu_get_cpu_id();
+	spinlock->value = 0;
+	
 }

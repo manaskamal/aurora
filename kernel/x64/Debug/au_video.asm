@@ -8,6 +8,7 @@ INCLUDELIB OLDNAMES
 PUBLIC	?fb_@@3U_au_fb_@@A				; fb_
 _BSS	SEGMENT
 ?fb_@@3U_au_fb_@@A DB 018H DUP (?)			; fb_
+fb_lock	DQ	01H DUP (?)
 _BSS	ENDS
 PUBLIC	?au_fb_initialize@@YAHXZ			; au_fb_initialize
 PUBLIC	?au_video_get_fb@@YAPEAIXZ			; au_video_get_fb
@@ -16,13 +17,24 @@ PUBLIC	?au_video_get_x_res@@YAIXZ			; au_video_get_x_res
 PUBLIC	?au_video_get_y_res@@YAIXZ			; au_video_get_y_res
 EXTRN	x86_64_map_page:PROC
 EXTRN	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ:PROC	; au_get_boot_info
+EXTRN	x64_lock_acquire:PROC
 pdata	SEGMENT
 $pdata$?au_fb_initialize@@YAHXZ DD imagerel $LN6
 	DD	imagerel $LN6+191
 	DD	imagerel $unwind$?au_fb_initialize@@YAHXZ
+$pdata$?au_video_get_fb@@YAPEAIXZ DD imagerel $LN3
+	DD	imagerel $LN3+49
+	DD	imagerel $unwind$?au_video_get_fb@@YAPEAIXZ
+$pdata$?au_video_get_x_res@@YAIXZ DD imagerel $LN3
+	DD	imagerel $LN3+46
+	DD	imagerel $unwind$?au_video_get_x_res@@YAIXZ
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?au_fb_initialize@@YAHXZ DD 010401H
+	DD	06204H
+$unwind$?au_video_get_fb@@YAPEAIXZ DD 010401H
+	DD	06204H
+$unwind$?au_video_get_x_res@@YAIXZ DD 010401H
 	DD	06204H
 xdata	ENDS
 ; Function compile flags: /Odtpy
@@ -30,11 +42,11 @@ xdata	ENDS
 _TEXT	SEGMENT
 ?au_video_get_y_res@@YAIXZ PROC				; au_video_get_y_res
 
-; 80   : 	return fb_.y_resolution;
+; 87   : 	return fb_.y_resolution;
 
 	mov	eax, DWORD PTR ?fb_@@3U_au_fb_@@A+4
 
-; 81   : }
+; 88   : }
 
 	ret	0
 ?au_video_get_y_res@@YAIXZ ENDP				; au_video_get_y_res
@@ -42,14 +54,35 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\kdrivers\au_video.cpp
 _TEXT	SEGMENT
+x_res$ = 32
 ?au_video_get_x_res@@YAIXZ PROC				; au_video_get_x_res
 
-; 73   : 	return fb_.x_resolution;
+; 76   : uint32_t au_video_get_x_res() {
+
+$LN3:
+	sub	rsp, 56					; 00000038H
+
+; 77   : 	x64_lock_acquire(&fb_lock);
+
+	lea	rcx, OFFSET FLAT:fb_lock
+	call	x64_lock_acquire
+
+; 78   : 	uint32_t x_res = fb_.x_resolution;
 
 	mov	eax, DWORD PTR ?fb_@@3U_au_fb_@@A
+	mov	DWORD PTR x_res$[rsp], eax
 
-; 74   : }
+; 79   : 	fb_lock = 0;
 
+	mov	QWORD PTR fb_lock, 0
+
+; 80   : 	return x_res;
+
+	mov	eax, DWORD PTR x_res$[rsp]
+
+; 81   : }
+
+	add	rsp, 56					; 00000038H
 	ret	0
 ?au_video_get_x_res@@YAIXZ ENDP				; au_video_get_x_res
 _TEXT	ENDS
@@ -58,11 +91,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?au_video_get_pixels_per_line@@YAGXZ PROC		; au_video_get_pixels_per_line
 
-; 66   : 	return fb_.pixels_per_scanline;
+; 70   : 	return fb_.pixels_per_scanline;
 
 	movzx	eax, WORD PTR ?fb_@@3U_au_fb_@@A+8
 
-; 67   : }
+; 71   : }
 
 	ret	0
 ?au_video_get_pixels_per_line@@YAGXZ ENDP		; au_video_get_pixels_per_line
@@ -70,14 +103,35 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\kdrivers\au_video.cpp
 _TEXT	SEGMENT
+fb$ = 32
 ?au_video_get_fb@@YAPEAIXZ PROC				; au_video_get_fb
 
-; 58   : 	return fb_.framebuffer;
+; 58   : uint32_t* au_video_get_fb() {
+
+$LN3:
+	sub	rsp, 56					; 00000038H
+
+; 59   : 	x64_lock_acquire(&fb_lock);
+
+	lea	rcx, OFFSET FLAT:fb_lock
+	call	x64_lock_acquire
+
+; 60   : 	uint32_t *fb = fb_.framebuffer;
 
 	mov	rax, QWORD PTR ?fb_@@3U_au_fb_@@A+16
+	mov	QWORD PTR fb$[rsp], rax
 
-; 59   : }
+; 61   : 	fb_lock = 0;
 
+	mov	QWORD PTR fb_lock, 0
+
+; 62   : 	return fb;
+
+	mov	rax, QWORD PTR fb$[rsp]
+
+; 63   : }
+
+	add	rsp, 56					; 00000038H
 	ret	0
 ?au_video_get_fb@@YAPEAIXZ ENDP				; au_video_get_fb
 _TEXT	ENDS
@@ -88,19 +142,19 @@ i$1 = 32
 phys_fb$ = 40
 ?au_fb_initialize@@YAHXZ PROC				; au_fb_initialize
 
-; 41   : int au_fb_initialize() {
+; 42   : int au_fb_initialize() {
 
 $LN6:
 	sub	rsp, 56					; 00000038H
 
-; 42   : 	uint32_t* phys_fb = au_get_boot_info()->fb_addr;
+; 43   : 	uint32_t* phys_fb = au_get_boot_info()->fb_addr;
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rax, QWORD PTR [rax+40]
 	mov	QWORD PTR phys_fb$[rsp], rax
 
-; 43   : 
-; 44   : 	for (size_t i = 0; i < au_get_boot_info()->fb_size / 4096; i++)
+; 44   : 
+; 45   : 	for (size_t i = 0; i < au_get_boot_info()->fb_size / 4096; i++)
 
 	mov	QWORD PTR i$1[rsp], 0
 	jmp	SHORT $LN3@au_fb_init
@@ -117,7 +171,7 @@ $LN3@au_fb_init:
 	cmp	QWORD PTR i$1[rsp], rax
 	jae	SHORT $LN1@au_fb_init
 
-; 45   : 		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
+; 46   : 		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
 
 	imul	rax, QWORD PTR i$1[rsp], 4096		; 00001000H
 	mov	rcx, 52776558133248			; 0000300000000000H
@@ -132,35 +186,35 @@ $LN3@au_fb_init:
 	jmp	SHORT $LN2@au_fb_init
 $LN1@au_fb_init:
 
-; 46   : 
-; 47   : 	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
+; 47   : 
+; 48   : 	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
 
 	mov	rax, -52776558133248			; ffffd00000000000H
 	mov	QWORD PTR ?fb_@@3U_au_fb_@@A+16, rax
 
-; 48   : 	fb_.pixels_per_scanline = au_get_boot_info()->pixels_per_line;
+; 49   : 	fb_.pixels_per_scanline = au_get_boot_info()->pixels_per_line;
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	movzx	eax, WORD PTR [rax+64]
 	mov	WORD PTR ?fb_@@3U_au_fb_@@A+8, ax
 
-; 49   : 	fb_.x_resolution = au_get_boot_info()->x_res;
+; 50   : 	fb_.x_resolution = au_get_boot_info()->x_res;
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	eax, DWORD PTR [rax+56]
 	mov	DWORD PTR ?fb_@@3U_au_fb_@@A, eax
 
-; 50   : 	fb_.y_resolution = au_get_boot_info()->y_res;
+; 51   : 	fb_.y_resolution = au_get_boot_info()->y_res;
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	eax, DWORD PTR [rax+60]
 	mov	DWORD PTR ?fb_@@3U_au_fb_@@A+4, eax
 
-; 51   : 	return 0;
+; 52   : 	return 0;
 
 	xor	eax, eax
 
-; 52   : }
+; 53   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0

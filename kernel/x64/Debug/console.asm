@@ -5,6 +5,9 @@ include listing.inc
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
+_BSS	SEGMENT
+print_lock DQ	01H DUP (?)
+_BSS	ENDS
 _DATA	SEGMENT
 console_early DB 01H
 _DATA	ENDS
@@ -25,7 +28,7 @@ _TEXT	SEGMENT
 text$ = 48
 printf	PROC
 
-; 38   : void printf(const char *text, ...) {
+; 40   : void printf(const char *text, ...) {
 
 $LN4:
 	mov	QWORD PTR [rsp+8], rcx
@@ -34,22 +37,27 @@ $LN4:
 	mov	QWORD PTR [rsp+32], r9
 	sub	rsp, 40					; 00000028H
 
-; 39   : 	if (console_early) {
+; 41   : 	//x64_lock_acquire(&print_lock);
+; 42   : 	if (console_early) {
 
 	movzx	eax, BYTE PTR console_early
 	test	eax, eax
 	je	SHORT $LN1@printf
 
-; 40   : 		au_get_boot_info()->auprint(text);
+; 43   : 		au_get_boot_info()->auprint(text);
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rcx, QWORD PTR text$[rsp]
 	call	QWORD PTR [rax+90]
 $LN1@printf:
 
-; 41   : 		return;
-; 42   : 	}
-; 43   : }
+; 44   : 		//if (print_lock == 1)
+; 45   : 		//	print_lock = 0;
+; 46   : 		return;
+; 47   : 	}
+; 48   : 	//if (print_lock == 1)
+; 49   : 	//	print_lock = 0;
+; 50   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0

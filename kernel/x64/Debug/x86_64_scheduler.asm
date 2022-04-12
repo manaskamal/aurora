@@ -5,14 +5,15 @@ include listing.inc
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
+PUBLIC	?queue_lock@@3PEAU_au_spinlock_@@EA		; queue_lock
 PUBLIC	?sched_start_lock@@3PEAU_au_spinlock_@@EA	; sched_start_lock
-PUBLIC	?scheduler_lock@@3PEAU_au_spinlock_@@EA		; scheduler_lock
 PUBLIC	?thread_list_head@@3PEAU_thread_@@EA		; thread_list_head
 PUBLIC	?thread_list_last@@3PEAU_thread_@@EA		; thread_list_last
 PUBLIC	?idle@@3PEAU_thread_@@EA			; idle
+PUBLIC	?scheduler_lock@@3PEAU_au_spinlock_@@EA		; scheduler_lock
 _BSS	SEGMENT
+?queue_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?)	; queue_lock
 ?sched_start_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?) ; sched_start_lock
-?scheduler_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?)	; scheduler_lock
 start_scheduler DB 01H DUP (?)
 	ALIGN	8
 
@@ -20,9 +21,12 @@ idle_lock DQ	01H DUP (?)
 ?thread_list_head@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_head
 ?thread_list_last@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_last
 ?idle@@3PEAU_thread_@@EA DQ 01H DUP (?)			; idle
+?scheduler_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?)	; scheduler_lock
 _BSS	ENDS
 CONST	SEGMENT
-$SG3102	DB	'Idle thread from cpu-id  %d, lock-> %d', 0aH, 00H
+$SG3073	DB	'Create kthr lock -> %d, set by cpu -> %d', 0aH, 00H
+	ORG $+6
+$SG3114	DB	'idle addr -> %x', 0aH, 00H
 CONST	ENDS
 PUBLIC	thread_insert
 PUBLIC	thread_delete
@@ -32,16 +36,17 @@ PUBLIC	?x86_64_sched_start@@YAXXZ			; x86_64_sched_start
 PUBLIC	?x86_64_initialize_idle@@YAXXZ			; x86_64_initialize_idle
 PUBLIC	?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ	; x86_64_get_idle_thr
 PUBLIC	?x86_64_sched_enable@@YAX_N@Z			; x86_64_sched_enable
+PUBLIC	?x86_64_get_scheduler_lock@@YAPEAU_au_spinlock_@@XZ ; x86_64_get_scheduler_lock
+PUBLIC	?x86_64_execute_idle@@YAXXZ			; x86_64_execute_idle
 PUBLIC	?x86_64_next_thread@@YAXXZ			; x86_64_next_thread
 PUBLIC	?x86_64_sceduler_isr@@YAX_KPEAX@Z		; x86_64_sceduler_isr
 PUBLIC	?x86_64_idle_thread@@YAXXZ			; x86_64_idle_thread
-EXTRN	printf:PROC
-EXTRN	?per_cpu_set_c_thread@@YAXPEAX@Z:PROC		; per_cpu_set_c_thread
-EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
-EXTRN	?per_cpu_get_c_thread@@YAPEAXXZ:PROC		; per_cpu_get_c_thread
 EXTRN	au_create_spinlock:PROC
 EXTRN	au_acquire_spinlock:PROC
 EXTRN	au_free_spinlock:PROC
+EXTRN	printf:PROC
+EXTRN	?per_cpu_set_c_thread@@YAXPEAX@Z:PROC		; per_cpu_set_c_thread
+EXTRN	?per_cpu_get_c_thread@@YAPEAXXZ:PROC		; per_cpu_get_c_thread
 EXTRN	setvect:PROC
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
 EXTRN	x64_cli:PROC
@@ -55,26 +60,26 @@ EXTRN	x86_64_save_context:PROC
 EXTRN	x86_64_execute_context:PROC
 pdata	SEGMENT
 $pdata$x86_64_create_kthread DD imagerel $LN3
-	DD	imagerel $LN3+460
+	DD	imagerel $LN3+522
 	DD	imagerel $unwind$x86_64_create_kthread
 $pdata$?x86_64_initialize_scheduler@@YAHXZ DD imagerel $LN3
-	DD	imagerel $LN3+100
+	DD	imagerel $LN3+131
 	DD	imagerel $unwind$?x86_64_initialize_scheduler@@YAHXZ
 $pdata$?x86_64_sched_start@@YAXXZ DD imagerel $LN3
-	DD	imagerel $LN3+55
+	DD	imagerel $LN3+31
 	DD	imagerel $unwind$?x86_64_sched_start@@YAXXZ
 $pdata$?x86_64_initialize_idle@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+21
 	DD	imagerel $unwind$?x86_64_initialize_idle@@YAXXZ
+$pdata$?x86_64_execute_idle@@YAXXZ DD imagerel $LN3
+	DD	imagerel $LN3+21
+	DD	imagerel $unwind$?x86_64_execute_idle@@YAXXZ
 $pdata$?x86_64_next_thread@@YAXXZ DD imagerel $LN7
-	DD	imagerel $LN7+83
+	DD	imagerel $LN7+107
 	DD	imagerel $unwind$?x86_64_next_thread@@YAXXZ
 $pdata$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+159
+	DD	imagerel $LN5+183
 	DD	imagerel $unwind$?x86_64_sceduler_isr@@YAX_KPEAX@Z
-$pdata$?x86_64_idle_thread@@YAXXZ DD imagerel $LN5
-	DD	imagerel $LN5+72
-	DD	imagerel $unwind$?x86_64_idle_thread@@YAXXZ
 pdata	ENDS
 xdata	SEGMENT
 $unwind$x86_64_create_kthread DD 011301H
@@ -85,66 +90,36 @@ $unwind$?x86_64_sched_start@@YAXXZ DD 010401H
 	DD	04204H
 $unwind$?x86_64_initialize_idle@@YAXXZ DD 010401H
 	DD	04204H
+$unwind$?x86_64_execute_idle@@YAXXZ DD 010401H
+	DD	04204H
 $unwind$?x86_64_next_thread@@YAXXZ DD 010401H
 	DD	06204H
 $unwind$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD 010e01H
 	DD	0620eH
-$unwind$?x86_64_idle_thread@@YAXXZ DD 010401H
-	DD	04204H
 xdata	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
 _TEXT	SEGMENT
 ?x86_64_idle_thread@@YAXXZ PROC				; x86_64_idle_thread
 
-; 201  : void x86_64_idle_thread() {
+; 216  : void x86_64_idle_thread() {
 
-$LN5:
-	sub	rsp, 40					; 00000028H
-
-; 202  : 	x64_cli();
-
-	call	x64_cli
-
-; 203  : 	printf("Idle thread from cpu-id  %d, lock-> %d\n", per_cpu_get_cpu_id(), scheduler_lock->value);
-
-	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
-	movzx	eax, al
-	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
-	mov	r8, QWORD PTR [rcx]
-	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3102
-	call	printf
-
-; 204  : 	
-; 205  : 	/*if (scheduler_lock == 1)
-; 206  : 		scheduler_lock = 0;*/
-; 207  : 	
-; 208  : 	au_free_spinlock(scheduler_lock);
-
-	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
-	call	au_free_spinlock
-
-; 209  : 	x64_sti();
-
-	call	x64_sti
+	npad	2
 $LN2@x86_64_idl:
 
-; 210  : 	
-; 211  : 	while (1) {	
+; 217  : 	while (1) {	
 
 	xor	eax, eax
 	cmp	eax, 1
 	je	SHORT $LN1@x86_64_idl
 
-; 212  : 	}
+; 218  : 	}
 
 	jmp	SHORT $LN2@x86_64_idl
 $LN1@x86_64_idl:
 
-; 213  : }
+; 219  : }
 
-	add	rsp, 40					; 00000028H
 	ret	0
 ?x86_64_idle_thread@@YAXXZ ENDP				; x86_64_idle_thread
 _TEXT	ENDS
@@ -156,108 +131,120 @@ v$ = 64
 p$ = 72
 ?x86_64_sceduler_isr@@YAX_KPEAX@Z PROC			; x86_64_sceduler_isr
 
-; 161  : void x86_64_sceduler_isr(size_t v, void* p) {
+; 172  : void x86_64_sceduler_isr(size_t v, void* p) {
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 162  : 	
-; 163  : 	if (start_scheduler == false) {
+; 173  : 	if (!start_scheduler) {
 
 	movzx	eax, BYTE PTR start_scheduler
 	test	eax, eax
 	jne	SHORT $LN2@x86_64_sce
 
-; 164  : 		apic_local_eoi();
+; 174  : 		au_acquire_spinlock(queue_lock);
+
+	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
+	call	au_acquire_spinlock
+
+; 175  : 		apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 165  : 		return;
+; 176  : 		au_free_spinlock(queue_lock);
+
+	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
+	call	au_free_spinlock
+
+; 177  : 		return;
 
 	jmp	SHORT $LN3@x86_64_sce
 $LN2@x86_64_sce:
 
-; 166  : 	}
-; 167  : 
-; 168  : 	au_acquire_spinlock(sched_start_lock);
+; 178  : 	}
+; 179  : 	au_acquire_spinlock(queue_lock);
 
-	mov	rcx, QWORD PTR ?sched_start_lock@@3PEAU_au_spinlock_@@EA ; sched_start_lock
+	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
 	call	au_acquire_spinlock
 
-; 169  : 	x64_cli();
+; 180  : 	x64_cli();
 
 	call	x64_cli
 
-; 170  : 
-; 171  : 	
-; 172  : 
-; 173  : 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
+; 181  : 
+; 182  : 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR current_thr$[rsp], rax
 
-; 174  : 	if (x86_64_save_context(current_thr) == 0) {
+; 183  : 	
+; 184  : 	if (x86_64_save_context(current_thr) == 0) {
 
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	call	x86_64_save_context
 	test	eax, eax
 	jne	SHORT $LN1@x86_64_sce
 
-; 175  : 		current_thr->cr3 = x64_read_cr3();
+; 185  : 		current_thr->cr3 = x64_read_cr3();
 
 	call	x64_read_cr3
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	mov	QWORD PTR [rcx+192], rax
 
-; 176  : 	
-; 177  : 		x86_64_next_thread();
+; 186  : 	
+; 187  : 		
+; 188  : 		x86_64_next_thread();
 
 	call	?x86_64_next_thread@@YAXXZ		; x86_64_next_thread
 
-; 178  : 		
-; 179  : 		apic_local_eoi();
+; 189  : 		
+; 190  : 		apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 180  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
+; 191  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR current_thr$[rsp], rax
 
-; 181  : 
-; 182  : 	
-; 183  : 		au_free_spinlock(sched_start_lock);
+; 192  : 
+; 193  : 		/*if (current_thr == (thread_t*)0xFFFFE00000000500)
+; 194  : 			printf("Current thr2 choosed by cpu -> %d \n", per_cpu_get_cpu_id());*/
+; 195  : 
+; 196  : 
+; 197  : 		au_free_spinlock(queue_lock);
 
-	mov	rcx, QWORD PTR ?sched_start_lock@@3PEAU_au_spinlock_@@EA ; sched_start_lock
+	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
 	call	au_free_spinlock
 
-; 184  : 		x86_64_execute_context(current_thr);
+; 198  : 		x86_64_execute_context(current_thr);
 
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	call	x86_64_execute_context
 $LN1@x86_64_sce:
 $end$6:
 
-; 185  : 	}
-; 186  : end:
-; 187  : 	apic_local_eoi();
+; 199  : 	}
+; 200  : end:
+; 201  : 	
+; 202  : 	apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 188  : 	
-; 189  : 	au_free_spinlock(sched_start_lock);
-
-	mov	rcx, QWORD PTR ?sched_start_lock@@3PEAU_au_spinlock_@@EA ; sched_start_lock
-	call	au_free_spinlock
-
-; 190  : 	x64_sti();
+; 203  : 	x64_sti();
 
 	call	x64_sti
+
+; 204  : 	au_free_spinlock(queue_lock);
+
+	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
+	call	au_free_spinlock
 $LN3@x86_64_sce:
 
-; 191  : }
+; 205  : 	//
+; 206  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -269,36 +256,41 @@ _TEXT	SEGMENT
 thr$ = 32
 ?x86_64_next_thread@@YAXXZ PROC				; x86_64_next_thread
 
-; 139  : void x86_64_next_thread() {
+; 147  : void x86_64_next_thread() {
 
 $LN7:
 	sub	rsp, 56					; 00000038H
 
-; 140  : 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
+; 148  : 	au_acquire_spinlock(scheduler_lock);
+
+	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	call	au_acquire_spinlock
+
+; 149  : 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR thr$[rsp], rax
 $LN4@x86_64_nex:
 
-; 141  : 	do {
-; 142  : 		thr = thr->next;
+; 150  : 	do {
+; 151  : 		thr = thr->next;
 
 	mov	rax, QWORD PTR thr$[rsp]
 	mov	rax, QWORD PTR [rax+216]
 	mov	QWORD PTR thr$[rsp], rax
 
-; 143  : 		if (thr == NULL)
+; 152  : 		if (thr == NULL)
 
 	cmp	QWORD PTR thr$[rsp], 0
 	jne	SHORT $LN1@x86_64_nex
 
-; 144  : 			thr = thread_list_head;
+; 153  : 			thr = thread_list_head;
 
 	mov	rax, QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA ; thread_list_head
 	mov	QWORD PTR thr$[rsp], rax
 $LN1@x86_64_nex:
 
-; 145  : 	} while (thr->state != THREAD_STATE_READY);
+; 154  : 	} while (thr->state != THREAD_STATE_READY);
 
 	mov	rax, QWORD PTR thr$[rsp]
 	movzx	eax, BYTE PTR [rax+208]
@@ -306,14 +298,19 @@ $LN1@x86_64_nex:
 	jne	SHORT $LN4@x86_64_nex
 $end$8:
 
-; 146  : 
-; 147  : end:
-; 148  : 	per_cpu_set_c_thread(thr);
+; 155  : 
+; 156  : end:
+; 157  : 	per_cpu_set_c_thread(thr);
 
 	mov	rcx, QWORD PTR thr$[rsp]
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 149  : }
+; 158  : 	au_free_spinlock(scheduler_lock);
+
+	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	call	au_free_spinlock
+
+; 159  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -322,18 +319,53 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
 _TEXT	SEGMENT
+?x86_64_execute_idle@@YAXXZ PROC			; x86_64_execute_idle
+
+; 255  : void x86_64_execute_idle() {
+
+$LN3:
+	sub	rsp, 40					; 00000028H
+
+; 256  : 	x86_64_execute_context(idle);
+
+	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
+	call	x86_64_execute_context
+
+; 257  : }
+
+	add	rsp, 40					; 00000028H
+	ret	0
+?x86_64_execute_idle@@YAXXZ ENDP			; x86_64_execute_idle
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
+_TEXT	SEGMENT
+?x86_64_get_scheduler_lock@@YAPEAU_au_spinlock_@@XZ PROC ; x86_64_get_scheduler_lock
+
+; 267  : 	return scheduler_lock;
+
+	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+
+; 268  : }
+
+	ret	0
+?x86_64_get_scheduler_lock@@YAPEAU_au_spinlock_@@XZ ENDP ; x86_64_get_scheduler_lock
+_TEXT	ENDS
+; Function compile flags: /Odtpy
+; File e:\aurora kernel\kernel\arch\x86_64\x86_64_scheduler.cpp
+_TEXT	SEGMENT
 value$ = 8
 ?x86_64_sched_enable@@YAX_N@Z PROC			; x86_64_sched_enable
 
-; 250  : void x86_64_sched_enable(bool value) {
+; 262  : void x86_64_sched_enable(bool value) {
 
 	mov	BYTE PTR [rsp+8], cl
 
-; 251  : 	start_scheduler = true;
+; 263  : 	start_scheduler = true;
 
 	mov	BYTE PTR start_scheduler, 1
 
-; 252  : }
+; 264  : }
 
 	ret	0
 ?x86_64_sched_enable@@YAX_N@Z ENDP			; x86_64_sched_enable
@@ -343,11 +375,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ PROC		; x86_64_get_idle_thr
 
-; 247  : 	return idle;
+; 259  : 	return idle;
 
 	mov	rax, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 
-; 248  : }
+; 260  : }
 
 	ret	0
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ ENDP		; x86_64_get_idle_thr
@@ -357,17 +389,17 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_initialize_idle@@YAXXZ PROC			; x86_64_initialize_idle
 
-; 231  : void x86_64_initialize_idle() {
+; 239  : void x86_64_initialize_idle() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 232  : 	per_cpu_set_c_thread((void*)idle);
+; 240  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 233  : }
+; 241  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -378,32 +410,22 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_sched_start@@YAXXZ PROC				; x86_64_sched_start
 
-; 238  : void x86_64_sched_start() {
+; 246  : void x86_64_sched_start() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 239  : 	au_acquire_spinlock(scheduler_lock);
-
-	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
-	call	au_acquire_spinlock
-
-; 240  : 	x64_cli();
+; 247  : 	x64_cli();
 
 	call	x64_cli
 
-; 241  : 	setvect(0x40, x86_64_sceduler_isr);
+; 248  : 	setvect(0x40, x86_64_sceduler_isr);
 
 	lea	rdx, OFFSET FLAT:?x86_64_sceduler_isr@@YAX_KPEAX@Z ; x86_64_sceduler_isr
 	mov	ecx, 64					; 00000040H
 	call	setvect
 
-; 242  : 	x86_64_execute_context(idle);
-
-	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
-	call	x86_64_execute_context
-
-; 243  : }
+; 249  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -415,13 +437,13 @@ _TEXT	SEGMENT
 tv65 = 32
 ?x86_64_initialize_scheduler@@YAHXZ PROC		; x86_64_initialize_scheduler
 
-; 219  : int x86_64_initialize_scheduler() {
+; 225  : int x86_64_initialize_scheduler() {
 
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 220  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
-; 221  : 		x64_read_cr3());
+; 226  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+; 227  : 		x64_read_cr3());
 
 	call	x64_read_cr3
 	mov	QWORD PTR tv65[rsp], rax
@@ -435,26 +457,37 @@ $LN3:
 	call	x86_64_create_kthread
 	mov	QWORD PTR ?idle@@3PEAU_thread_@@EA, rax	; idle
 
-; 222  : 	scheduler_lock = au_create_spinlock();
+; 228  : 	printf("idle addr -> %x\n", idle);
+
+	mov	rdx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
+	lea	rcx, OFFSET FLAT:$SG3114
+	call	printf
+
+; 229  : 	scheduler_lock = au_create_spinlock();
 
 	call	au_create_spinlock
 	mov	QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA, rax ; scheduler_lock
 
-; 223  : 	sched_start_lock = au_create_spinlock();
+; 230  : 	sched_start_lock = au_create_spinlock();
 
 	call	au_create_spinlock
 	mov	QWORD PTR ?sched_start_lock@@3PEAU_au_spinlock_@@EA, rax ; sched_start_lock
 
-; 224  : 	per_cpu_set_c_thread((void*)idle);
+; 231  : 	queue_lock = au_create_spinlock();
+
+	call	au_create_spinlock
+	mov	QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA, rax ; queue_lock
+
+; 232  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 225  : 	return 0;
+; 233  : 	return 0;
 
 	xor	eax, eax
 
-; 226  : }
+; 234  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -469,7 +502,7 @@ stack$ = 72
 cr3$ = 80
 x86_64_create_kthread PROC
 
-; 101  : thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr3) {
+; 103  : thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr3) {
 
 $LN3:
 	mov	QWORD PTR [rsp+24], r8
@@ -477,170 +510,191 @@ $LN3:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 102  : 	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
+; 104  : 	
+; 105  : 	au_acquire_spinlock(scheduler_lock);
+
+	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	call	au_acquire_spinlock
+
+; 106  : 	printf("Create kthr lock -> %d, set by cpu -> %d\n", scheduler_lock->value, scheduler_lock->set_by_cpu);
+
+	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	movzx	eax, BYTE PTR [rax+8]
+	mov	r8d, eax
+	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	mov	rdx, QWORD PTR [rax]
+	lea	rcx, OFFSET FLAT:$SG3073
+	call	printf
+
+; 107  : 	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
 
 	mov	ecx, 232				; 000000e8H
 	call	kmalloc
 	mov	QWORD PTR thread$[rsp], rax
 
-; 103  : 	memset(thread, 0, sizeof(thread_t));
+; 108  : 	memset(thread, 0, sizeof(thread_t));
 
 	mov	r8d, 232				; 000000e8H
 	xor	edx, edx
 	mov	rcx, QWORD PTR thread$[rsp]
 	call	?memset@@YAXPEAXEI@Z			; memset
 
-; 104  : 	thread->ss = 0x10;
+; 109  : 	thread->ss = 0x10;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax], 16
 
-; 105  : 	thread->rsp = (uint64_t*)stack;
+; 110  : 	thread->rsp = (uint64_t*)stack;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR stack$[rsp]
 	mov	QWORD PTR [rax+8], rcx
 
-; 106  : 	thread->rflags = 0x202;
+; 111  : 	thread->rflags = 0x202;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+16], 514			; 00000202H
 
-; 107  : 	thread->cs = 0x08;
+; 112  : 	thread->cs = 0x08;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+24], 8
 
-; 108  : 	thread->rip = (uint64_t)entry;
+; 113  : 	thread->rip = (uint64_t)entry;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR entry$[rsp]
 	mov	QWORD PTR [rax+32], rcx
 
-; 109  : 	thread->rax = 0;
+; 114  : 	thread->rax = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+40], 0
 
-; 110  : 	thread->rbx = 0;
+; 115  : 	thread->rbx = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+48], 0
 
-; 111  : 	thread->rcx = 0;
+; 116  : 	thread->rcx = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+56], 0
 
-; 112  : 	thread->rdx = 0;
+; 117  : 	thread->rdx = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+64], 0
 
-; 113  : 	thread->rsi = 0;
+; 118  : 	thread->rsi = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+72], 0
 
-; 114  : 	thread->rdi = 0;
+; 119  : 	thread->rdi = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+80], 0
 
-; 115  : 	thread->rbp = (uint64_t)thread->rsp;
+; 120  : 	thread->rbp = (uint64_t)thread->rsp;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR [rcx+8]
 	mov	QWORD PTR [rax+88], rcx
 
-; 116  : 	thread->r8 = 0;
+; 121  : 	thread->r8 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+96], 0
 
-; 117  : 	thread->r9 = 0;
+; 122  : 	thread->r9 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+104], 0
 
-; 118  : 	thread->r10 = 0;
+; 123  : 	thread->r10 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+112], 0
 
-; 119  : 	thread->r11 = 0;
+; 124  : 	thread->r11 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+120], 0
 
-; 120  : 	thread->r12 = 0;
+; 125  : 	thread->r12 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+128], 0
 
-; 121  : 	thread->r13 = 0;
+; 126  : 	thread->r13 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+136], 0
 
-; 122  : 	thread->r14 = 0;
+; 127  : 	thread->r14 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+144], 0
 
-; 123  : 	thread->r15 = 0;
+; 128  : 	thread->r15 = 0;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+152], 0
 
-; 124  : 	thread->ds = 0x10;
+; 129  : 	thread->ds = 0x10;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+160], 16
 
-; 125  : 	thread->es = 0x10;
+; 130  : 	thread->es = 0x10;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+168], 16
 
-; 126  : 	thread->fs = 0x10;
+; 131  : 	thread->fs = 0x10;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+176], 16
 
-; 127  : 	thread->gs = 0x10;
+; 132  : 	thread->gs = 0x10;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	QWORD PTR [rax+184], 16
 
-; 128  : 	thread->cr3 = cr3;
+; 133  : 	thread->cr3 = cr3;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR cr3$[rsp]
 	mov	QWORD PTR [rax+192], rcx
 
-; 129  : 	thread->kern_esp = stack;
+; 134  : 	thread->kern_esp = stack;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rcx, QWORD PTR stack$[rsp]
 	mov	QWORD PTR [rax+200], rcx
 
-; 130  : 	thread->state = THREAD_STATE_READY;
+; 135  : 	thread->state = THREAD_STATE_READY;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	BYTE PTR [rax+208], 1
 
-; 131  : 	thread_insert(thread);
+; 136  : 	thread_insert(thread);
 
 	mov	rcx, QWORD PTR thread$[rsp]
 	call	thread_insert
 
-; 132  : 	return thread;
+; 137  : 	scheduler_lock->value = 0;
+
+	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
+	mov	QWORD PTR [rax], 0
+
+; 138  : 	return thread;
 
 	mov	rax, QWORD PTR thread$[rsp]
 
-; 133  : }
+; 139  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -652,40 +706,40 @@ _TEXT	SEGMENT
 thread$ = 8
 thread_delete PROC
 
-; 76   : void thread_delete(thread_t * thread) {
+; 78   : void thread_delete(thread_t * thread) {
 
 	mov	QWORD PTR [rsp+8], rcx
 
-; 77   : 	if (thread_list_head == NULL)
+; 79   : 	if (thread_list_head == NULL)
 
 	cmp	QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA, 0 ; thread_list_head
 	jne	SHORT $LN5@thread_del
 
-; 78   : 		return;
+; 80   : 		return;
 
 	jmp	$LN6@thread_del
 $LN5@thread_del:
 
-; 79   : 
-; 80   : 	if (thread == thread_list_head) {
+; 81   : 
+; 82   : 	if (thread == thread_list_head) {
 
 	mov	rax, QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA ; thread_list_head
 	cmp	QWORD PTR thread$[rsp], rax
 	jne	SHORT $LN4@thread_del
 
-; 81   : 		thread_list_head = thread_list_head->next;
+; 83   : 		thread_list_head = thread_list_head->next;
 
 	mov	rax, QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA ; thread_list_head
 	mov	rax, QWORD PTR [rax+216]
 	mov	QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA, rax ; thread_list_head
 
-; 82   : 	}
-; 83   : 	else {
+; 84   : 	}
+; 85   : 	else {
 
 	jmp	SHORT $LN3@thread_del
 $LN4@thread_del:
 
-; 84   : 		thread->prev->next = thread->next;
+; 86   : 		thread->prev->next = thread->next;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rax, QWORD PTR [rax+224]
@@ -694,27 +748,27 @@ $LN4@thread_del:
 	mov	QWORD PTR [rax+216], rcx
 $LN3@thread_del:
 
-; 85   : 	}
-; 86   : 
-; 87   : 	if (thread == thread_list_last) {
+; 87   : 	}
+; 88   : 
+; 89   : 	if (thread == thread_list_last) {
 
 	mov	rax, QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA ; thread_list_last
 	cmp	QWORD PTR thread$[rsp], rax
 	jne	SHORT $LN2@thread_del
 
-; 88   : 		thread_list_last = thread->prev;
+; 90   : 		thread_list_last = thread->prev;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rax, QWORD PTR [rax+224]
 	mov	QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA, rax ; thread_list_last
 
-; 89   : 	}
-; 90   : 	else {
+; 91   : 	}
+; 92   : 	else {
 
 	jmp	SHORT $LN1@thread_del
 $LN2@thread_del:
 
-; 91   : 		thread->next->prev = thread->prev;
+; 93   : 		thread->next->prev = thread->prev;
 
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	rax, QWORD PTR [rax+216]
@@ -724,8 +778,8 @@ $LN2@thread_del:
 $LN1@thread_del:
 $LN6@thread_del:
 
-; 92   : 	}
-; 93   : }
+; 94   : 	}
+; 95   : }
 
 	ret	0
 thread_delete ENDP
@@ -736,63 +790,63 @@ _TEXT	SEGMENT
 new_thread$ = 8
 thread_insert PROC
 
-; 55   : void thread_insert(thread_t * new_thread) {
+; 57   : void thread_insert(thread_t * new_thread) {
 
 	mov	QWORD PTR [rsp+8], rcx
 
-; 56   : 	new_thread->next = NULL;
+; 58   : 	new_thread->next = NULL;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR [rax+216], 0
 
-; 57   : 	new_thread->prev = NULL;
+; 59   : 	new_thread->prev = NULL;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR [rax+224], 0
 
-; 58   : 
-; 59   : 	if (thread_list_head == NULL) {
+; 60   : 
+; 61   : 	if (thread_list_head == NULL) {
 
 	cmp	QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA, 0 ; thread_list_head
 	jne	SHORT $LN2@thread_ins
 
-; 60   : 		thread_list_last = new_thread;
+; 62   : 		thread_list_last = new_thread;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA, rax ; thread_list_last
 
-; 61   : 		thread_list_head = new_thread;
+; 63   : 		thread_list_head = new_thread;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA, rax ; thread_list_head
 
-; 62   : 	}
-; 63   : 	else {
+; 64   : 	}
+; 65   : 	else {
 
 	jmp	SHORT $LN1@thread_ins
 $LN2@thread_ins:
 
-; 64   : 		thread_list_last->next = new_thread;
+; 66   : 		thread_list_last->next = new_thread;
 
 	mov	rax, QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA ; thread_list_last
 	mov	rcx, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR [rax+216], rcx
 
-; 65   : 		new_thread->prev = thread_list_last;
+; 67   : 		new_thread->prev = thread_list_last;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	rcx, QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA ; thread_list_last
 	mov	QWORD PTR [rax+224], rcx
 $LN1@thread_ins:
 
-; 66   : 	}
-; 67   : 
-; 68   : 	thread_list_last = new_thread;
+; 68   : 	}
+; 69   : 
+; 70   : 	thread_list_last = new_thread;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA, rax ; thread_list_last
 
-; 69   : }
+; 71   : }
 
 	ret	0
 thread_insert ENDP

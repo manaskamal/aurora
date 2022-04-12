@@ -27,62 +27,12 @@
 *
 **/
 
-#include <kdrivers\au_video.h>
-#include <arch\x86_64\x86_64_paging.h>
-#include <arch\x86_64\x86_64_pmmngr.h>
-#include <auinfo.h>
-#include <arch\x86_64\x86_64_lowlevel.h>
+#ifndef __X86_64_PIC_H__
+#define __X86_64_PIC_H__
 
-au_fb_t fb_;
-static uint64_t fb_lock = 0;
+#include <stdint.h>
 
-/*
- * au_fb_initialize -- initialize the framebuffer
- */
-int au_fb_initialize() {
-	uint32_t* phys_fb = au_get_boot_info()->fb_addr;
+extern void x86_64_pic_initialize();
+extern void x86_64_pic_eoi(unsigned int intno);
 
-	for (size_t i = 0; i < au_get_boot_info()->fb_size / 4096; i++)
-		x86_64_map_page((uint64_t)phys_fb + i * 4096, FRAMEBUFFER_ADDRESS + i * 4096, 0);
-
-	fb_.framebuffer = (uint32_t*)FRAMEBUFFER_ADDRESS;
-	fb_.pixels_per_scanline = au_get_boot_info()->pixels_per_line;
-	fb_.x_resolution = au_get_boot_info()->x_res;
-	fb_.y_resolution = au_get_boot_info()->y_res;
-	return 0;
-}
-
-/*
- * au_video_get_fb -- return the framebuffer address
- */
-uint32_t* au_video_get_fb() {
-	x64_lock_acquire(&fb_lock);
-	uint32_t *fb = fb_.framebuffer;
-	fb_lock = 0;
-	return fb;
-}
-
-/*
- * au_video_get_pixels_per_line -- return the screen pixels
- * per line information
- */
-uint16_t au_video_get_pixels_per_line() {
-	return fb_.pixels_per_scanline;
-}
-
-/*
- * au_video_get_x_res -- return screen width
- */
-uint32_t au_video_get_x_res() {
-	x64_lock_acquire(&fb_lock);
-	uint32_t x_res = fb_.x_resolution;
-	fb_lock = 0;
-	return x_res;
-}
-
-/*
- * au_video_get_y_res -- return screen height
- */
-uint32_t au_video_get_y_res() {
-	return fb_.y_resolution;
-}
+#endif

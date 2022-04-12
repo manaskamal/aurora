@@ -29,15 +29,22 @@
 
 #include <console.h>
 #include <auinfo.h>
+#include <arch\x86_64\x86_64_lowlevel.h>
 
 static bool console_early = true;
 
+static uint64_t print_lock = 0;
 /*
  * printf -- printing functions
  */
 void printf(const char *text, ...) {
+	//x64_lock_acquire(&print_lock);
 	if (console_early) {
 		au_get_boot_info()->auprint(text);
+		//if (print_lock == 1)
+		//	print_lock = 0;
 		return;
 	}
+	//if (print_lock == 1)
+	//	print_lock = 0;
 }

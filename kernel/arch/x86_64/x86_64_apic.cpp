@@ -35,6 +35,7 @@
 #include <arch\x86_64\x86_64_ioapic.h>
 #include <arch\x86_64\x86_64_pmmngr.h>
 #include <arch\x86_64\x86_64_ap_init.h>
+#include <arch\x86_64\x86_64_pit.h>
 #include <string.h>
 #include <kdrivers\serial.h>
 #include <console.h>
@@ -165,8 +166,11 @@ int x86_64_initialize_apic(bool bsp) {
 	size_t apic_base;
 	if (bsp){
 		apic_base = (size_t)x86_64_phys_to_virt(0xFEE00000);
-	}else
-		apic_base =  x64_read_msr(IA32_APIC_BASE_MSR);
+	}
+	else {
+		apic_base = x64_read_msr(IA32_APIC_BASE_MSR);
+		//printf("APIC BASE on AP -> %x \n", apic_base);
+	}
 	apic_timer_count = 0;
 	//map_page (0xFEE00000, 0xFEE00000,0);
 
@@ -184,14 +188,14 @@ int x86_64_initialize_apic(bool bsp) {
 		x64_write_msr(IA32_APIC_BASE_MSR, x86_64_virt_to_phys(apic_base));
 	else
 		x64_write_msr(IA32_APIC_BASE_MSR, apic_base);
+
 	//! Sends EOI to APIC
 	setvect(0xFF, apic_spurious_interrupt);
 	write_apic_register(LAPIC_REGISTER_SVR, read_apic_register(LAPIC_REGISTER_SVR) |
 		IA32_APIC_SVR_ENABLE | 0xFF);
-	
-	//!Register the time speed
-	write_apic_register(LAPIC_REGISTER_TMRDIV, 0xa);  //0xa
 
+	
+	write_apic_register(LAPIC_REGISTER_TMRDIV, 0xa);
 	/*! timer initialized*/
 	size_t timer_vector = 0x40;
 	setvect(timer_vector, apic_timer_interrupt);
@@ -199,7 +203,7 @@ int x86_64_initialize_apic(bool bsp) {
 	size_t timer_reg = (1 << 17) | timer_vector;
 	write_apic_register(LAPIC_REGISTER_LVT_TIMER, timer_reg);
 	io_wait();
-	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 76);  //100 , 500
+	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 16);  //100 , 500
 
 
 	x64_outportb(PIC1_DATA, 0xFF);
@@ -212,6 +216,8 @@ int x86_64_initialize_apic(bool bsp) {
 		ioapic_init((void*)x86_64_phys_to_virt(0xfec00000));
 	return 0;
 }
+
+
 
 
 void timer_sleep(uint32_t ms) {
@@ -250,10 +256,6 @@ bool icr_busy() {
 
 bool ap_started = 0;
 
-void Stall(uint32_t millis) {
-	uint64_t current = apic_timer_count;
-	while (apic_timer_count - current < millis);
-}
 
 /* initialize other processors
  * @param processor -- other processor id

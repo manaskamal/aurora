@@ -31,12 +31,15 @@
 #include <arch\x86_64\x86_64_lowlevel.h>
 #include <arch\x86_64\x86_64_cpu.h>
 
+static uint64_t per_cpu_lock = 0;
 /*
  * per_cpu_set_cpu_id -- write the cpu id
  * @param id -- cpu id
  */
 void per_cpu_set_cpu_id(uint8_t id) {
+	x64_lock_acquire(&per_cpu_lock);
 	x64_write_gs_b(0, id);
+	per_cpu_lock = 0;
 }
 
 /*
@@ -45,7 +48,9 @@ void per_cpu_set_cpu_id(uint8_t id) {
  * @param thread -- current thread address
  */
 void per_cpu_set_c_thread(void* thread) {
+	x64_lock_acquire(&per_cpu_lock);
 	x64_write_gs_q(1, (uint64_t)thread);
+	per_cpu_lock = 0;
 }
 
 
@@ -53,12 +58,18 @@ void per_cpu_set_c_thread(void* thread) {
  * per_cpu_get_cpu_id -- gets the current cpu id
  */
 uint8_t per_cpu_get_cpu_id() {
-	return x64_read_gs_b(0);
+	x64_lock_acquire(&per_cpu_lock);
+	uint8_t id =  x64_read_gs_b(0);
+	per_cpu_lock = 0;
+	return id;
 }
 
 /*
  * per_cpu_get_c_thread -- gets the current running thread
  */
 void* per_cpu_get_c_thread() {
-	return (void*)x64_read_gs_q(1);
+	x64_lock_acquire(&per_cpu_lock);
+	void* thr = (void*)x64_read_gs_q(1);
+	per_cpu_lock = 0;
+	return thr;
 }

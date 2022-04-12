@@ -37,6 +37,7 @@
 /* au_spinlock -- spinlock structure*/
 typedef struct _au_spinlock_ {
 	uint64_t value;
+	uint8_t  set_by_cpu;
 }au_spinlock_t;
 
 

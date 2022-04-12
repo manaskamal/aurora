@@ -10,13 +10,13 @@ _BSS	SEGMENT
 ?au_acpi@@3U_aurora_acpi_@@A DB 031H DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3264	DB	'FACP', 00H
-	ORG $+3
 $SG3265	DB	'FACP', 00H
 	ORG $+3
-$SG3269	DB	'APIC', 00H
+$SG3266	DB	'FACP', 00H
 	ORG $+3
 $SG3270	DB	'APIC', 00H
+	ORG $+3
+$SG3271	DB	'APIC', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
 PUBLIC	?au_acpi_get_num_core@@YAIXZ			; au_acpi_get_num_core
@@ -92,11 +92,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?au_acpi_get_num_core@@YAIXZ PROC			; au_acpi_get_num_core
 
-; 98   : 	return au_acpi.num_core;
+; 97   : 	return au_acpi.num_core;
 
 	mov	eax, DWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+45
 
-; 99   : }
+; 98   : }
 
 	ret	0
 ?au_acpi_get_num_core@@YAIXZ ENDP			; au_acpi_get_num_core
@@ -214,10 +214,10 @@ $LN13@au_initial:
 ; 61   : 
 ; 62   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3264
+	lea	rcx, OFFSET FLAT:$SG3265
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3265
+	lea	rdx, OFFSET FLAT:$SG3266
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -234,10 +234,10 @@ $LN10@au_initial:
 ; 65   : 
 ; 66   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3269
+	lea	rcx, OFFSET FLAT:$SG3270
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3270
+	lea	rdx, OFFSET FLAT:$SG3271
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -283,39 +283,38 @@ $LN3@au_initial:
 	mov	rax, QWORD PTR apic_header$1[rsp]
 	mov	QWORD PTR lapic$3[rsp], rax
 
-; 74   : 					//	au_get_boot_info()->auprint("LAPIC id -> %x, %x \n", lapic->lapicId, lapic->procId);
-; 75   : 						if (lapic->procId != 0)
+; 74   : 						if (lapic->procId != 0)
 
 	mov	rax, QWORD PTR lapic$3[rsp]
 	movzx	eax, BYTE PTR [rax+2]
 	test	eax, eax
 	je	SHORT $LN2@au_initial
 
-; 76   : 							au_acpi.num_core = lapic->procId;
+; 75   : 							au_acpi.num_core = lapic->procId;
 
 	mov	rax, QWORD PTR lapic$3[rsp]
 	movzx	eax, BYTE PTR [rax+2]
 	mov	DWORD PTR ?au_acpi@@3U_aurora_acpi_@@A+45, eax
 $LN2@au_initial:
 
-; 77   : 						 break;
+; 76   : 						 break;
 
 	jmp	SHORT $LN4@au_initial
 $LN1@au_initial:
 
-; 78   : 					}
-; 79   : 
-; 80   : 					case ACPI_APICTYPE_IOAPIC: {
-; 81   : 						acpiIoApic *ioapic = (acpiIoApic*)apic_header;
+; 77   : 					}
+; 78   : 
+; 79   : 					case ACPI_APICTYPE_IOAPIC: {
+; 80   : 						acpiIoApic *ioapic = (acpiIoApic*)apic_header;
 
 	mov	rax, QWORD PTR apic_header$1[rsp]
 	mov	QWORD PTR ioapic$4[rsp], rax
 $LN4@au_initial:
 
-; 82   : 						break;
-; 83   : 					}
-; 84   : 				}
-; 85   : 				apic_header = raw_offset <acpiApicHeader*>(apic_header, apic_header->length);
+; 81   : 						break;
+; 82   : 					}
+; 83   : 				}
+; 84   : 				apic_header = raw_offset <acpiApicHeader*>(apic_header, apic_header->length);
 
 	mov	rax, QWORD PTR apic_header$1[rsp]
 	movzx	eax, BYTE PTR [rax+1]
@@ -324,25 +323,25 @@ $LN4@au_initial:
 	call	??$raw_offset@PEAU_acpi_apic_header_@@PEAU1@@@YAPEAU_acpi_apic_header_@@PEAU0@H@Z ; raw_offset<_acpi_apic_header_ * __ptr64,_acpi_apic_header_ * __ptr64>
 	mov	QWORD PTR apic_header$1[rsp], rax
 
-; 86   : 			}
+; 85   : 			}
 
 	jmp	$LN7@au_initial
 $LN6@au_initial:
 $LN8@au_initial:
 $LN9@au_initial:
 
-; 87   : 		}
-; 88   : 	}
+; 86   : 		}
+; 87   : 	}
 
 	jmp	$LN12@au_initial
 $LN11@au_initial:
 
-; 89   : 
-; 90   : 	return 0;
+; 88   : 
+; 89   : 	return 0;
 
 	xor	eax, eax
 
-; 91   : }
+; 90   : }
 
 	add	rsp, 136				; 00000088H
 	ret	0

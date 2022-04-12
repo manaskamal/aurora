@@ -39,6 +39,8 @@
 #define PORT  0x3f8
 static bool _serial_initialized_ = false;
 
+static uint64_t serial_lock = 0;
+
 
 int au_initialize_serial() {
 	x64_outportb(x86_64_phys_to_virt(PORT + 1), 0x00);
@@ -67,6 +69,8 @@ void debug_serial(char* string) {
 }
 
 void _au_debug_print_(char* format, ...) {
+	x64_lock_acquire(&serial_lock);
+
 	_va_list_ args;
 	va_start(args, format);
 
@@ -147,6 +151,8 @@ void _au_debug_print_(char* format, ...) {
 		++format;
 	}
 	va_end(args);
+
+	serial_lock = 0;
 }
 
 bool is_serial_initialized() {

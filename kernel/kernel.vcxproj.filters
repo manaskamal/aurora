@@ -144,6 +144,12 @@
     <ClInclude Include="include\fs\devfs.h">
       <Filter>include\fs</Filter>
     </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_pit.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\x86_64\x86_64_pic.h">
+      <Filter>include\arch\x86_64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -206,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="fs\devfs.cpp">
       <Filter>fs</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_pit.cpp">
+      <Filter>arch\x86_64</Filter>
+    </ClCompile>
+    <ClCompile Include="arch\x86_64\x86_64_pic.cpp">
+      <Filter>arch\x86_64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

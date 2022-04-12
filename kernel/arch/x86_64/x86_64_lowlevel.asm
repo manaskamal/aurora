@@ -408,12 +408,13 @@ x64_get_stack:
 ;======================================
 global x64_lock_acquire
 x64_lock_acquire:  
-     mov rax,1
-     lock xchg [rcx],rax
+.trylock:
+     mov rax, 1
+     lock xchg qword [rcx],rax
 	 cmp rax, 0
 	 je .escape
      pause
-	 jmp x64_lock_acquire
+	 jmp .trylock
 .escape:
      ret
 

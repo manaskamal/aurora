@@ -37,6 +37,7 @@
 #include <arch\x86_64\x86_64_ioapic.h>
 #include <arch\x86_64\x86_64_per_cpu.h>
 #include <arch\x86_64\x86_64_scheduler.h>
+#include <arch\x86_64\x86_64_pit.h>
 #include <string.h>
 
 #include <kdrivers\au_video.h>
@@ -59,33 +60,35 @@ aurora_info_t * au_get_boot_info() {
 
 extern "C" int _fltused = 1;
 static uint64_t thr_lock = 0;
+static uint64_t t_lock = 0;
 
+int j_ = 100;
 void thread_test() {
-	x64_lock_acquire(&thr_lock);
-	printf("Thread test %d\n", per_cpu_get_cpu_id());
-	if (thr_lock == 1)
-		thr_lock = 0;
-	for (;;) {
-		x64_cli();
-		x64_lock_acquire(&thr_lock);
-		if (per_cpu_get_cpu_id() != 0)
-			printf("Thr tst in cpu %d\n", per_cpu_get_cpu_id());
-		if (per_cpu_get_cpu_id() == 0)
-			printf("Thr tst in bsp\n");
-
-		for (int i = 0; i < 100000; i++)
-			;
-		x64_sti();
-		if (thr_lock == 1)
-			thr_lock = 0;
+	for (;;){
+		x64_lock_acquire(&t_lock);
+		printf("THR Test -> %d \n", per_cpu_get_cpu_id());
+		if (t_lock == 1 || t_lock > 1)
+			t_lock = 0;
 		
 	}
 }
 
+static int i_ = 0; 
+
+void thread_test2() {
+
+	while (1) {
+
+		x64_lock_acquire(&thr_lock);
+		printf("Thr test2 -> %d\n", per_cpu_get_cpu_id());
+		if (thr_lock == 1 || thr_lock > 1)
+			thr_lock = 0;
+	}
+
+}
+
 /* initialize the bsp from here!*/
 int _kmain(aurora_info_t *bootinfo) {
-	x64_cli();
-
 	bootinfo->auprint("Aurora Kernel \n");
 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
@@ -94,7 +97,6 @@ int _kmain(aurora_info_t *bootinfo) {
 
 	x86_64_pmmngr_init(bootinfo);
 	x86_64_cpu_initialize(true);
-
 	/* initialize early drivers*/
 	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
@@ -102,16 +104,17 @@ int _kmain(aurora_info_t *bootinfo) {
 	au_status = au_initialize_serial();
 	au_status = x86_64_initialize_apic(true);
 	au_status = au_initialize_acpi();
-	
-	x86_64_setup_cpu_data(0);
+	x86_64_pit_initialize();
 
 	/* initialize the kernel subsystems */
 	vfs_initialize();
 	devfs_initialize();
 
-
+	x86_64_setup_cpu_data(0);
 	//x86_64_boot_free();
     x86_64_initialize_scheduler();
+	
+
 #ifdef SMP
 	/* initialize all the AP's*/
 	initialize_cpu(au_acpi_get_num_core());
@@ -123,10 +126,13 @@ int _kmain(aurora_info_t *bootinfo) {
 	 * that scheduler has started and they can
 	 * start their jobs
 	 */
-	thread_t *thr = x86_64_create_kthread(thread_test, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
-		x64_read_cr3());
+	
+	thread_t *thr = x86_64_create_kthread(thread_test, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
+	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc() + 4096), x64_read_cr3());
+	printf("Thread2-> %x\n", thr2);
 	x86_64_sched_enable(true);
 	x86_64_sched_start();
+	x86_64_execute_idle();
 	for (;;);
 	return 0;
 }

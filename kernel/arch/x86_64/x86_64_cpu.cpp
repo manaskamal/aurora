@@ -33,6 +33,7 @@
 #include <arch\x86_64\x86_64_pmmngr.h>
 #include <arch\x86_64\x86_64_per_cpu.h>
 #include <arch\x86_64\x86_64_paging.h>
+#include <arch\x86_64\x86_64_pic.h>
 #include <mm\kmalloc.h>
 #include <console.h>
 #include <auinfo.h>
@@ -281,7 +282,10 @@ void x86_64_cpu_print_brand() {
 }
 
 
-
+void pit_handler(size_t v, void* p) {
+	printf("Pit handler++\n");
+	
+}
 /*
  * x86_64_cpu_initialize -- initialize the cpu
  */
@@ -301,6 +305,7 @@ void x86_64_cpu_initialize(bool bsp) {
 	efer |= 1;
 	x64_write_msr(IA32_EFER, efer);
 
+	
 	/* setup BSP cpu data */
 	if (!bsp) {
 		gdtr *new_gdtr = (gdtr*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
@@ -331,6 +336,6 @@ void x86_64_setup_cpu_data(void* data) {
 	}
 	else {
 		x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)data);
-		//per_cpu_set_cpu_id((b >> 24));
+		per_cpu_set_cpu_id((b >> 24));
 	}
 }
