@@ -133,6 +133,9 @@ thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr
 	thread->cr3 = cr3;
 	thread->kern_esp = stack;
 	thread->state = THREAD_STATE_READY;
+	thread->cpu_affinity = THREAD_CPU_AFFINITY_ANY;
+	thread->fxstate = kmalloc(512);
+	memset(thread->fxstate, 0, 512);
 	thread_insert(thread);
 	scheduler_lock->value = 0;
 	return thread;
@@ -145,17 +148,18 @@ au_spinlock_t *queue_lock;
  * of threads, switch to next thread
  */
 void x86_64_next_thread() {
-	au_acquire_spinlock(scheduler_lock);
+	//au_acquire_spinlock(scheduler_lock);
 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
 	do {
 		thr = thr->next;
+		
 		if (thr == NULL)
 			thr = thread_list_head;
 	} while (thr->state != THREAD_STATE_READY);
 
 end:
 	per_cpu_set_c_thread(thr);
-	au_free_spinlock(scheduler_lock);
+	//au_free_spinlock(scheduler_lock);
 }
 
 
@@ -165,43 +169,47 @@ au_spinlock_t *sched_start_lock;
 
 
 static bool start_scheduler = false;
-
+int count = 0;
 /*
  * the main scheduler, heart of aurora
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
 	if (!start_scheduler) {
-		au_acquire_spinlock(queue_lock);
 		apic_local_eoi();
-		au_free_spinlock(queue_lock);
 		return;
 	}
-	au_acquire_spinlock(queue_lock);
+	
 	x64_cli();
-
+	au_acquire_spinlock(queue_lock);
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 	
+	
+
 	if (x86_64_save_context(current_thr) == 0) {
 		current_thr->cr3 = x64_read_cr3();
 	
-		
+		if (x86_64_fxsave_supported())
+			x64_fxsave(current_thr->fxstate);
+
+		apic_local_eoi();
 		x86_64_next_thread();
 		
-		apic_local_eoi();
 		current_thr = (thread_t*)per_cpu_get_c_thread();
 
-		/*if (current_thr == (thread_t*)0xFFFFE00000000500)
-			printf("Current thr2 choosed by cpu -> %d \n", per_cpu_get_cpu_id());*/
-
-
 		au_free_spinlock(queue_lock);
+
+		if (x86_64_fxsave_supported())
+			x64_fxrstor(current_thr->fxstate);
+
 		x86_64_execute_context(current_thr);
 	}
 end:
-	
 	apic_local_eoi();
 	x64_sti();
 	au_free_spinlock(queue_lock);
+	
+	//x
+	
 	//
 }
 

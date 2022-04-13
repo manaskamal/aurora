@@ -7,6 +7,7 @@ INCLUDELIB OLDNAMES
 
 PUBLIC	?queue_lock@@3PEAU_au_spinlock_@@EA		; queue_lock
 PUBLIC	?sched_start_lock@@3PEAU_au_spinlock_@@EA	; sched_start_lock
+PUBLIC	?count@@3HA					; count
 PUBLIC	?thread_list_head@@3PEAU_thread_@@EA		; thread_list_head
 PUBLIC	?thread_list_last@@3PEAU_thread_@@EA		; thread_list_last
 PUBLIC	?idle@@3PEAU_thread_@@EA			; idle
@@ -15,8 +16,9 @@ _BSS	SEGMENT
 ?queue_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?)	; queue_lock
 ?sched_start_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?) ; sched_start_lock
 start_scheduler DB 01H DUP (?)
-	ALIGN	8
+	ALIGN	4
 
+?count@@3HA DD	01H DUP (?)				; count
 idle_lock DQ	01H DUP (?)
 ?thread_list_head@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_head
 ?thread_list_last@@3PEAU_thread_@@EA DQ 01H DUP (?)	; thread_list_last
@@ -24,9 +26,9 @@ idle_lock DQ	01H DUP (?)
 ?scheduler_lock@@3PEAU_au_spinlock_@@EA DQ 01H DUP (?)	; scheduler_lock
 _BSS	ENDS
 CONST	SEGMENT
-$SG3073	DB	'Create kthr lock -> %d, set by cpu -> %d', 0aH, 00H
+$SG3081	DB	'Create kthr lock -> %d, set by cpu -> %d', 0aH, 00H
 	ORG $+6
-$SG3114	DB	'idle addr -> %x', 0aH, 00H
+$SG3125	DB	'idle addr -> %x', 0aH, 00H
 CONST	ENDS
 PUBLIC	thread_insert
 PUBLIC	thread_delete
@@ -48,10 +50,13 @@ EXTRN	printf:PROC
 EXTRN	?per_cpu_set_c_thread@@YAXPEAX@Z:PROC		; per_cpu_set_c_thread
 EXTRN	?per_cpu_get_c_thread@@YAPEAXXZ:PROC		; per_cpu_get_c_thread
 EXTRN	setvect:PROC
+EXTRN	?x86_64_fxsave_supported@@YA_NXZ:PROC		; x86_64_fxsave_supported
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
 EXTRN	x64_cli:PROC
 EXTRN	x64_sti:PROC
 EXTRN	x64_read_cr3:PROC
+EXTRN	x64_fxsave:PROC
+EXTRN	x64_fxrstor:PROC
 EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	x86_64_pmmngr_alloc:PROC
 EXTRN	kmalloc:PROC
@@ -60,7 +65,7 @@ EXTRN	x86_64_save_context:PROC
 EXTRN	x86_64_execute_context:PROC
 pdata	SEGMENT
 $pdata$x86_64_create_kthread DD imagerel $LN3
-	DD	imagerel $LN3+522
+	DD	imagerel $LN3+581
 	DD	imagerel $unwind$x86_64_create_kthread
 $pdata$?x86_64_initialize_scheduler@@YAHXZ DD imagerel $LN3
 	DD	imagerel $LN3+131
@@ -75,10 +80,10 @@ $pdata$?x86_64_execute_idle@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+21
 	DD	imagerel $unwind$?x86_64_execute_idle@@YAXXZ
 $pdata$?x86_64_next_thread@@YAXXZ DD imagerel $LN7
-	DD	imagerel $LN7+107
+	DD	imagerel $LN7+83
 	DD	imagerel $unwind$?x86_64_next_thread@@YAXXZ
-$pdata$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+183
+$pdata$?x86_64_sceduler_isr@@YAX_KPEAX@Z DD imagerel $LN7
+	DD	imagerel $LN7+220
 	DD	imagerel $unwind$?x86_64_sceduler_isr@@YAX_KPEAX@Z
 pdata	ENDS
 xdata	SEGMENT
@@ -102,23 +107,23 @@ xdata	ENDS
 _TEXT	SEGMENT
 ?x86_64_idle_thread@@YAXXZ PROC				; x86_64_idle_thread
 
-; 216  : void x86_64_idle_thread() {
+; 224  : void x86_64_idle_thread() {
 
 	npad	2
 $LN2@x86_64_idl:
 
-; 217  : 	while (1) {	
+; 225  : 	while (1) {	
 
 	xor	eax, eax
 	cmp	eax, 1
 	je	SHORT $LN1@x86_64_idl
 
-; 218  : 	}
+; 226  : 	}
 
 	jmp	SHORT $LN2@x86_64_idl
 $LN1@x86_64_idl:
 
-; 219  : }
+; 227  : }
 
 	ret	0
 ?x86_64_idle_thread@@YAXXZ ENDP				; x86_64_idle_thread
@@ -131,120 +136,140 @@ v$ = 64
 p$ = 72
 ?x86_64_sceduler_isr@@YAX_KPEAX@Z PROC			; x86_64_sceduler_isr
 
-; 172  : void x86_64_sceduler_isr(size_t v, void* p) {
+; 176  : void x86_64_sceduler_isr(size_t v, void* p) {
 
-$LN5:
+$LN7:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 173  : 	if (!start_scheduler) {
+; 177  : 	if (!start_scheduler) {
 
 	movzx	eax, BYTE PTR start_scheduler
 	test	eax, eax
-	jne	SHORT $LN2@x86_64_sce
+	jne	SHORT $LN4@x86_64_sce
 
-; 174  : 		au_acquire_spinlock(queue_lock);
-
-	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
-	call	au_acquire_spinlock
-
-; 175  : 		apic_local_eoi();
+; 178  : 		apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 176  : 		au_free_spinlock(queue_lock);
+; 179  : 		return;
 
-	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
-	call	au_free_spinlock
+	jmp	$LN5@x86_64_sce
+$LN4@x86_64_sce:
 
-; 177  : 		return;
+; 180  : 	}
+; 181  : 	
+; 182  : 	x64_cli();
 
-	jmp	SHORT $LN3@x86_64_sce
-$LN2@x86_64_sce:
+	call	x64_cli
 
-; 178  : 	}
-; 179  : 	au_acquire_spinlock(queue_lock);
+; 183  : 	au_acquire_spinlock(queue_lock);
 
 	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
 	call	au_acquire_spinlock
 
-; 180  : 	x64_cli();
-
-	call	x64_cli
-
-; 181  : 
-; 182  : 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
+; 184  : 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR current_thr$[rsp], rax
 
-; 183  : 	
-; 184  : 	if (x86_64_save_context(current_thr) == 0) {
+; 185  : 	
+; 186  : 	
+; 187  : 
+; 188  : 	if (x86_64_save_context(current_thr) == 0) {
 
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	call	x86_64_save_context
 	test	eax, eax
-	jne	SHORT $LN1@x86_64_sce
+	jne	SHORT $LN3@x86_64_sce
 
-; 185  : 		current_thr->cr3 = x64_read_cr3();
+; 189  : 		current_thr->cr3 = x64_read_cr3();
 
 	call	x64_read_cr3
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	mov	QWORD PTR [rcx+192], rax
 
-; 186  : 	
-; 187  : 		
-; 188  : 		x86_64_next_thread();
+; 190  : 	
+; 191  : 		if (x86_64_fxsave_supported())
 
-	call	?x86_64_next_thread@@YAXXZ		; x86_64_next_thread
+	call	?x86_64_fxsave_supported@@YA_NXZ	; x86_64_fxsave_supported
+	movzx	eax, al
+	test	eax, eax
+	je	SHORT $LN2@x86_64_sce
 
-; 189  : 		
-; 190  : 		apic_local_eoi();
+; 192  : 			x64_fxsave(current_thr->fxstate);
+
+	mov	rax, QWORD PTR current_thr$[rsp]
+	mov	rcx, QWORD PTR [rax+216]
+	call	x64_fxsave
+$LN2@x86_64_sce:
+
+; 193  : 
+; 194  : 		apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 191  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
+; 195  : 		x86_64_next_thread();
+
+	call	?x86_64_next_thread@@YAXXZ		; x86_64_next_thread
+
+; 196  : 		
+; 197  : 		current_thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR current_thr$[rsp], rax
 
-; 192  : 
-; 193  : 		/*if (current_thr == (thread_t*)0xFFFFE00000000500)
-; 194  : 			printf("Current thr2 choosed by cpu -> %d \n", per_cpu_get_cpu_id());*/
-; 195  : 
-; 196  : 
-; 197  : 		au_free_spinlock(queue_lock);
+; 198  : 
+; 199  : 		au_free_spinlock(queue_lock);
 
 	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
 	call	au_free_spinlock
 
-; 198  : 		x86_64_execute_context(current_thr);
+; 200  : 
+; 201  : 		if (x86_64_fxsave_supported())
+
+	call	?x86_64_fxsave_supported@@YA_NXZ	; x86_64_fxsave_supported
+	movzx	eax, al
+	test	eax, eax
+	je	SHORT $LN1@x86_64_sce
+
+; 202  : 			x64_fxrstor(current_thr->fxstate);
+
+	mov	rax, QWORD PTR current_thr$[rsp]
+	mov	rcx, QWORD PTR [rax+216]
+	call	x64_fxrstor
+$LN1@x86_64_sce:
+
+; 203  : 
+; 204  : 		x86_64_execute_context(current_thr);
 
 	mov	rcx, QWORD PTR current_thr$[rsp]
 	call	x86_64_execute_context
-$LN1@x86_64_sce:
-$end$6:
+$LN3@x86_64_sce:
+$end$8:
 
-; 199  : 	}
-; 200  : end:
-; 201  : 	
-; 202  : 	apic_local_eoi();
+; 205  : 	}
+; 206  : end:
+; 207  : 	apic_local_eoi();
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 203  : 	x64_sti();
+; 208  : 	x64_sti();
 
 	call	x64_sti
 
-; 204  : 	au_free_spinlock(queue_lock);
+; 209  : 	au_free_spinlock(queue_lock);
 
 	mov	rcx, QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA ; queue_lock
 	call	au_free_spinlock
-$LN3@x86_64_sce:
+$LN5@x86_64_sce:
 
-; 205  : 	//
-; 206  : }
+; 210  : 	
+; 211  : 	//x
+; 212  : 	
+; 213  : 	//
+; 214  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -256,41 +281,38 @@ _TEXT	SEGMENT
 thr$ = 32
 ?x86_64_next_thread@@YAXXZ PROC				; x86_64_next_thread
 
-; 147  : void x86_64_next_thread() {
+; 150  : void x86_64_next_thread() {
 
 $LN7:
 	sub	rsp, 56					; 00000038H
 
-; 148  : 	au_acquire_spinlock(scheduler_lock);
-
-	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
-	call	au_acquire_spinlock
-
-; 149  : 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
+; 151  : 	//au_acquire_spinlock(scheduler_lock);
+; 152  : 	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	QWORD PTR thr$[rsp], rax
 $LN4@x86_64_nex:
 
-; 150  : 	do {
-; 151  : 		thr = thr->next;
+; 153  : 	do {
+; 154  : 		thr = thr->next;
 
 	mov	rax, QWORD PTR thr$[rsp]
-	mov	rax, QWORD PTR [rax+216]
+	mov	rax, QWORD PTR [rax+224]
 	mov	QWORD PTR thr$[rsp], rax
 
-; 152  : 		if (thr == NULL)
+; 155  : 		
+; 156  : 		if (thr == NULL)
 
 	cmp	QWORD PTR thr$[rsp], 0
 	jne	SHORT $LN1@x86_64_nex
 
-; 153  : 			thr = thread_list_head;
+; 157  : 			thr = thread_list_head;
 
 	mov	rax, QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA ; thread_list_head
 	mov	QWORD PTR thr$[rsp], rax
 $LN1@x86_64_nex:
 
-; 154  : 	} while (thr->state != THREAD_STATE_READY);
+; 158  : 	} while (thr->state != THREAD_STATE_READY);
 
 	mov	rax, QWORD PTR thr$[rsp]
 	movzx	eax, BYTE PTR [rax+208]
@@ -298,19 +320,15 @@ $LN1@x86_64_nex:
 	jne	SHORT $LN4@x86_64_nex
 $end$8:
 
-; 155  : 
-; 156  : end:
-; 157  : 	per_cpu_set_c_thread(thr);
+; 159  : 
+; 160  : end:
+; 161  : 	per_cpu_set_c_thread(thr);
 
 	mov	rcx, QWORD PTR thr$[rsp]
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 158  : 	au_free_spinlock(scheduler_lock);
-
-	mov	rcx, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
-	call	au_free_spinlock
-
-; 159  : }
+; 162  : 	//au_free_spinlock(scheduler_lock);
+; 163  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -321,17 +339,17 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_execute_idle@@YAXXZ PROC			; x86_64_execute_idle
 
-; 255  : void x86_64_execute_idle() {
+; 263  : void x86_64_execute_idle() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 256  : 	x86_64_execute_context(idle);
+; 264  : 	x86_64_execute_context(idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	x86_64_execute_context
 
-; 257  : }
+; 265  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -342,11 +360,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_get_scheduler_lock@@YAPEAU_au_spinlock_@@XZ PROC ; x86_64_get_scheduler_lock
 
-; 267  : 	return scheduler_lock;
+; 275  : 	return scheduler_lock;
 
 	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
 
-; 268  : }
+; 276  : }
 
 	ret	0
 ?x86_64_get_scheduler_lock@@YAPEAU_au_spinlock_@@XZ ENDP ; x86_64_get_scheduler_lock
@@ -357,15 +375,15 @@ _TEXT	SEGMENT
 value$ = 8
 ?x86_64_sched_enable@@YAX_N@Z PROC			; x86_64_sched_enable
 
-; 262  : void x86_64_sched_enable(bool value) {
+; 270  : void x86_64_sched_enable(bool value) {
 
 	mov	BYTE PTR [rsp+8], cl
 
-; 263  : 	start_scheduler = true;
+; 271  : 	start_scheduler = true;
 
 	mov	BYTE PTR start_scheduler, 1
 
-; 264  : }
+; 272  : }
 
 	ret	0
 ?x86_64_sched_enable@@YAX_N@Z ENDP			; x86_64_sched_enable
@@ -375,11 +393,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ PROC		; x86_64_get_idle_thr
 
-; 259  : 	return idle;
+; 267  : 	return idle;
 
 	mov	rax, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 
-; 260  : }
+; 268  : }
 
 	ret	0
 ?x86_64_get_idle_thr@@YAPEAU_thread_@@XZ ENDP		; x86_64_get_idle_thr
@@ -389,17 +407,17 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_initialize_idle@@YAXXZ PROC			; x86_64_initialize_idle
 
-; 239  : void x86_64_initialize_idle() {
+; 247  : void x86_64_initialize_idle() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 240  : 	per_cpu_set_c_thread((void*)idle);
+; 248  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 241  : }
+; 249  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -410,22 +428,22 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_sched_start@@YAXXZ PROC				; x86_64_sched_start
 
-; 246  : void x86_64_sched_start() {
+; 254  : void x86_64_sched_start() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 247  : 	x64_cli();
+; 255  : 	x64_cli();
 
 	call	x64_cli
 
-; 248  : 	setvect(0x40, x86_64_sceduler_isr);
+; 256  : 	setvect(0x40, x86_64_sceduler_isr);
 
 	lea	rdx, OFFSET FLAT:?x86_64_sceduler_isr@@YAX_KPEAX@Z ; x86_64_sceduler_isr
 	mov	ecx, 64					; 00000040H
 	call	setvect
 
-; 249  : }
+; 257  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -437,13 +455,13 @@ _TEXT	SEGMENT
 tv65 = 32
 ?x86_64_initialize_scheduler@@YAHXZ PROC		; x86_64_initialize_scheduler
 
-; 225  : int x86_64_initialize_scheduler() {
+; 233  : int x86_64_initialize_scheduler() {
 
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 226  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
-; 227  : 		x64_read_cr3());
+; 234  : 	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+; 235  : 		x64_read_cr3());
 
 	call	x64_read_cr3
 	mov	QWORD PTR tv65[rsp], rax
@@ -457,37 +475,37 @@ $LN3:
 	call	x86_64_create_kthread
 	mov	QWORD PTR ?idle@@3PEAU_thread_@@EA, rax	; idle
 
-; 228  : 	printf("idle addr -> %x\n", idle);
+; 236  : 	printf("idle addr -> %x\n", idle);
 
 	mov	rdx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
-	lea	rcx, OFFSET FLAT:$SG3114
+	lea	rcx, OFFSET FLAT:$SG3125
 	call	printf
 
-; 229  : 	scheduler_lock = au_create_spinlock();
+; 237  : 	scheduler_lock = au_create_spinlock();
 
 	call	au_create_spinlock
 	mov	QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA, rax ; scheduler_lock
 
-; 230  : 	sched_start_lock = au_create_spinlock();
+; 238  : 	sched_start_lock = au_create_spinlock();
 
 	call	au_create_spinlock
 	mov	QWORD PTR ?sched_start_lock@@3PEAU_au_spinlock_@@EA, rax ; sched_start_lock
 
-; 231  : 	queue_lock = au_create_spinlock();
+; 239  : 	queue_lock = au_create_spinlock();
 
 	call	au_create_spinlock
 	mov	QWORD PTR ?queue_lock@@3PEAU_au_spinlock_@@EA, rax ; queue_lock
 
-; 232  : 	per_cpu_set_c_thread((void*)idle);
+; 240  : 	per_cpu_set_c_thread((void*)idle);
 
 	mov	rcx, QWORD PTR ?idle@@3PEAU_thread_@@EA	; idle
 	call	?per_cpu_set_c_thread@@YAXPEAX@Z	; per_cpu_set_c_thread
 
-; 233  : 	return 0;
+; 241  : 	return 0;
 
 	xor	eax, eax
 
-; 234  : }
+; 242  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -523,18 +541,18 @@ $LN3:
 	mov	r8d, eax
 	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
 	mov	rdx, QWORD PTR [rax]
-	lea	rcx, OFFSET FLAT:$SG3073
+	lea	rcx, OFFSET FLAT:$SG3081
 	call	printf
 
 ; 107  : 	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
 
-	mov	ecx, 232				; 000000e8H
+	mov	ecx, 240				; 000000f0H
 	call	kmalloc
 	mov	QWORD PTR thread$[rsp], rax
 
 ; 108  : 	memset(thread, 0, sizeof(thread_t));
 
-	mov	r8d, 232				; 000000e8H
+	mov	r8d, 240				; 000000f0H
 	xor	edx, edx
 	mov	rcx, QWORD PTR thread$[rsp]
 	call	?memset@@YAXPEAXEI@Z			; memset
@@ -680,21 +698,41 @@ $LN3:
 	mov	rax, QWORD PTR thread$[rsp]
 	mov	BYTE PTR [rax+208], 1
 
-; 136  : 	thread_insert(thread);
+; 136  : 	thread->cpu_affinity = THREAD_CPU_AFFINITY_ANY;
+
+	mov	rax, QWORD PTR thread$[rsp]
+	mov	BYTE PTR [rax+209], 65			; 00000041H
+
+; 137  : 	thread->fxstate = kmalloc(512);
+
+	mov	ecx, 512				; 00000200H
+	call	kmalloc
+	mov	rcx, QWORD PTR thread$[rsp]
+	mov	QWORD PTR [rcx+216], rax
+
+; 138  : 	memset(thread->fxstate, 0, 512);
+
+	mov	r8d, 512				; 00000200H
+	xor	edx, edx
+	mov	rax, QWORD PTR thread$[rsp]
+	mov	rcx, QWORD PTR [rax+216]
+	call	?memset@@YAXPEAXEI@Z			; memset
+
+; 139  : 	thread_insert(thread);
 
 	mov	rcx, QWORD PTR thread$[rsp]
 	call	thread_insert
 
-; 137  : 	scheduler_lock->value = 0;
+; 140  : 	scheduler_lock->value = 0;
 
 	mov	rax, QWORD PTR ?scheduler_lock@@3PEAU_au_spinlock_@@EA ; scheduler_lock
 	mov	QWORD PTR [rax], 0
 
-; 138  : 	return thread;
+; 141  : 	return thread;
 
 	mov	rax, QWORD PTR thread$[rsp]
 
-; 139  : }
+; 142  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -730,7 +768,7 @@ $LN5@thread_del:
 ; 83   : 		thread_list_head = thread_list_head->next;
 
 	mov	rax, QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA ; thread_list_head
-	mov	rax, QWORD PTR [rax+216]
+	mov	rax, QWORD PTR [rax+224]
 	mov	QWORD PTR ?thread_list_head@@3PEAU_thread_@@EA, rax ; thread_list_head
 
 ; 84   : 	}
@@ -742,10 +780,10 @@ $LN4@thread_del:
 ; 86   : 		thread->prev->next = thread->next;
 
 	mov	rax, QWORD PTR thread$[rsp]
-	mov	rax, QWORD PTR [rax+224]
+	mov	rax, QWORD PTR [rax+232]
 	mov	rcx, QWORD PTR thread$[rsp]
-	mov	rcx, QWORD PTR [rcx+216]
-	mov	QWORD PTR [rax+216], rcx
+	mov	rcx, QWORD PTR [rcx+224]
+	mov	QWORD PTR [rax+224], rcx
 $LN3@thread_del:
 
 ; 87   : 	}
@@ -759,7 +797,7 @@ $LN3@thread_del:
 ; 90   : 		thread_list_last = thread->prev;
 
 	mov	rax, QWORD PTR thread$[rsp]
-	mov	rax, QWORD PTR [rax+224]
+	mov	rax, QWORD PTR [rax+232]
 	mov	QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA, rax ; thread_list_last
 
 ; 91   : 	}
@@ -771,10 +809,10 @@ $LN2@thread_del:
 ; 93   : 		thread->next->prev = thread->prev;
 
 	mov	rax, QWORD PTR thread$[rsp]
-	mov	rax, QWORD PTR [rax+216]
+	mov	rax, QWORD PTR [rax+224]
 	mov	rcx, QWORD PTR thread$[rsp]
-	mov	rcx, QWORD PTR [rcx+224]
-	mov	QWORD PTR [rax+224], rcx
+	mov	rcx, QWORD PTR [rcx+232]
+	mov	QWORD PTR [rax+232], rcx
 $LN1@thread_del:
 $LN6@thread_del:
 
@@ -797,12 +835,12 @@ thread_insert PROC
 ; 58   : 	new_thread->next = NULL;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
-	mov	QWORD PTR [rax+216], 0
+	mov	QWORD PTR [rax+224], 0
 
 ; 59   : 	new_thread->prev = NULL;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
-	mov	QWORD PTR [rax+224], 0
+	mov	QWORD PTR [rax+232], 0
 
 ; 60   : 
 ; 61   : 	if (thread_list_head == NULL) {
@@ -830,13 +868,13 @@ $LN2@thread_ins:
 
 	mov	rax, QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA ; thread_list_last
 	mov	rcx, QWORD PTR new_thread$[rsp]
-	mov	QWORD PTR [rax+216], rcx
+	mov	QWORD PTR [rax+224], rcx
 
 ; 67   : 		new_thread->prev = thread_list_last;
 
 	mov	rax, QWORD PTR new_thread$[rsp]
 	mov	rcx, QWORD PTR ?thread_list_last@@3PEAU_thread_@@EA ; thread_list_last
-	mov	QWORD PTR [rax+224], rcx
+	mov	QWORD PTR [rax+232], rcx
 $LN1@thread_ins:
 
 ; 68   : 	}

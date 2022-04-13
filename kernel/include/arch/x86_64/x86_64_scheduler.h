@@ -38,6 +38,8 @@
 #define THREAD_STATE_BLOCKED 3
 #define THREAD_STATE_SLEEP 4
 
+#define THREAD_CPU_AFFINITY_ANY 65
+
 typedef struct _thread_ {
 	uint64_t ss;
 	uint64_t *rsp;
@@ -67,6 +69,8 @@ typedef struct _thread_ {
 	uint64_t cr3;
 	uint64_t kern_esp;
 	uint8_t state;
+	uint8_t cpu_affinity;
+	void* fxstate;
 	_thread_ *next;
 	_thread_ *prev;
 }thread_t;

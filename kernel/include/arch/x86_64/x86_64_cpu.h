@@ -78,5 +78,13 @@ AU_EXTERN AU_EXPORT void setvect(size_t vector, void(*function)(size_t vector, v
 */
 extern void x86_64_setup_cpu_data(void* data);
 
+/*
+* x86_64_fxsave_support -- returns true if supported
+*/
+extern bool x86_64_fxsave_supported();
 
+/*
+* x86_64_avx_supported -- returns true if supported
+*/
+extern bool x86_64_avx_supported();
 #endif

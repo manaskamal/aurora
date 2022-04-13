@@ -1,16 +1,16 @@
-﻿Build started 12-04-2022 আবেলি 11:00:58.
+﻿Build started 13-04-2022 আবেলি 1:27:50.
      1>Project "E:\Aurora Kernel\kernel\kernel.vcxproj" on node 2 (Rebuild target(s)).
      1>_NASM:
          arch\x86_64\x86_64_ctx_switch.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpb08565cf96b54d3588613d910aa0397a.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp38bf4ef352ca40a694c659af7e47ed9d.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_ctx_switch.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_ctx_switch.asm"
        _NASM:
          _fastcpy.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp83829f8eb89b4d37980027036e1fa761.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpb3dafe15a35b4bf2955e4d7472401694.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\_fastcpy.obj"  "E:\Aurora Kernel\kernel\_fastcpy.asm"
        _NASM:
          arch\x86_64\x86_64_interrupt.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmpdcc2c176a56c4d81abfd0d34abe18f26.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp6cca5b69be4b4ec4b7ad780819b6b322.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_interrupt.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm"
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(128): warning : signed dword immediate exceeds bounds
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(129): warning : signed dword immediate exceeds bounds
@@ -262,10 +262,10 @@
      1>E:\Aurora Kernel\kernel\arch\x86_64\x86_64_interrupt.asm(152): warning : signed dword immediate exceeds bounds
        _NASM:
          arch\x86_64\x86_64_lowlevel.asm
-         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp153e819dccd946b38e81e4b3864f0eb9.cmd"
+         cmd.exe /C "C:\Users\HP\AppData\Local\Temp\tmp567641ca287e436183164ef279e43586.cmd"
          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\"nasm.exe -Xvc -f win64 -o "x64\Debug\x86_64_lowlevel.obj"  "E:\Aurora Kernel\kernel\arch\x86_64\x86_64_lowlevel.asm"
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D SMP /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_per_cpu.cpp arch\x86_64\x86_64_pic.cpp arch\x86_64\x86_64_pit.cpp arch\x86_64\x86_64_pmmngr.cpp arch\x86_64\x86_64_scheduler.cpp atomic\au_spinlock.cpp console.cpp fs\devfs.cpp fs\vfs.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp pe.cpp stdlib.cpp string.cpp utils\list.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"E:\Aurora Kernel\kernel\include" /Zi /nologo /W0 /WX- /Od /Oy /D ARCH_X64 /D _MBCS /X /Gm /GS- /arch:SSE /fp:precise /Zc:wchar_t /Zc:forScope /GR- /FAs /Fa"x64\Debug\\" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt arch\x86_64\x86_64_apic.cpp arch\x86_64\x86_64_ap_init.cpp arch\x86_64\x86_64_cpu.cpp arch\x86_64\x86_64_exception.cpp arch\x86_64\x86_64_ioapic.cpp arch\x86_64\x86_64_paging.cpp arch\x86_64\x86_64_per_cpu.cpp arch\x86_64\x86_64_pic.cpp arch\x86_64\x86_64_pit.cpp arch\x86_64\x86_64_pmmngr.cpp arch\x86_64\x86_64_scheduler.cpp atomic\au_spinlock.cpp console.cpp fs\devfs.cpp fs\vfs.cpp kdrivers\au_acpi.cpp kdrivers\au_video.cpp kdrivers\serial.cpp main.cpp mm\kmalloc.cpp pe.cpp stdlib.cpp string.cpp utils\list.cpp
      1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE'
          list.cpp
          string.cpp
@@ -333,4 +333,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:17.21
+Time Elapsed 00:00:02.83

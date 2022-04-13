@@ -12,7 +12,7 @@ _serial_initialized_ DB 01H DUP (?)
 serial_lock DQ	01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG2971	DB	'.', 00H
+$SG2975	DB	'.', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_serial@@YAHXZ			; au_initialize_serial
 PUBLIC	?_au_debug_print_@@YAXPEADZZ			; _au_debug_print_
@@ -480,7 +480,7 @@ $LN5@au_debug_p:
 ; 135  : 			{
 ; 136  : 				debug_serial(".");
 
-	lea	rcx, OFFSET FLAT:$SG2971
+	lea	rcx, OFFSET FLAT:$SG2975
 	call	?debug_serial@@YAXPEAD@Z		; debug_serial
 
 ; 137  : 			}

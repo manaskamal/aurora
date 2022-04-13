@@ -60,7 +60,7 @@ void au_acquire_spinlock(au_spinlock_t *spinlock) {
 	if (spinlock->value > 1)
 		spinlock->value = 0;
 	x64_lock_acquire(&spinlock->value);
-	spinlock->set_by_cpu = per_cpu_get_cpu_id();
+	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
 }
 
 /*
@@ -69,10 +69,12 @@ void au_acquire_spinlock(au_spinlock_t *spinlock) {
  */
 void au_free_spinlock(au_spinlock_t* spinlock) {
 	if (spinlock->value > 1){ //corrupted spinlock
+		spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
+		spinlock->value = 0;
 		return;
 	}
 
-	spinlock->set_by_cpu = per_cpu_get_cpu_id();
+	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
 	spinlock->value = 0;
-	
+
 }

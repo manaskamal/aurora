@@ -10,13 +10,13 @@ _BSS	SEGMENT
 ?au_acpi@@3U_aurora_acpi_@@A DB 031H DUP (?)		; au_acpi
 _BSS	ENDS
 CONST	SEGMENT
-$SG3265	DB	'FACP', 00H
+$SG3271	DB	'FACP', 00H
 	ORG $+3
-$SG3266	DB	'FACP', 00H
+$SG3272	DB	'FACP', 00H
 	ORG $+3
-$SG3270	DB	'APIC', 00H
+$SG3276	DB	'APIC', 00H
 	ORG $+3
-$SG3271	DB	'APIC', 00H
+$SG3277	DB	'APIC', 00H
 CONST	ENDS
 PUBLIC	?au_initialize_acpi@@YAHXZ			; au_initialize_acpi
 PUBLIC	?au_acpi_get_num_core@@YAIXZ			; au_acpi_get_num_core
@@ -214,10 +214,10 @@ $LN13@au_initial:
 ; 61   : 
 ; 62   : 		if (!strncmp(sig, ACPI_SIG_FADT, strlen(ACPI_SIG_FADT))) {
 
-	lea	rcx, OFFSET FLAT:$SG3265
+	lea	rcx, OFFSET FLAT:$SG3271
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3266
+	lea	rdx, OFFSET FLAT:$SG3272
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax
@@ -234,10 +234,10 @@ $LN10@au_initial:
 ; 65   : 
 ; 66   : 		else if (!strncmp(sig, ACPI_SIG_APIC, strlen("APIC"))) {
 
-	lea	rcx, OFFSET FLAT:$SG3270
+	lea	rcx, OFFSET FLAT:$SG3276
 	call	?strlen@@YA_KPEBD@Z			; strlen
 	mov	r8, rax
-	lea	rdx, OFFSET FLAT:$SG3271
+	lea	rdx, OFFSET FLAT:$SG3277
 	lea	rcx, QWORD PTR sig$[rsp]
 	call	?strncmp@@YAHPEBD0_K@Z			; strncmp
 	test	eax, eax

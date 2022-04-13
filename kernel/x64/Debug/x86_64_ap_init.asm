@@ -10,7 +10,7 @@ _BSS	SEGMENT
 ap_lock	DQ	01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG3033	DB	'APIC interrupt from cpu id -> %d', 0aH, 00H
+$SG3041	DB	'APIC interrupt from cpu id -> %d', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_ap_init@@YAXPEAX@Z			; x86_64_ap_init
 PUBLIC	?x86_64_apic_handler@@YAX_KPEAX@Z		; x86_64_apic_handler
@@ -19,6 +19,7 @@ EXTRN	?x86_64_cpu_initialize@@YAX_N@Z:PROC		; x86_64_cpu_initialize
 EXTRN	x86_64_cpu_print_brand:PROC
 EXTRN	?x86_64_setup_cpu_data@@YAXPEAX@Z:PROC		; x86_64_setup_cpu_data
 EXTRN	x64_cli:PROC
+EXTRN	x64_sti:PROC
 EXTRN	x64_lock_acquire:PROC
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
 EXTRN	?apic_local_eoi@@YAXXZ:PROC			; apic_local_eoi
@@ -26,7 +27,6 @@ EXTRN	?x86_64_ap_started@@YAXXZ:PROC			; x86_64_ap_started
 EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
 EXTRN	?x86_64_sched_start@@YAXXZ:PROC			; x86_64_sched_start
 EXTRN	?x86_64_initialize_idle@@YAXXZ:PROC		; x86_64_initialize_idle
-EXTRN	?x86_64_execute_idle@@YAXXZ:PROC		; x86_64_execute_idle
 pdata	SEGMENT
 $pdata$?x86_64_ap_init@@YAXPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+70
@@ -74,7 +74,7 @@ $LN3:
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	ecx, DWORD PTR tv68[rsp]
 	mov	edx, ecx
-	lea	rcx, OFFSET FLAT:$SG3033
+	lea	rcx, OFFSET FLAT:$SG3041
 	call	QWORD PTR [rax+90]
 
 ; 50   : 	apic_local_eoi();
@@ -139,18 +139,19 @@ $LN5:
 
 	call	?x86_64_ap_started@@YAXXZ		; x86_64_ap_started
 
-; 64   : 	x86_64_execute_idle();
+; 64   : 	//x86_64_execute_idle();
+; 65   : 	x64_sti();
 
-	call	?x86_64_execute_idle@@YAXXZ		; x86_64_execute_idle
+	call	x64_sti
 $LN2@x86_64_ap_:
 
-; 65   : 	/* initialize processor specific functions here !!*/
-; 66   : 	/* from here we'll jump to scheduler */
-; 67   : 	for (;;);
+; 66   : 	/* initialize processor specific functions here !!*/
+; 67   : 	/* from here we'll jump to scheduler */
+; 68   : 	for (;;);
 
 	jmp	SHORT $LN2@x86_64_ap_
 
-; 68   : }
+; 69   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0

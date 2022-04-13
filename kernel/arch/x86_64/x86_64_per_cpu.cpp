@@ -58,9 +58,9 @@ void per_cpu_set_c_thread(void* thread) {
  * per_cpu_get_cpu_id -- gets the current cpu id
  */
 uint8_t per_cpu_get_cpu_id() {
-	x64_lock_acquire(&per_cpu_lock);
+	//x64_lock_acquire(&per_cpu_lock);
 	uint8_t id =  x64_read_gs_b(0);
-	per_cpu_lock = 0;
+	//per_cpu_lock = 0;
 	return id;
 }
 
@@ -68,8 +68,8 @@ uint8_t per_cpu_get_cpu_id() {
  * per_cpu_get_c_thread -- gets the current running thread
  */
 void* per_cpu_get_c_thread() {
-	x64_lock_acquire(&per_cpu_lock);
+//	x64_lock_acquire(&per_cpu_lock);
 	void* thr = (void*)x64_read_gs_q(1);
-	per_cpu_lock = 0;
+//	per_cpu_lock = 0;
 	return thr;
 }

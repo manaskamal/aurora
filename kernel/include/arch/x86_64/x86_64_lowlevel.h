@@ -221,4 +221,7 @@ extern "C" size_t x64_get_stack();
 
 AU_EXTERN AU_EXPORT void x64_lock_acquire(uint64_t * lock);
 AU_EXTERN AU_EXPORT void x64_lock_release(uint64_t* lock);
+
+extern "C" void x64_fxsave(void* location);
+extern "C" void x64_fxrstor(void* location);
 #endif

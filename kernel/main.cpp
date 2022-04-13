@@ -64,25 +64,34 @@ static uint64_t t_lock = 0;
 
 int j_ = 100;
 void thread_test() {
+	x64_lock_acquire(&t_lock);
+	printf("Thread test started \n");
+	t_lock = 0;
 	for (;;){
-		x64_lock_acquire(&t_lock);
-		printf("THR Test -> %d \n", per_cpu_get_cpu_id());
-		if (t_lock == 1 || t_lock > 1)
-			t_lock = 0;
-		
 	}
 }
 
-static int i_ = 0; 
+static size_t i_ = 0; 
 
 void thread_test2() {
 
 	while (1) {
-
 		x64_lock_acquire(&thr_lock);
-		printf("Thr test2 -> %d\n", per_cpu_get_cpu_id());
-		if (thr_lock == 1 || thr_lock > 1)
-			thr_lock = 0;
+		
+		if (per_cpu_get_cpu_id() == 0) {
+			for (int i = 0; i < 10; i++)
+			for (int j = 0; j < 10; j++)
+				au_video_get_fb()[i_ + i * au_video_get_x_res() + i_ + j] = 0xffffffff;
+		}
+		else if (per_cpu_get_cpu_id() != 0) {
+			for (int i = 0; i <20; i++) 
+			for (int j = 0; j < 20; j++)
+				au_video_get_fb()[i * au_video_get_x_res() + j] = 0xff0000ff;
+		}
+
+		i_ += 10;
+
+		thr_lock = 0;
 	}
 
 }
@@ -128,7 +137,8 @@ int _kmain(aurora_info_t *bootinfo) {
 	 */
 	
 	thread_t *thr = x86_64_create_kthread(thread_test, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
-	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc() + 4096), x64_read_cr3());
+	printf("Thr addr -> %x \n", thr);
+	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
 	printf("Thread2-> %x\n", thr2);
 	x86_64_sched_enable(true);
 	x86_64_sched_start();

@@ -25,10 +25,10 @@ $pdata$?per_cpu_set_c_thread@@YAXPEAX@Z DD imagerel $LN3
 	DD	imagerel $LN3+52
 	DD	imagerel $unwind$?per_cpu_set_c_thread@@YAXPEAX@Z
 $pdata$?per_cpu_get_cpu_id@@YAEXZ DD imagerel $LN3
-	DD	imagerel $LN3+48
+	DD	imagerel $LN3+25
 	DD	imagerel $unwind$?per_cpu_get_cpu_id@@YAEXZ
 $pdata$?per_cpu_get_c_thread@@YAPEAXXZ DD imagerel $LN3
-	DD	imagerel $LN3+52
+	DD	imagerel $LN3+29
 	DD	imagerel $unwind$?per_cpu_get_c_thread@@YAPEAXXZ
 pdata	ENDS
 xdata	SEGMENT
@@ -52,21 +52,14 @@ thr$ = 32
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 71   : 	x64_lock_acquire(&per_cpu_lock);
-
-	lea	rcx, OFFSET FLAT:per_cpu_lock
-	call	x64_lock_acquire
-
+; 71   : //	x64_lock_acquire(&per_cpu_lock);
 ; 72   : 	void* thr = (void*)x64_read_gs_q(1);
 
 	mov	ecx, 1
 	call	x64_read_gs_q
 	mov	QWORD PTR thr$[rsp], rax
 
-; 73   : 	per_cpu_lock = 0;
-
-	mov	QWORD PTR per_cpu_lock, 0
-
+; 73   : //	per_cpu_lock = 0;
 ; 74   : 	return thr;
 
 	mov	rax, QWORD PTR thr$[rsp]
@@ -88,21 +81,14 @@ id$ = 32
 $LN3:
 	sub	rsp, 56					; 00000038H
 
-; 61   : 	x64_lock_acquire(&per_cpu_lock);
-
-	lea	rcx, OFFSET FLAT:per_cpu_lock
-	call	x64_lock_acquire
-
+; 61   : 	//x64_lock_acquire(&per_cpu_lock);
 ; 62   : 	uint8_t id =  x64_read_gs_b(0);
 
 	xor	ecx, ecx
 	call	x64_read_gs_b
 	mov	BYTE PTR id$[rsp], al
 
-; 63   : 	per_cpu_lock = 0;
-
-	mov	QWORD PTR per_cpu_lock, 0
-
+; 63   : 	//per_cpu_lock = 0;
 ; 64   : 	return id;
 
 	movzx	eax, BYTE PTR id$[rsp]

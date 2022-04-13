@@ -14,16 +14,16 @@ _BSS	SEGMENT
 
 thr_lock DQ	01H DUP (?)
 t_lock	DQ	01H DUP (?)
-i_	DD	01H DUP (?)
+i_	DQ	01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG3506	DB	'THR Test -> %d ', 0aH, 00H
+$SG3511	DB	'Thread test started ', 0aH, 00H
+	ORG $+2
+$SG3543	DB	'Aurora Kernel ', 0aH, 00H
+$SG3546	DB	'Aurora kernel started ', 0aH, 00H
+$SG3549	DB	'Thr addr -> %x ', 0aH, 00H
 	ORG $+7
-$SG3515	DB	'Thr test2 -> %d', 0aH, 00H
-	ORG $+7
-$SG3521	DB	'Aurora Kernel ', 0aH, 00H
-$SG3524	DB	'Aurora kernel started ', 0aH, 00H
-$SG3529	DB	'Thread2-> %x', 0aH, 00H
+$SG3552	DB	'Thread2-> %x', 0aH, 00H
 CONST	ENDS
 _DATA	SEGMENT
 _fltused DD	01H
@@ -43,7 +43,6 @@ EXTRN	printf:PROC
 EXTRN	?x86_64_paging_init@@YAHXZ:PROC			; x86_64_paging_init
 EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	?x86_64_initialize_apic@@YAH_N@Z:PROC		; x86_64_initialize_apic
-EXTRN	?initialize_cpu@@YAXI@Z:PROC			; initialize_cpu
 EXTRN	?per_cpu_get_cpu_id@@YAEXZ:PROC			; per_cpu_get_cpu_id
 EXTRN	x86_64_create_kthread:PROC
 EXTRN	?x86_64_initialize_scheduler@@YAHXZ:PROC	; x86_64_initialize_scheduler
@@ -53,28 +52,29 @@ EXTRN	?x86_64_execute_idle@@YAXXZ:PROC		; x86_64_execute_idle
 EXTRN	?x86_64_pit_initialize@@YAXXZ:PROC		; x86_64_pit_initialize
 EXTRN	memcpy:PROC
 EXTRN	?au_fb_initialize@@YAHXZ:PROC			; au_fb_initialize
+EXTRN	?au_video_get_fb@@YAPEAIXZ:PROC			; au_video_get_fb
+EXTRN	?au_video_get_x_res@@YAIXZ:PROC			; au_video_get_x_res
 EXTRN	?au_initialize_serial@@YAHXZ:PROC		; au_initialize_serial
 EXTRN	?au_initialize_acpi@@YAHXZ:PROC			; au_initialize_acpi
-EXTRN	?au_acpi_get_num_core@@YAIXZ:PROC		; au_acpi_get_num_core
 EXTRN	?x86_64_kmalloc_initialize@@YAHXZ:PROC		; x86_64_kmalloc_initialize
 EXTRN	?vfs_initialize@@YAXXZ:PROC			; vfs_initialize
 EXTRN	?devfs_initialize@@YAXXZ:PROC			; devfs_initialize
 pdata	SEGMENT
-$pdata$?thread_test@@YAXXZ DD imagerel $LN7
-	DD	imagerel $LN7+76
+$pdata$?thread_test@@YAXXZ DD imagerel $LN5
+	DD	imagerel $LN5+46
 	DD	imagerel $unwind$?thread_test@@YAXXZ
-$pdata$?thread_test2@@YAXXZ DD imagerel $LN7
-	DD	imagerel $LN7+83
+$pdata$?thread_test2@@YAXXZ DD imagerel $LN20
+	DD	imagerel $LN20+316
 	DD	imagerel $unwind$?thread_test2@@YAXXZ
 $pdata$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD imagerel $LN5
-	DD	imagerel $LN5+330
+	DD	imagerel $LN5+329
 	DD	imagerel $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z
 pdata	ENDS
 xdata	SEGMENT
 $unwind$?thread_test@@YAXXZ DD 010401H
 	DD	04204H
 $unwind$?thread_test2@@YAXXZ DD 010401H
-	DD	04204H
+	DD	08204H
 $unwind$?_kmain@@YAHPEAU_AURORA_INFO_@@@Z DD 010901H
 	DD	0a209H
 xdata	ENDS
@@ -82,149 +82,149 @@ xdata	ENDS
 ; File e:\aurora kernel\kernel\main.cpp
 _TEXT	SEGMENT
 au_status$ = 32
-tv83 = 40
-tv91 = 48
-thr2$ = 56
-thr$ = 64
+tv81 = 40
+thr$ = 48
+tv91 = 56
+thr2$ = 64
 bootinfo$ = 96
 ?_kmain@@YAHPEAU_AURORA_INFO_@@@Z PROC			; _kmain
 
-; 91   : int _kmain(aurora_info_t *bootinfo) {
+; 100  : int _kmain(aurora_info_t *bootinfo) {
 
 $LN5:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 88					; 00000058H
 
-; 92   : 	bootinfo->auprint("Aurora Kernel \n");
+; 101  : 	bootinfo->auprint("Aurora Kernel \n");
 
-	lea	rcx, OFFSET FLAT:$SG3521
+	lea	rcx, OFFSET FLAT:$SG3543
 	mov	rax, QWORD PTR bootinfo$[rsp]
 	call	QWORD PTR [rax+90]
 
-; 93   : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
+; 102  : 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
 
 	mov	r8d, 98					; 00000062H
 	mov	rdx, QWORD PTR bootinfo$[rsp]
 	lea	rcx, OFFSET FLAT:?info@@3U_AURORA_INFO_@@A ; info
 	call	memcpy
 
-; 94   : 
-; 95   : 	int au_status = 0;
+; 103  : 
+; 104  : 	int au_status = 0;
 
 	mov	DWORD PTR au_status$[rsp], 0
 
-; 96   : 
-; 97   : 
-; 98   : 	x86_64_pmmngr_init(bootinfo);
+; 105  : 
+; 106  : 
+; 107  : 	x86_64_pmmngr_init(bootinfo);
 
 	mov	rcx, QWORD PTR bootinfo$[rsp]
 	call	?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z ; x86_64_pmmngr_init
 
-; 99   : 	x86_64_cpu_initialize(true);
+; 108  : 	x86_64_cpu_initialize(true);
 
 	mov	cl, 1
 	call	?x86_64_cpu_initialize@@YAX_N@Z		; x86_64_cpu_initialize
 
-; 100  : 	/* initialize early drivers*/
-; 101  : 	au_status = au_fb_initialize();
+; 109  : 	/* initialize early drivers*/
+; 110  : 	au_status = au_fb_initialize();
 
 	call	?au_fb_initialize@@YAHXZ		; au_fb_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 102  : 	au_status = x86_64_paging_init();
+; 111  : 	au_status = x86_64_paging_init();
 
 	call	?x86_64_paging_init@@YAHXZ		; x86_64_paging_init
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 103  : 	au_status = x86_64_kmalloc_initialize();
+; 112  : 	au_status = x86_64_kmalloc_initialize();
 
 	call	?x86_64_kmalloc_initialize@@YAHXZ	; x86_64_kmalloc_initialize
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 104  : 	au_status = au_initialize_serial();
+; 113  : 	au_status = au_initialize_serial();
 
 	call	?au_initialize_serial@@YAHXZ		; au_initialize_serial
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 105  : 	au_status = x86_64_initialize_apic(true);
+; 114  : 	au_status = x86_64_initialize_apic(true);
 
 	mov	cl, 1
 	call	?x86_64_initialize_apic@@YAH_N@Z	; x86_64_initialize_apic
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 106  : 	au_status = au_initialize_acpi();
+; 115  : 	au_status = au_initialize_acpi();
 
 	call	?au_initialize_acpi@@YAHXZ		; au_initialize_acpi
 	mov	DWORD PTR au_status$[rsp], eax
 
-; 107  : 	x86_64_pit_initialize();
+; 116  : 	x86_64_pit_initialize();
 
 	call	?x86_64_pit_initialize@@YAXXZ		; x86_64_pit_initialize
 
-; 108  : 
-; 109  : 	/* initialize the kernel subsystems */
-; 110  : 	vfs_initialize();
+; 117  : 
+; 118  : 	/* initialize the kernel subsystems */
+; 119  : 	vfs_initialize();
 
 	call	?vfs_initialize@@YAXXZ			; vfs_initialize
 
-; 111  : 	devfs_initialize();
+; 120  : 	devfs_initialize();
 
 	call	?devfs_initialize@@YAXXZ		; devfs_initialize
 
-; 112  : 
-; 113  : 	x86_64_setup_cpu_data(0);
+; 121  : 
+; 122  : 	x86_64_setup_cpu_data(0);
 
 	xor	ecx, ecx
 	call	?x86_64_setup_cpu_data@@YAXPEAX@Z	; x86_64_setup_cpu_data
 
-; 114  : 	//x86_64_boot_free();
-; 115  :     x86_64_initialize_scheduler();
+; 123  : 	//x86_64_boot_free();
+; 124  :     x86_64_initialize_scheduler();
 
 	call	?x86_64_initialize_scheduler@@YAHXZ	; x86_64_initialize_scheduler
 
-; 116  : 	
-; 117  : 
-; 118  : #ifdef SMP
-; 119  : 	/* initialize all the AP's*/
-; 120  : 	initialize_cpu(au_acpi_get_num_core());
+; 125  : 	
+; 126  : 
+; 127  : #ifdef SMP
+; 128  : 	/* initialize all the AP's*/
+; 129  : 	initialize_cpu(au_acpi_get_num_core());
+; 130  : #endif
+; 131  : 
+; 132  : 	printf("Aurora kernel started \n");
 
-	call	?au_acpi_get_num_core@@YAIXZ		; au_acpi_get_num_core
-	mov	ecx, eax
-	call	?initialize_cpu@@YAXI@Z			; initialize_cpu
-
-; 121  : #endif
-; 122  : 
-; 123  : 	printf("Aurora kernel started \n");
-
-	lea	rcx, OFFSET FLAT:$SG3524
+	lea	rcx, OFFSET FLAT:$SG3546
 	call	printf
 
-; 124  : 
-; 125  : 	/* Start Scheduler, and notify all cpu's 
-; 126  : 	 * that scheduler has started and they can
-; 127  : 	 * start their jobs
-; 128  : 	 */
-; 129  : 	
-; 130  : 	thread_t *thr = x86_64_create_kthread(thread_test, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
+; 133  : 
+; 134  : 	/* Start Scheduler, and notify all cpu's 
+; 135  : 	 * that scheduler has started and they can
+; 136  : 	 * start their jobs
+; 137  : 	 */
+; 138  : 	
+; 139  : 	thread_t *thr = x86_64_create_kthread(thread_test, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
 
 	call	x64_read_cr3
-	mov	QWORD PTR tv83[rsp], rax
+	mov	QWORD PTR tv81[rsp], rax
 	call	x86_64_pmmngr_alloc
 	mov	rcx, rax
 	call	x86_64_phys_to_virt
-	mov	rcx, QWORD PTR tv83[rsp]
+	mov	rcx, QWORD PTR tv81[rsp]
 	mov	r8, rcx
 	mov	rdx, rax
 	lea	rcx, OFFSET FLAT:?thread_test@@YAXXZ	; thread_test
 	call	x86_64_create_kthread
 	mov	QWORD PTR thr$[rsp], rax
 
-; 131  : 	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc() + 4096), x64_read_cr3());
+; 140  : 	printf("Thr addr -> %x \n", thr);
+
+	mov	rdx, QWORD PTR thr$[rsp]
+	lea	rcx, OFFSET FLAT:$SG3549
+	call	printf
+
+; 141  : 	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
 
 	call	x64_read_cr3
 	mov	QWORD PTR tv91[rsp], rax
 	call	x86_64_pmmngr_alloc
-	add	rax, 4096				; 00001000H
 	mov	rcx, rax
 	call	x86_64_phys_to_virt
 	mov	rcx, QWORD PTR tv91[rsp]
@@ -234,35 +234,35 @@ $LN5:
 	call	x86_64_create_kthread
 	mov	QWORD PTR thr2$[rsp], rax
 
-; 132  : 	printf("Thread2-> %x\n", thr2);
+; 142  : 	printf("Thread2-> %x\n", thr2);
 
 	mov	rdx, QWORD PTR thr2$[rsp]
-	lea	rcx, OFFSET FLAT:$SG3529
+	lea	rcx, OFFSET FLAT:$SG3552
 	call	printf
 
-; 133  : 	x86_64_sched_enable(true);
+; 143  : 	x86_64_sched_enable(true);
 
 	mov	cl, 1
 	call	?x86_64_sched_enable@@YAX_N@Z		; x86_64_sched_enable
 
-; 134  : 	x86_64_sched_start();
+; 144  : 	x86_64_sched_start();
 
 	call	?x86_64_sched_start@@YAXXZ		; x86_64_sched_start
 
-; 135  : 	x86_64_execute_idle();
+; 145  : 	x86_64_execute_idle();
 
 	call	?x86_64_execute_idle@@YAXXZ		; x86_64_execute_idle
 $LN2@kmain:
 
-; 136  : 	for (;;);
+; 146  : 	for (;;);
 
 	jmp	SHORT $LN2@kmain
 
-; 137  : 	return 0;
+; 147  : 	return 0;
 
 	xor	eax, eax
 
-; 138  : }
+; 148  : }
 
 	add	rsp, 88					; 00000058H
 	ret	0
@@ -271,57 +271,161 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\main.cpp
 _TEXT	SEGMENT
+i$1 = 32
+j$2 = 36
+i$3 = 40
+j$4 = 44
+tv73 = 48
+tv90 = 56
 ?thread_test2@@YAXXZ PROC				; thread_test2
 
-; 78   : void thread_test2() {
+; 76   : void thread_test2() {
 
-$LN7:
-	sub	rsp, 40					; 00000028H
-$LN4@thread_tes:
+$LN20:
+	sub	rsp, 72					; 00000048H
+$LN17@thread_tes:
 
-; 79   : 
-; 80   : 	while (1) {
+; 77   : 
+; 78   : 	while (1) {
 
 	xor	eax, eax
 	cmp	eax, 1
-	je	SHORT $LN3@thread_tes
+	je	$LN16@thread_tes
 
-; 81   : 
-; 82   : 		x64_lock_acquire(&thr_lock);
+; 79   : 		x64_lock_acquire(&thr_lock);
 
 	lea	rcx, OFFSET FLAT:thr_lock
 	call	x64_lock_acquire
 
-; 83   : 		printf("Thr test2 -> %d\n", per_cpu_get_cpu_id());
+; 80   : 		
+; 81   : 		if (per_cpu_get_cpu_id() == 0) {
 
 	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
 	movzx	eax, al
-	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3515
-	call	printf
+	test	eax, eax
+	jne	SHORT $LN15@thread_tes
 
-; 84   : 		if (thr_lock == 1 || thr_lock > 1)
+; 82   : 			for (int i = 0; i < 10; i++)
 
-	cmp	QWORD PTR thr_lock, 1
-	je	SHORT $LN1@thread_tes
-	cmp	QWORD PTR thr_lock, 1
-	jbe	SHORT $LN2@thread_tes
+	mov	DWORD PTR i$1[rsp], 0
+	jmp	SHORT $LN14@thread_tes
+$LN13@thread_tes:
+	mov	eax, DWORD PTR i$1[rsp]
+	inc	eax
+	mov	DWORD PTR i$1[rsp], eax
+$LN14@thread_tes:
+	cmp	DWORD PTR i$1[rsp], 10
+	jge	SHORT $LN12@thread_tes
+
+; 83   : 			for (int j = 0; j < 10; j++)
+
+	mov	DWORD PTR j$2[rsp], 0
+	jmp	SHORT $LN11@thread_tes
+$LN10@thread_tes:
+	mov	eax, DWORD PTR j$2[rsp]
+	inc	eax
+	mov	DWORD PTR j$2[rsp], eax
+$LN11@thread_tes:
+	cmp	DWORD PTR j$2[rsp], 10
+	jge	SHORT $LN9@thread_tes
+
+; 84   : 				au_video_get_fb()[i_ + i * au_video_get_x_res() + i_ + j] = 0xffffffff;
+
+	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
+	mov	QWORD PTR tv73[rsp], rax
+	call	?au_video_get_x_res@@YAIXZ		; au_video_get_x_res
+	mov	ecx, DWORD PTR i$1[rsp]
+	imul	ecx, eax
+	mov	eax, ecx
+	mov	eax, eax
+	mov	rcx, QWORD PTR i_
+	add	rcx, rax
+	mov	rax, rcx
+	add	rax, QWORD PTR i_
+	movsxd	rcx, DWORD PTR j$2[rsp]
+	add	rax, rcx
+	mov	rcx, QWORD PTR tv73[rsp]
+	mov	DWORD PTR [rcx+rax*4], -1		; ffffffffH
+	jmp	SHORT $LN10@thread_tes
+$LN9@thread_tes:
+	jmp	SHORT $LN13@thread_tes
+$LN12@thread_tes:
+
+; 85   : 		}
+; 86   : 		else if (per_cpu_get_cpu_id() != 0) {
+
+	jmp	SHORT $LN8@thread_tes
+$LN15@thread_tes:
+	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
+	movzx	eax, al
+	test	eax, eax
+	je	SHORT $LN7@thread_tes
+
+; 87   : 			for (int i = 0; i <20; i++) 
+
+	mov	DWORD PTR i$3[rsp], 0
+	jmp	SHORT $LN6@thread_tes
+$LN5@thread_tes:
+	mov	eax, DWORD PTR i$3[rsp]
+	inc	eax
+	mov	DWORD PTR i$3[rsp], eax
+$LN6@thread_tes:
+	cmp	DWORD PTR i$3[rsp], 20
+	jge	SHORT $LN4@thread_tes
+
+; 88   : 			for (int j = 0; j < 20; j++)
+
+	mov	DWORD PTR j$4[rsp], 0
+	jmp	SHORT $LN3@thread_tes
+$LN2@thread_tes:
+	mov	eax, DWORD PTR j$4[rsp]
+	inc	eax
+	mov	DWORD PTR j$4[rsp], eax
+$LN3@thread_tes:
+	cmp	DWORD PTR j$4[rsp], 20
+	jge	SHORT $LN1@thread_tes
+
+; 89   : 				au_video_get_fb()[i * au_video_get_x_res() + j] = 0xff0000ff;
+
+	call	?au_video_get_fb@@YAPEAIXZ		; au_video_get_fb
+	mov	QWORD PTR tv90[rsp], rax
+	call	?au_video_get_x_res@@YAIXZ		; au_video_get_x_res
+	mov	ecx, DWORD PTR i$3[rsp]
+	imul	ecx, eax
+	mov	eax, ecx
+	add	eax, DWORD PTR j$4[rsp]
+	mov	eax, eax
+	mov	rcx, QWORD PTR tv90[rsp]
+	mov	DWORD PTR [rcx+rax*4], -16776961	; ff0000ffH
+	jmp	SHORT $LN2@thread_tes
 $LN1@thread_tes:
+	jmp	SHORT $LN5@thread_tes
+$LN4@thread_tes:
+$LN7@thread_tes:
+$LN8@thread_tes:
 
-; 85   : 			thr_lock = 0;
+; 90   : 		}
+; 91   : 
+; 92   : 		i_ += 10;
+
+	mov	rax, QWORD PTR i_
+	add	rax, 10
+	mov	QWORD PTR i_, rax
+
+; 93   : 
+; 94   : 		thr_lock = 0;
 
 	mov	QWORD PTR thr_lock, 0
-$LN2@thread_tes:
 
-; 86   : 	}
+; 95   : 	}
 
-	jmp	SHORT $LN4@thread_tes
-$LN3@thread_tes:
+	jmp	$LN17@thread_tes
+$LN16@thread_tes:
 
-; 87   : 
-; 88   : }
+; 96   : 
+; 97   : }
 
-	add	rsp, 40					; 00000028H
+	add	rsp, 72					; 00000048H
 	ret	0
 ?thread_test2@@YAXXZ ENDP				; thread_test2
 _TEXT	ENDS
@@ -332,43 +436,30 @@ _TEXT	SEGMENT
 
 ; 66   : void thread_test() {
 
-$LN7:
+$LN5:
 	sub	rsp, 40					; 00000028H
-$LN4@thread_tes:
 
-; 67   : 	for (;;){
-; 68   : 		x64_lock_acquire(&t_lock);
+; 67   : 	x64_lock_acquire(&t_lock);
 
 	lea	rcx, OFFSET FLAT:t_lock
 	call	x64_lock_acquire
 
-; 69   : 		printf("THR Test -> %d \n", per_cpu_get_cpu_id());
+; 68   : 	printf("Thread test started \n");
 
-	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
-	movzx	eax, al
-	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3506
+	lea	rcx, OFFSET FLAT:$SG3511
 	call	printf
 
-; 70   : 		if (t_lock == 1 || t_lock > 1)
-
-	cmp	QWORD PTR t_lock, 1
-	je	SHORT $LN1@thread_tes
-	cmp	QWORD PTR t_lock, 1
-	jbe	SHORT $LN2@thread_tes
-$LN1@thread_tes:
-
-; 71   : 			t_lock = 0;
+; 69   : 	t_lock = 0;
 
 	mov	QWORD PTR t_lock, 0
 $LN2@thread_tes:
 
-; 72   : 		
-; 73   : 	}
+; 70   : 	for (;;){
+; 71   : 	}
 
-	jmp	SHORT $LN4@thread_tes
+	jmp	SHORT $LN2@thread_tes
 
-; 74   : }
+; 72   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0

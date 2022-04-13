@@ -376,6 +376,23 @@ x64_activate_avx:
 	  pop rax
 	  ret
 
+;==========================================================
+;   FXSAVE - FXRSTOR 
+;==========================================================
+global x64_fxsave
+x64_fxsave:
+      and cl, 0xF0
+	  add rcx, 0x10
+      fxsave [rcx]
+	  ret
+
+global x64_fxrstor
+x64_fxrstor:
+      and cl, 0xF0
+	  add rcx, 0x10
+      fxrstor [rcx]
+	  ret
+
 global x64_read_xcr0
 x64_read_xcr0:
       xor rcx, rcx

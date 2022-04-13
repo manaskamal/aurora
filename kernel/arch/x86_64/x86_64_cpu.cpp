@@ -61,6 +61,8 @@ __declspec(align(4)) static gdt_entry gdt[GDT_ENTRIES];
 __declspec(align(4)) static gdtr the_gdtr, old_gdtr;
 static uint16_t oldsregs[8];
 
+static bool _fxsave_support = false;
+static bool _avx_support = false;
 
 //!==========================================================================================
 //! G L O B A L     D E S C R I P T O R    T A B L E 
@@ -220,6 +222,8 @@ void x86_64_cpu_feature_enable() {
 
 		if ((d & (1 << 24)) != 0) {
 			cr4 |= (1 << 9);
+			au_get_boot_info()->auprint("FXSAVE enabled\n");
+			_fxsave_support = true;
 		}
 
 		x64_write_cr4(cr4);
@@ -338,4 +342,18 @@ void x86_64_setup_cpu_data(void* data) {
 		x64_write_msr(MSR_IA32_GS_BASE, (uint64_t)data);
 		per_cpu_set_cpu_id((b >> 24));
 	}
+}
+
+/*
+ * x86_64_fxsave_support -- returns true if supported
+ */
+bool x86_64_fxsave_supported() {
+	return _fxsave_support;
+}
+
+/*
+ * x86_64_avx_supported -- returns true if supported
+ */
+bool x86_64_avx_supported() {
+	return _avx_support;
 }

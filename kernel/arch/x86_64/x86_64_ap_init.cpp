@@ -61,7 +61,8 @@ void x86_64_ap_init(void *cpu_data) {
 
 	x86_64_sched_start();
 	x86_64_ap_started();
-	x86_64_execute_idle();
+	//x86_64_execute_idle();
+	x64_sti();
 	/* initialize processor specific functions here !!*/
 	/* from here we'll jump to scheduler */
 	for (;;);

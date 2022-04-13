@@ -35,14 +35,17 @@
 static uint64_t exception_lock = 0;
 
 void panic(const char* msg, ...) {
+	x64_lock_acquire(&exception_lock);
 	printf("***ARCH x86_64 : Exception Occured ***\n");
 	printf("[aurora]: We are sorry to say that, a processor invalid exception has occured\n");
 	printf("[aurora]: please inform it to the master of the kernel\n");
 	printf("[aurora]: Below is the code of exception\n");
+	exception_lock = 0;
 	printf(msg);
 }
 
 void divide_by_zero_fault(size_t vector, void* param) {
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 	panic("\nDivide by 0");
@@ -51,42 +54,52 @@ void divide_by_zero_fault(size_t vector, void* param) {
 	printf("RIP -> %x\n", frame->rip);
 	printf("RSP -> %x\n", frame->rsp);
 	printf("RFLAGS -> %x\n", frame->rflags);
-
+	exception_lock = 0;
 	for (;;);
 }
 
 void single_step_trap(size_t vector, void* param) {
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 	panic("\nSingle Step Trap");
+	exception_lock = 0;
 	for (;;);
 }
 
 void nmi_trap(size_t vector, void* param){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nNMI [Non-Muskable-Interrupt] Trap");
+	exception_lock = 0;
 	for (;;);
 
 }
 
 //! exception function breakpoint_trap
 void breakpoint_trap(size_t vector, void* param){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nBreakpoint Trap");
+	exception_lock = 0;
 	for (;;);
 }
 
 //! exception function -- overflow_trap
 void overflow_trap(size_t v, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nOverflow Trap");
+	exception_lock = 0;
 	for (;;);
 }
 
 //! exception function -- bounds_check_fault
 void bounds_check_fault(size_t v, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nBound Check Fault");
+	exception_lock = 0;
 	for (;;);
 }
 
@@ -109,8 +122,10 @@ void invalid_opcode_fault(size_t v, void* p){
 
 //! exception function -- no device fault
 void no_device_fault(size_t v, void* p){
+	x64_lock_acquire(&exception_lock);
 	x64_cli();
 	panic("\nNo Device Fault");
+	exception_lock = 0;
 	for (;;);
 }
 

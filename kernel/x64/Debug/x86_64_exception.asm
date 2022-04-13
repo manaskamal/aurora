@@ -9,100 +9,100 @@ _BSS	SEGMENT
 exception_lock DQ 01H DUP (?)
 _BSS	ENDS
 CONST	SEGMENT
-$SG2852	DB	'***ARCH x86_64 : Exception Occured ***', 0aH, 00H
-$SG2854	DB	'[aurora]: please inform it to the master of the kernel', 0aH
+$SG2858	DB	'***ARCH x86_64 : Exception Occured ***', 0aH, 00H
+$SG2860	DB	'[aurora]: please inform it to the master of the kernel', 0aH
 	DB	00H
-$SG2853	DB	'[aurora]: We are sorry to say that, a processor invalid '
+$SG2859	DB	'[aurora]: We are sorry to say that, a processor invalid '
 	DB	'exception has occured', 0aH, 00H
 	ORG $+1
-$SG2855	DB	'[aurora]: Below is the code of exception', 0aH, 00H
+$SG2861	DB	'[aurora]: Below is the code of exception', 0aH, 00H
 	ORG $+6
-$SG2862	DB	0aH, 'Divide by 0', 00H
+$SG2868	DB	0aH, 'Divide by 0', 00H
 	ORG $+3
-$SG2863	DB	'__PROCESSOR_DATA__', 0aH, 00H
+$SG2869	DB	'__PROCESSOR_DATA__', 0aH, 00H
 	ORG $+4
-$SG2864	DB	'RIP -> %x', 0aH, 00H
+$SG2870	DB	'RIP -> %x', 0aH, 00H
 	ORG $+5
-$SG2865	DB	'RSP -> %x', 0aH, 00H
+$SG2871	DB	'RSP -> %x', 0aH, 00H
 	ORG $+5
-$SG2866	DB	'RFLAGS -> %x', 0aH, 00H
+$SG2872	DB	'RFLAGS -> %x', 0aH, 00H
 	ORG $+2
-$SG2876	DB	0aH, 'Single Step Trap', 00H
+$SG2882	DB	0aH, 'Single Step Trap', 00H
 	ORG $+6
-$SG2884	DB	0aH, 'NMI [Non-Muskable-Interrupt] Trap', 00H
+$SG2890	DB	0aH, 'NMI [Non-Muskable-Interrupt] Trap', 00H
 	ORG $+5
-$SG2892	DB	0aH, 'Breakpoint Trap', 00H
+$SG2898	DB	0aH, 'Breakpoint Trap', 00H
 	ORG $+7
-$SG2900	DB	0aH, 'Overflow Trap', 00H
+$SG2906	DB	0aH, 'Overflow Trap', 00H
 	ORG $+1
-$SG2908	DB	0aH, 'Bound Check Fault', 00H
+$SG2914	DB	0aH, 'Bound Check Fault', 00H
 	ORG $+5
-$SG2918	DB	'Invalid Opcode Fault', 0aH, 00H
+$SG2924	DB	'Invalid Opcode Fault', 0aH, 00H
 	ORG $+2
-$SG2919	DB	'CPU ID -> %d ', 0aH, 00H
+$SG2925	DB	'CPU ID -> %d ', 0aH, 00H
 	ORG $+1
-$SG2920	DB	'__PROCESSOR TRACE__', 0aH, 00H
+$SG2926	DB	'__PROCESSOR TRACE__', 0aH, 00H
 	ORG $+3
-$SG2921	DB	'RIP -> %x', 0aH, 00H
+$SG2927	DB	'RIP -> %x', 0aH, 00H
 	ORG $+5
-$SG2922	DB	'Stack -> %x', 0aH, 00H
+$SG2928	DB	'Stack -> %x', 0aH, 00H
 	ORG $+3
-$SG2923	DB	'RFLAGS -> %x', 0aH, 00H
+$SG2929	DB	'RFLAGS -> %x', 0aH, 00H
 	ORG $+2
-$SG2924	DB	'CS -> %x', 0aH, 00H
+$SG2930	DB	'CS -> %x', 0aH, 00H
 	ORG $+6
-$SG2925	DB	'SS -> %x', 0aH, 00H
+$SG2931	DB	'SS -> %x', 0aH, 00H
 	ORG $+6
-$SG2933	DB	0aH, 'No Device Fault', 00H
+$SG2939	DB	0aH, 'No Device Fault', 00H
 	ORG $+7
-$SG2941	DB	0aH, 'Double Fault Abort', 00H
+$SG2947	DB	0aH, 'Double Fault Abort', 00H
 	ORG $+4
-$SG2949	DB	0aH, 'Invalid TSS Fault ', 00H
+$SG2955	DB	0aH, 'Invalid TSS Fault ', 00H
 	ORG $+4
-$SG2957	DB	0aH, 'No Segment Fault', 00H
+$SG2963	DB	0aH, 'No Segment Fault', 00H
 	ORG $+6
-$SG2965	DB	0aH, 'Stack Fault at ', 00H
+$SG2971	DB	0aH, 'Stack Fault at ', 00H
 	ORG $+7
-$SG2975	DB	'Genral Protection Fault', 0aH, 00H
+$SG2981	DB	'Genral Protection Fault', 0aH, 00H
 	ORG $+7
-$SG2976	DB	'Current CPU id -> %d ', 0aH, 00H
+$SG2982	DB	'Current CPU id -> %d ', 0aH, 00H
 	ORG $+1
-$SG2977	DB	'Current thread -> %x ', 0aH, 00H
+$SG2983	DB	'Current thread -> %x ', 0aH, 00H
 	ORG $+1
-$SG2978	DB	'__PROCESSOR TRACE__', 0aH, 00H
+$SG2984	DB	'__PROCESSOR TRACE__', 0aH, 00H
 	ORG $+3
-$SG2979	DB	'RIP -> %x', 0aH, 00H
+$SG2985	DB	'RIP -> %x', 0aH, 00H
 	ORG $+5
-$SG2980	DB	'Stack -> %x', 0aH, 00H
+$SG2986	DB	'Stack -> %x', 0aH, 00H
 	ORG $+3
-$SG2981	DB	'RFLAGS -> %x', 0aH, 00H
+$SG2987	DB	'RFLAGS -> %x', 0aH, 00H
 	ORG $+2
-$SG2982	DB	'CS -> %x, SS -> %x', 0aH, 00H
+$SG2988	DB	'CS -> %x, SS -> %x', 0aH, 00H
 	ORG $+4
-$SG2999	DB	'[aurora]: page fault ', 0aH, 00H
+$SG3005	DB	'[aurora]: page fault ', 0aH, 00H
 	ORG $+1
-$SG3000	DB	'[aurora]: page fault at -> %x ', 0aH, 00H
-$SG3001	DB	'[aurora]: current cpu -> %d ', 0aH, 00H
+$SG3006	DB	'[aurora]: page fault at -> %x ', 0aH, 00H
+$SG3007	DB	'[aurora]: current cpu -> %d ', 0aH, 00H
 	ORG $+2
-$SG3003	DB	'bit: present ', 0aH, 00H
+$SG3009	DB	'bit: present ', 0aH, 00H
 	ORG $+1
-$SG3006	DB	'bit: rw ', 0aH, 00H
+$SG3012	DB	'bit: rw ', 0aH, 00H
 	ORG $+6
-$SG3009	DB	'bit: us ', 0aH, 00H
+$SG3015	DB	'bit: us ', 0aH, 00H
 	ORG $+6
-$SG3012	DB	'bit: resv ', 0aH, 00H
+$SG3018	DB	'bit: resv ', 0aH, 00H
 	ORG $+4
-$SG3015	DB	'bit: id', 0aH, 00H
+$SG3021	DB	'bit: id', 0aH, 00H
 	ORG $+7
-$SG3016	DB	'RIP -> %x ', 0aH, 00H
+$SG3022	DB	'RIP -> %x ', 0aH, 00H
 	ORG $+4
-$SG3024	DB	0aH, 'FPU Fault', 00H
+$SG3030	DB	0aH, 'FPU Fault', 00H
 	ORG $+5
-$SG3032	DB	0aH, 'Alignment Check Fault at address ', 00H
+$SG3038	DB	0aH, 'Alignment Check Fault at address ', 00H
 	ORG $+5
-$SG3040	DB	0aH, 'Machine Check Abort', 00H
+$SG3046	DB	0aH, 'Machine Check Abort', 00H
 	ORG $+3
-$SG3048	DB	0aH, 'SIMD FPU Fault', 00H
+$SG3054	DB	0aH, 'SIMD FPU Fault', 00H
 CONST	ENDS
 PUBLIC	?x86_64_exception_init@@YAXXZ			; x86_64_exception_init
 PUBLIC	?panic@@YAXPEBDZZ				; panic
@@ -136,31 +136,31 @@ $pdata$?x86_64_exception_init@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+312
 	DD	imagerel $unwind$?x86_64_exception_init@@YAXXZ
 $pdata$?panic@@YAXPEBDZZ DD imagerel $LN3
-	DD	imagerel $LN3+87
+	DD	imagerel $LN3+110
 	DD	imagerel $unwind$?panic@@YAXPEBDZZ
 $pdata$?divide_by_zero_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+123
+	DD	imagerel $LN5+146
 	DD	imagerel $unwind$?divide_by_zero_fault@@YAX_KPEAX@Z
 $pdata$?single_step_trap@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+48
+	DD	imagerel $LN5+71
 	DD	imagerel $unwind$?single_step_trap@@YAX_KPEAX@Z
 $pdata$?nmi_trap@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+38
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?nmi_trap@@YAX_KPEAX@Z
 $pdata$?breakpoint_trap@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+38
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?breakpoint_trap@@YAX_KPEAX@Z
 $pdata$?overflow_trap@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+38
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?overflow_trap@@YAX_KPEAX@Z
 $pdata$?bounds_check_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+38
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?bounds_check_fault@@YAX_KPEAX@Z
 $pdata$?invalid_opcode_fault@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+210
 	DD	imagerel $unwind$?invalid_opcode_fault@@YAX_KPEAX@Z
 $pdata$?no_device_fault@@YAX_KPEAX@Z DD imagerel $LN5
-	DD	imagerel $LN5+38
+	DD	imagerel $LN5+61
 	DD	imagerel $unwind$?no_device_fault@@YAX_KPEAX@Z
 $pdata$?double_fault_abort@@YAX_KPEAX@Z DD imagerel $LN5
 	DD	imagerel $LN5+38
@@ -242,28 +242,28 @@ v$ = 48
 p$ = 56
 ?simd_fpu_fault@@YAX_KPEAX@Z PROC			; simd_fpu_fault
 
-; 226  : void simd_fpu_fault(size_t v, void* p){
+; 241  : void simd_fpu_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 227  : 	x64_cli();
+; 242  : 	x64_cli();
 
 	call	x64_cli
 
-; 228  : 	panic("\nSIMD FPU Fault");
+; 243  : 	panic("\nSIMD FPU Fault");
 
-	lea	rcx, OFFSET FLAT:$SG3048
+	lea	rcx, OFFSET FLAT:$SG3054
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@simd_fpu_f:
 
-; 229  : 	for (;;);
+; 244  : 	for (;;);
 
 	jmp	SHORT $LN2@simd_fpu_f
 
-; 230  : }
+; 245  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -276,28 +276,28 @@ v$ = 48
 p$ = 56
 ?machine_check_abort@@YAX_KPEAX@Z PROC			; machine_check_abort
 
-; 219  : void machine_check_abort(size_t v, void* p){
+; 234  : void machine_check_abort(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 220  : 	x64_cli();
+; 235  : 	x64_cli();
 
 	call	x64_cli
 
-; 221  : 	panic("\nMachine Check Abort");
+; 236  : 	panic("\nMachine Check Abort");
 
-	lea	rcx, OFFSET FLAT:$SG3040
+	lea	rcx, OFFSET FLAT:$SG3046
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@machine_ch:
 
-; 222  : 	for (;;);
+; 237  : 	for (;;);
 
 	jmp	SHORT $LN2@machine_ch
 
-; 223  : }
+; 238  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -310,28 +310,28 @@ v$ = 48
 p$ = 56
 ?alignment_check_fault@@YAX_KPEAX@Z PROC		; alignment_check_fault
 
-; 212  : void alignment_check_fault(size_t v, void* p){
+; 227  : void alignment_check_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 213  : 	x64_cli();
+; 228  : 	x64_cli();
 
 	call	x64_cli
 
-; 214  : 	panic("\nAlignment Check Fault at address ");
+; 229  : 	panic("\nAlignment Check Fault at address ");
 
-	lea	rcx, OFFSET FLAT:$SG3032
+	lea	rcx, OFFSET FLAT:$SG3038
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@alignment_:
 
-; 215  : 	for (;;);
+; 230  : 	for (;;);
 
 	jmp	SHORT $LN2@alignment_
 
-; 216  : }
+; 231  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -344,37 +344,37 @@ vector$ = 48
 p$ = 56
 ?fpu_fault@@YAX_KPEAX@Z PROC				; fpu_fault
 
-; 202  : void fpu_fault(size_t vector, void* p){
+; 217  : void fpu_fault(size_t vector, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 203  : 	x64_lock_acquire(&exception_lock);
+; 218  : 	x64_lock_acquire(&exception_lock);
 
 	lea	rcx, OFFSET FLAT:exception_lock
 	call	x64_lock_acquire
 
-; 204  : 	x64_cli();
+; 219  : 	x64_cli();
 
 	call	x64_cli
 
-; 205  : 	panic("\nFPU Fault");
+; 220  : 	panic("\nFPU Fault");
 
-	lea	rcx, OFFSET FLAT:$SG3024
+	lea	rcx, OFFSET FLAT:$SG3030
 	call	?panic@@YAXPEBDZZ			; panic
 
-; 206  : 	exception_lock = 0;
+; 221  : 	exception_lock = 0;
 
 	mov	QWORD PTR exception_lock, 0
 $LN2@fpu_fault:
 
-; 207  : 	for (;;);
+; 222  : 	for (;;);
 
 	jmp	SHORT $LN2@fpu_fault
 
-; 208  : }
+; 223  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -395,35 +395,35 @@ vector$ = 96
 param$ = 104
 ?page_fault@@YAX_KPEAX@Z PROC				; page_fault
 
-; 166  : void page_fault(size_t vector, void* param){
+; 181  : void page_fault(size_t vector, void* param){
 
 $LN16:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 88					; 00000058H
 
-; 167  : 	x64_lock_acquire(&exception_lock);
+; 182  : 	x64_lock_acquire(&exception_lock);
 
 	lea	rcx, OFFSET FLAT:exception_lock
 	call	x64_lock_acquire
 
-; 168  : 	x64_cli();
+; 183  : 	x64_cli();
 
 	call	x64_cli
 
-; 169  : 
-; 170  : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
+; 184  : 
+; 185  : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 
 	mov	rax, QWORD PTR param$[rsp]
 	mov	QWORD PTR frame$[rsp], rax
 
-; 171  : 	void* vaddr = (void*)x64_read_cr2();
+; 186  : 	void* vaddr = (void*)x64_read_cr2();
 
 	call	x64_read_cr2
 	mov	QWORD PTR vaddr$[rsp], rax
 
-; 172  : 
-; 173  : 	int present = !(frame->error & 0x1);
+; 187  : 
+; 188  : 	int present = !(frame->error & 0x1);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rax, QWORD PTR [rax+8]
@@ -438,110 +438,110 @@ $LN15@page_fault:
 	mov	eax, DWORD PTR tv69[rsp]
 	mov	DWORD PTR present$[rsp], eax
 
-; 174  : 	int rw = frame->error & 0x2;
+; 189  : 	int rw = frame->error & 0x2;
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rax, QWORD PTR [rax+8]
 	and	rax, 2
 	mov	DWORD PTR rw$[rsp], eax
 
-; 175  : 	int us = frame->error & 0x4;
+; 190  : 	int us = frame->error & 0x4;
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rax, QWORD PTR [rax+8]
 	and	rax, 4
 	mov	DWORD PTR us$[rsp], eax
 
-; 176  : 	int resv = frame->error & 0x8;
+; 191  : 	int resv = frame->error & 0x8;
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rax, QWORD PTR [rax+8]
 	and	rax, 8
 	mov	DWORD PTR resv$[rsp], eax
 
-; 177  : 	int id = frame->error & 0x10;
+; 192  : 	int id = frame->error & 0x10;
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rax, QWORD PTR [rax+8]
 	and	rax, 16
 	mov	DWORD PTR id$[rsp], eax
 
-; 178  : 
-; 179  : 	panic("[aurora]: page fault \n");
+; 193  : 
+; 194  : 	panic("[aurora]: page fault \n");
 
-	lea	rcx, OFFSET FLAT:$SG2999
+	lea	rcx, OFFSET FLAT:$SG3005
 	call	?panic@@YAXPEBDZZ			; panic
 
-; 180  : 	printf("[aurora]: page fault at -> %x \n", vaddr);
+; 195  : 	printf("[aurora]: page fault at -> %x \n", vaddr);
 
 	mov	rdx, QWORD PTR vaddr$[rsp]
-	lea	rcx, OFFSET FLAT:$SG3000
+	lea	rcx, OFFSET FLAT:$SG3006
 	call	printf
 
-; 181  : 	printf("[aurora]: current cpu -> %d \n", per_cpu_get_cpu_id());
+; 196  : 	printf("[aurora]: current cpu -> %d \n", per_cpu_get_cpu_id());
 
 	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
 	movzx	eax, al
 	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG3001
+	lea	rcx, OFFSET FLAT:$SG3007
 	call	printf
 
-; 182  : 	if (present)
+; 197  : 	if (present)
 
 	cmp	DWORD PTR present$[rsp], 0
 	je	SHORT $LN11@page_fault
 
-; 183  : 		printf("bit: present \n");
+; 198  : 		printf("bit: present \n");
 
-	lea	rcx, OFFSET FLAT:$SG3003
+	lea	rcx, OFFSET FLAT:$SG3009
 	call	printf
 	jmp	SHORT $LN10@page_fault
 $LN11@page_fault:
 
-; 184  : 	else if (rw)
+; 199  : 	else if (rw)
 
 	cmp	DWORD PTR rw$[rsp], 0
 	je	SHORT $LN9@page_fault
 
-; 185  : 		printf("bit: rw \n");
+; 200  : 		printf("bit: rw \n");
 
-	lea	rcx, OFFSET FLAT:$SG3006
+	lea	rcx, OFFSET FLAT:$SG3012
 	call	printf
 	jmp	SHORT $LN8@page_fault
 $LN9@page_fault:
 
-; 186  : 	else if (us)
+; 201  : 	else if (us)
 
 	cmp	DWORD PTR us$[rsp], 0
 	je	SHORT $LN7@page_fault
 
-; 187  : 		printf("bit: us \n");
+; 202  : 		printf("bit: us \n");
 
-	lea	rcx, OFFSET FLAT:$SG3009
+	lea	rcx, OFFSET FLAT:$SG3015
 	call	printf
 	jmp	SHORT $LN6@page_fault
 $LN7@page_fault:
 
-; 188  : 	else if (resv)
+; 203  : 	else if (resv)
 
 	cmp	DWORD PTR resv$[rsp], 0
 	je	SHORT $LN5@page_fault
 
-; 189  : 		printf("bit: resv \n");
+; 204  : 		printf("bit: resv \n");
 
-	lea	rcx, OFFSET FLAT:$SG3012
+	lea	rcx, OFFSET FLAT:$SG3018
 	call	printf
 	jmp	SHORT $LN4@page_fault
 $LN5@page_fault:
 
-; 190  : 	else if (id)
+; 205  : 	else if (id)
 
 	cmp	DWORD PTR id$[rsp], 0
 	je	SHORT $LN3@page_fault
 
-; 191  : 		printf("bit: id\n");
+; 206  : 		printf("bit: id\n");
 
-	lea	rcx, OFFSET FLAT:$SG3015
+	lea	rcx, OFFSET FLAT:$SG3021
 	call	printf
 $LN3@page_fault:
 $LN4@page_fault:
@@ -549,26 +549,26 @@ $LN6@page_fault:
 $LN8@page_fault:
 $LN10@page_fault:
 
-; 192  : 
-; 193  : 	printf("RIP -> %x \n", frame->rip);
+; 207  : 
+; 208  : 	printf("RIP -> %x \n", frame->rip);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+16]
-	lea	rcx, OFFSET FLAT:$SG3016
+	lea	rcx, OFFSET FLAT:$SG3022
 	call	printf
 
-; 194  : 
-; 195  : 	exception_lock = 0;
+; 209  : 
+; 210  : 	exception_lock = 0;
 
 	mov	QWORD PTR exception_lock, 0
 $LN2@page_fault:
 
-; 196  : 
-; 197  : 	for (;;);
+; 211  : 
+; 212  : 	for (;;);
 
 	jmp	SHORT $LN2@page_fault
 
-; 198  : }
+; 213  : }
 
 	add	rsp, 88					; 00000058H
 	ret	0
@@ -582,92 +582,92 @@ v$ = 64
 p$ = 72
 ?general_protection_fault@@YAX_KPEAX@Z PROC		; general_protection_fault
 
-; 147  : void general_protection_fault(size_t v, void* p){
+; 162  : void general_protection_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 148  : 	x64_lock_acquire(&exception_lock);
+; 163  : 	x64_lock_acquire(&exception_lock);
 
 	lea	rcx, OFFSET FLAT:exception_lock
 	call	x64_lock_acquire
 
-; 149  : 	x64_cli();
+; 164  : 	x64_cli();
 
 	call	x64_cli
 
-; 150  : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
+; 165  : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
 
 	mov	rax, QWORD PTR p$[rsp]
 	mov	QWORD PTR frame$[rsp], rax
 
-; 151  : 	panic ("Genral Protection Fault\n");
+; 166  : 	panic ("Genral Protection Fault\n");
 
-	lea	rcx, OFFSET FLAT:$SG2975
+	lea	rcx, OFFSET FLAT:$SG2981
 	call	?panic@@YAXPEBDZZ			; panic
 
-; 152  : 	printf("Current CPU id -> %d \n", per_cpu_get_cpu_id());
+; 167  : 	printf("Current CPU id -> %d \n", per_cpu_get_cpu_id());
 
 	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
 	movzx	eax, al
 	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG2976
+	lea	rcx, OFFSET FLAT:$SG2982
 	call	printf
 
-; 153  : 	printf("Current thread -> %x \n", per_cpu_get_c_thread());
+; 168  : 	printf("Current thread -> %x \n", per_cpu_get_c_thread());
 
 	call	?per_cpu_get_c_thread@@YAPEAXXZ		; per_cpu_get_c_thread
 	mov	rdx, rax
-	lea	rcx, OFFSET FLAT:$SG2977
+	lea	rcx, OFFSET FLAT:$SG2983
 	call	printf
 
-; 154  : 	printf ("__PROCESSOR TRACE__\n");
+; 169  : 	printf ("__PROCESSOR TRACE__\n");
 
-	lea	rcx, OFFSET FLAT:$SG2978
+	lea	rcx, OFFSET FLAT:$SG2984
 	call	printf
 
-; 155  : 	printf ("RIP -> %x\n",frame->rip);
+; 170  : 	printf ("RIP -> %x\n",frame->rip);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+16]
-	lea	rcx, OFFSET FLAT:$SG2979
+	lea	rcx, OFFSET FLAT:$SG2985
 	call	printf
 
-; 156  : 	printf ("Stack -> %x\n", frame->rsp);
+; 171  : 	printf ("Stack -> %x\n", frame->rsp);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+40]
-	lea	rcx, OFFSET FLAT:$SG2980
+	lea	rcx, OFFSET FLAT:$SG2986
 	call	printf
 
-; 157  : 	printf ("RFLAGS -> %x\n", frame->rflags);
+; 172  : 	printf ("RFLAGS -> %x\n", frame->rflags);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+32]
-	lea	rcx, OFFSET FLAT:$SG2981
+	lea	rcx, OFFSET FLAT:$SG2987
 	call	printf
 
-; 158  : 	printf ("CS -> %x, SS -> %x\n", frame->cs, frame->ss);
+; 173  : 	printf ("CS -> %x, SS -> %x\n", frame->cs, frame->ss);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	r8, QWORD PTR [rax+48]
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+24]
-	lea	rcx, OFFSET FLAT:$SG2982
+	lea	rcx, OFFSET FLAT:$SG2988
 	call	printf
 
-; 159  : 	exception_lock = 0;
+; 174  : 	exception_lock = 0;
 
 	mov	QWORD PTR exception_lock, 0
 $LN2@general_pr:
 
-; 160  : 	for(;;);
+; 175  : 	for(;;);
 
 	jmp	SHORT $LN2@general_pr
 
-; 161  : }
+; 176  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -680,28 +680,28 @@ v$ = 48
 p$ = 56
 ?stack_fault@@YAX_KPEAX@Z PROC				; stack_fault
 
-; 139  : void stack_fault(size_t v, void* p){
+; 154  : void stack_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 140  : 	x64_cli();
+; 155  : 	x64_cli();
 
 	call	x64_cli
 
-; 141  : 	panic("\nStack Fault at ");
+; 156  : 	panic("\nStack Fault at ");
 
-	lea	rcx, OFFSET FLAT:$SG2965
+	lea	rcx, OFFSET FLAT:$SG2971
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@stack_faul:
 
-; 142  : 	for (;;);
+; 157  : 	for (;;);
 
 	jmp	SHORT $LN2@stack_faul
 
-; 143  : }
+; 158  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -714,28 +714,28 @@ v$ = 48
 p$ = 56
 ?no_segment_fault@@YAX_KPEAX@Z PROC			; no_segment_fault
 
-; 132  : void no_segment_fault(size_t v, void* p){
+; 147  : void no_segment_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 133  : 	x64_cli();
+; 148  : 	x64_cli();
 
 	call	x64_cli
 
-; 134  : 	panic("\nNo Segment Fault");
+; 149  : 	panic("\nNo Segment Fault");
 
-	lea	rcx, OFFSET FLAT:$SG2957
+	lea	rcx, OFFSET FLAT:$SG2963
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@no_segment:
 
-; 135  : 	for (;;);
+; 150  : 	for (;;);
 
 	jmp	SHORT $LN2@no_segment
 
-; 136  : }
+; 151  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -748,28 +748,28 @@ v$ = 48
 p$ = 56
 ?invalid_tss_fault@@YAX_KPEAX@Z PROC			; invalid_tss_fault
 
-; 125  : void invalid_tss_fault(size_t v, void* p){
+; 140  : void invalid_tss_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 126  : 	x64_cli();
+; 141  : 	x64_cli();
 
 	call	x64_cli
 
-; 127  : 	panic("\nInvalid TSS Fault ");
+; 142  : 	panic("\nInvalid TSS Fault ");
 
-	lea	rcx, OFFSET FLAT:$SG2949
+	lea	rcx, OFFSET FLAT:$SG2955
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@invalid_ts:
 
-; 128  : 	for (;;);
+; 143  : 	for (;;);
 
 	jmp	SHORT $LN2@invalid_ts
 
-; 129  : }
+; 144  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -782,28 +782,28 @@ v$ = 48
 p$ = 56
 ?double_fault_abort@@YAX_KPEAX@Z PROC			; double_fault_abort
 
-; 118  : void double_fault_abort(size_t v, void* p){
+; 133  : void double_fault_abort(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 119  : 	x64_cli();
+; 134  : 	x64_cli();
 
 	call	x64_cli
 
-; 120  : 	panic("\nDouble Fault Abort");
+; 135  : 	panic("\nDouble Fault Abort");
 
-	lea	rcx, OFFSET FLAT:$SG2941
+	lea	rcx, OFFSET FLAT:$SG2947
 	call	?panic@@YAXPEBDZZ			; panic
 $LN2@double_fau:
 
-; 121  : 	for (;;);
+; 136  : 	for (;;);
 
 	jmp	SHORT $LN2@double_fau
 
-; 122  : }
+; 137  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -816,28 +816,37 @@ v$ = 48
 p$ = 56
 ?no_device_fault@@YAX_KPEAX@Z PROC			; no_device_fault
 
-; 111  : void no_device_fault(size_t v, void* p){
+; 124  : void no_device_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 112  : 	x64_cli();
+; 125  : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 126  : 	x64_cli();
 
 	call	x64_cli
 
-; 113  : 	panic("\nNo Device Fault");
+; 127  : 	panic("\nNo Device Fault");
 
-	lea	rcx, OFFSET FLAT:$SG2933
+	lea	rcx, OFFSET FLAT:$SG2939
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 128  : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@no_device_:
 
-; 114  : 	for (;;);
+; 129  : 	for (;;);
 
 	jmp	SHORT $LN2@no_device_
 
-; 115  : }
+; 130  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -851,90 +860,90 @@ v$ = 64
 p$ = 72
 ?invalid_opcode_fault@@YAX_KPEAX@Z PROC			; invalid_opcode_fault
 
-; 94   : void invalid_opcode_fault(size_t v, void* p){
+; 107  : void invalid_opcode_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 95   : 	x64_lock_acquire(&exception_lock);
+; 108  : 	x64_lock_acquire(&exception_lock);
 
 	lea	rcx, OFFSET FLAT:exception_lock
 	call	x64_lock_acquire
 
-; 96   : 	x64_cli();
+; 109  : 	x64_cli();
 
 	call	x64_cli
 
-; 97   : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
+; 110  : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
 
 	mov	rax, QWORD PTR p$[rsp]
 	mov	QWORD PTR frame$[rsp], rax
 
-; 98   : 	panic("Invalid Opcode Fault\n");
+; 111  : 	panic("Invalid Opcode Fault\n");
 
-	lea	rcx, OFFSET FLAT:$SG2918
+	lea	rcx, OFFSET FLAT:$SG2924
 	call	?panic@@YAXPEBDZZ			; panic
 
-; 99   : 	printf("CPU ID -> %d \n", per_cpu_get_cpu_id());
+; 112  : 	printf("CPU ID -> %d \n", per_cpu_get_cpu_id());
 
 	call	?per_cpu_get_cpu_id@@YAEXZ		; per_cpu_get_cpu_id
 	movzx	eax, al
 	mov	edx, eax
-	lea	rcx, OFFSET FLAT:$SG2919
-	call	printf
-
-; 100  : 	printf("__PROCESSOR TRACE__\n");
-
-	lea	rcx, OFFSET FLAT:$SG2920
-	call	printf
-
-; 101  : 	printf("RIP -> %x\n", frame->rip);
-
-	mov	rax, QWORD PTR frame$[rsp]
-	mov	rdx, QWORD PTR [rax+16]
-	lea	rcx, OFFSET FLAT:$SG2921
-	call	printf
-
-; 102  : 	printf("Stack -> %x\n", frame->rsp);
-
-	mov	rax, QWORD PTR frame$[rsp]
-	mov	rdx, QWORD PTR [rax+40]
-	lea	rcx, OFFSET FLAT:$SG2922
-	call	printf
-
-; 103  : 	printf("RFLAGS -> %x\n", frame->rflags);
-
-	mov	rax, QWORD PTR frame$[rsp]
-	mov	rdx, QWORD PTR [rax+32]
-	lea	rcx, OFFSET FLAT:$SG2923
-	call	printf
-
-; 104  : 	printf("CS -> %x\n", frame->cs);
-
-	mov	rax, QWORD PTR frame$[rsp]
-	mov	rdx, QWORD PTR [rax+24]
-	lea	rcx, OFFSET FLAT:$SG2924
-	call	printf
-
-; 105  : 	printf("SS -> %x\n", frame->ss);
-
-	mov	rax, QWORD PTR frame$[rsp]
-	mov	rdx, QWORD PTR [rax+48]
 	lea	rcx, OFFSET FLAT:$SG2925
 	call	printf
 
-; 106  : 	exception_lock = 0;
+; 113  : 	printf("__PROCESSOR TRACE__\n");
+
+	lea	rcx, OFFSET FLAT:$SG2926
+	call	printf
+
+; 114  : 	printf("RIP -> %x\n", frame->rip);
+
+	mov	rax, QWORD PTR frame$[rsp]
+	mov	rdx, QWORD PTR [rax+16]
+	lea	rcx, OFFSET FLAT:$SG2927
+	call	printf
+
+; 115  : 	printf("Stack -> %x\n", frame->rsp);
+
+	mov	rax, QWORD PTR frame$[rsp]
+	mov	rdx, QWORD PTR [rax+40]
+	lea	rcx, OFFSET FLAT:$SG2928
+	call	printf
+
+; 116  : 	printf("RFLAGS -> %x\n", frame->rflags);
+
+	mov	rax, QWORD PTR frame$[rsp]
+	mov	rdx, QWORD PTR [rax+32]
+	lea	rcx, OFFSET FLAT:$SG2929
+	call	printf
+
+; 117  : 	printf("CS -> %x\n", frame->cs);
+
+	mov	rax, QWORD PTR frame$[rsp]
+	mov	rdx, QWORD PTR [rax+24]
+	lea	rcx, OFFSET FLAT:$SG2930
+	call	printf
+
+; 118  : 	printf("SS -> %x\n", frame->ss);
+
+	mov	rax, QWORD PTR frame$[rsp]
+	mov	rdx, QWORD PTR [rax+48]
+	lea	rcx, OFFSET FLAT:$SG2931
+	call	printf
+
+; 119  : 	exception_lock = 0;
 
 	mov	QWORD PTR exception_lock, 0
 $LN2@invalid_op:
 
-; 107  : 	for (;;);
+; 120  : 	for (;;);
 
 	jmp	SHORT $LN2@invalid_op
 
-; 108  : }
+; 121  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -947,28 +956,37 @@ v$ = 48
 p$ = 56
 ?bounds_check_fault@@YAX_KPEAX@Z PROC			; bounds_check_fault
 
-; 87   : void bounds_check_fault(size_t v, void* p){
+; 98   : void bounds_check_fault(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 88   : 	x64_cli();
+; 99   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 100  : 	x64_cli();
 
 	call	x64_cli
 
-; 89   : 	panic("\nBound Check Fault");
+; 101  : 	panic("\nBound Check Fault");
 
-	lea	rcx, OFFSET FLAT:$SG2908
+	lea	rcx, OFFSET FLAT:$SG2914
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 102  : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@bounds_che:
 
-; 90   : 	for (;;);
+; 103  : 	for (;;);
 
 	jmp	SHORT $LN2@bounds_che
 
-; 91   : }
+; 104  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -981,28 +999,37 @@ v$ = 48
 p$ = 56
 ?overflow_trap@@YAX_KPEAX@Z PROC			; overflow_trap
 
-; 80   : void overflow_trap(size_t v, void* p){
+; 89   : void overflow_trap(size_t v, void* p){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 81   : 	x64_cli();
+; 90   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 91   : 	x64_cli();
 
 	call	x64_cli
 
-; 82   : 	panic("\nOverflow Trap");
+; 92   : 	panic("\nOverflow Trap");
 
-	lea	rcx, OFFSET FLAT:$SG2900
+	lea	rcx, OFFSET FLAT:$SG2906
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 93   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@overflow_t:
 
-; 83   : 	for (;;);
+; 94   : 	for (;;);
 
 	jmp	SHORT $LN2@overflow_t
 
-; 84   : }
+; 95   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -1015,28 +1042,37 @@ vector$ = 48
 param$ = 56
 ?breakpoint_trap@@YAX_KPEAX@Z PROC			; breakpoint_trap
 
-; 73   : void breakpoint_trap(size_t vector, void* param){
+; 80   : void breakpoint_trap(size_t vector, void* param){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 74   : 	x64_cli();
+; 81   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 82   : 	x64_cli();
 
 	call	x64_cli
 
-; 75   : 	panic("\nBreakpoint Trap");
+; 83   : 	panic("\nBreakpoint Trap");
 
-	lea	rcx, OFFSET FLAT:$SG2892
+	lea	rcx, OFFSET FLAT:$SG2898
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 84   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@breakpoint:
 
-; 76   : 	for (;;);
+; 85   : 	for (;;);
 
 	jmp	SHORT $LN2@breakpoint
 
-; 77   : }
+; 86   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -1049,29 +1085,38 @@ vector$ = 48
 param$ = 56
 ?nmi_trap@@YAX_KPEAX@Z PROC				; nmi_trap
 
-; 65   : void nmi_trap(size_t vector, void* param){
+; 70   : void nmi_trap(size_t vector, void* param){
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 66   : 	x64_cli();
+; 71   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 72   : 	x64_cli();
 
 	call	x64_cli
 
-; 67   : 	panic("\nNMI [Non-Muskable-Interrupt] Trap");
+; 73   : 	panic("\nNMI [Non-Muskable-Interrupt] Trap");
 
-	lea	rcx, OFFSET FLAT:$SG2884
+	lea	rcx, OFFSET FLAT:$SG2890
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 74   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@nmi_trap:
 
-; 68   : 	for (;;);
+; 75   : 	for (;;);
 
 	jmp	SHORT $LN2@nmi_trap
 
-; 69   : 
-; 70   : }
+; 76   : 
+; 77   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -1085,33 +1130,42 @@ vector$ = 64
 param$ = 72
 ?single_step_trap@@YAX_KPEAX@Z PROC			; single_step_trap
 
-; 58   : void single_step_trap(size_t vector, void* param) {
+; 61   : void single_step_trap(size_t vector, void* param) {
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 59   : 	x64_cli();
+; 62   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 63   : 	x64_cli();
 
 	call	x64_cli
 
-; 60   : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
+; 64   : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 
 	mov	rax, QWORD PTR param$[rsp]
 	mov	QWORD PTR frame$[rsp], rax
 
-; 61   : 	panic("\nSingle Step Trap");
+; 65   : 	panic("\nSingle Step Trap");
 
-	lea	rcx, OFFSET FLAT:$SG2876
+	lea	rcx, OFFSET FLAT:$SG2882
 	call	?panic@@YAXPEBDZZ			; panic
+
+; 66   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@single_ste:
 
-; 62   : 	for (;;);
+; 67   : 	for (;;);
 
 	jmp	SHORT $LN2@single_ste
 
-; 63   : }
+; 68   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -1125,61 +1179,69 @@ vector$ = 64
 param$ = 72
 ?divide_by_zero_fault@@YAX_KPEAX@Z PROC			; divide_by_zero_fault
 
-; 45   : void divide_by_zero_fault(size_t vector, void* param) {
+; 47   : void divide_by_zero_fault(size_t vector, void* param) {
 
 $LN5:
 	mov	QWORD PTR [rsp+16], rdx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 46   : 	x64_cli();
+; 48   : 	x64_lock_acquire(&exception_lock);
+
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 49   : 	x64_cli();
 
 	call	x64_cli
 
-; 47   : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
+; 50   : 	interrupt_stack_frame *frame = (interrupt_stack_frame*)param;
 
 	mov	rax, QWORD PTR param$[rsp]
 	mov	QWORD PTR frame$[rsp], rax
 
-; 48   : 	panic("\nDivide by 0");
+; 51   : 	panic("\nDivide by 0");
 
-	lea	rcx, OFFSET FLAT:$SG2862
+	lea	rcx, OFFSET FLAT:$SG2868
 	call	?panic@@YAXPEBDZZ			; panic
 
-; 49   : 
-; 50   : 	printf("__PROCESSOR_DATA__\n");
+; 52   : 
+; 53   : 	printf("__PROCESSOR_DATA__\n");
 
-	lea	rcx, OFFSET FLAT:$SG2863
+	lea	rcx, OFFSET FLAT:$SG2869
 	call	printf
 
-; 51   : 	printf("RIP -> %x\n", frame->rip);
+; 54   : 	printf("RIP -> %x\n", frame->rip);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+16]
-	lea	rcx, OFFSET FLAT:$SG2864
+	lea	rcx, OFFSET FLAT:$SG2870
 	call	printf
 
-; 52   : 	printf("RSP -> %x\n", frame->rsp);
+; 55   : 	printf("RSP -> %x\n", frame->rsp);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+40]
-	lea	rcx, OFFSET FLAT:$SG2865
+	lea	rcx, OFFSET FLAT:$SG2871
 	call	printf
 
-; 53   : 	printf("RFLAGS -> %x\n", frame->rflags);
+; 56   : 	printf("RFLAGS -> %x\n", frame->rflags);
 
 	mov	rax, QWORD PTR frame$[rsp]
 	mov	rdx, QWORD PTR [rax+32]
-	lea	rcx, OFFSET FLAT:$SG2866
+	lea	rcx, OFFSET FLAT:$SG2872
 	call	printf
+
+; 57   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
 $LN2@divide_by_:
 
-; 54   : 
-; 55   : 	for (;;);
+; 58   : 	for (;;);
 
 	jmp	SHORT $LN2@divide_by_
 
-; 56   : }
+; 59   : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -1200,32 +1262,41 @@ $LN3:
 	mov	QWORD PTR [rsp+32], r9
 	sub	rsp, 40					; 00000028H
 
-; 38   : 	printf("***ARCH x86_64 : Exception Occured ***\n");
+; 38   : 	x64_lock_acquire(&exception_lock);
 
-	lea	rcx, OFFSET FLAT:$SG2852
+	lea	rcx, OFFSET FLAT:exception_lock
+	call	x64_lock_acquire
+
+; 39   : 	printf("***ARCH x86_64 : Exception Occured ***\n");
+
+	lea	rcx, OFFSET FLAT:$SG2858
 	call	printf
 
-; 39   : 	printf("[aurora]: We are sorry to say that, a processor invalid exception has occured\n");
+; 40   : 	printf("[aurora]: We are sorry to say that, a processor invalid exception has occured\n");
 
-	lea	rcx, OFFSET FLAT:$SG2853
+	lea	rcx, OFFSET FLAT:$SG2859
 	call	printf
 
-; 40   : 	printf("[aurora]: please inform it to the master of the kernel\n");
+; 41   : 	printf("[aurora]: please inform it to the master of the kernel\n");
 
-	lea	rcx, OFFSET FLAT:$SG2854
+	lea	rcx, OFFSET FLAT:$SG2860
 	call	printf
 
-; 41   : 	printf("[aurora]: Below is the code of exception\n");
+; 42   : 	printf("[aurora]: Below is the code of exception\n");
 
-	lea	rcx, OFFSET FLAT:$SG2855
+	lea	rcx, OFFSET FLAT:$SG2861
 	call	printf
 
-; 42   : 	printf(msg);
+; 43   : 	exception_lock = 0;
+
+	mov	QWORD PTR exception_lock, 0
+
+; 44   : 	printf(msg);
 
 	mov	rcx, QWORD PTR msg$[rsp]
 	call	printf
 
-; 43   : }
+; 45   : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -1236,120 +1307,120 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_exception_init@@YAXXZ PROC			; x86_64_exception_init
 
-; 232  : void x86_64_exception_init() {
+; 247  : void x86_64_exception_init() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 233  : 	setvect(0, divide_by_zero_fault);
+; 248  : 	setvect(0, divide_by_zero_fault);
 
 	lea	rdx, OFFSET FLAT:?divide_by_zero_fault@@YAX_KPEAX@Z ; divide_by_zero_fault
 	xor	ecx, ecx
 	call	setvect
 
-; 234  : 	setvect(1, single_step_trap);
+; 249  : 	setvect(1, single_step_trap);
 
 	lea	rdx, OFFSET FLAT:?single_step_trap@@YAX_KPEAX@Z ; single_step_trap
 	mov	ecx, 1
 	call	setvect
 
-; 235  : 	setvect(2, nmi_trap);
+; 250  : 	setvect(2, nmi_trap);
 
 	lea	rdx, OFFSET FLAT:?nmi_trap@@YAX_KPEAX@Z	; nmi_trap
 	mov	ecx, 2
 	call	setvect
 
-; 236  : 	setvect(3, breakpoint_trap);
+; 251  : 	setvect(3, breakpoint_trap);
 
 	lea	rdx, OFFSET FLAT:?breakpoint_trap@@YAX_KPEAX@Z ; breakpoint_trap
 	mov	ecx, 3
 	call	setvect
 
-; 237  : 	setvect(4, overflow_trap);
+; 252  : 	setvect(4, overflow_trap);
 
 	lea	rdx, OFFSET FLAT:?overflow_trap@@YAX_KPEAX@Z ; overflow_trap
 	mov	ecx, 4
 	call	setvect
 
-; 238  : 	setvect(5, bounds_check_fault);
+; 253  : 	setvect(5, bounds_check_fault);
 
 	lea	rdx, OFFSET FLAT:?bounds_check_fault@@YAX_KPEAX@Z ; bounds_check_fault
 	mov	ecx, 5
 	call	setvect
 
-; 239  : 	setvect(6, invalid_opcode_fault);
+; 254  : 	setvect(6, invalid_opcode_fault);
 
 	lea	rdx, OFFSET FLAT:?invalid_opcode_fault@@YAX_KPEAX@Z ; invalid_opcode_fault
 	mov	ecx, 6
 	call	setvect
 
-; 240  : 	setvect(7, no_device_fault);
+; 255  : 	setvect(7, no_device_fault);
 
 	lea	rdx, OFFSET FLAT:?no_device_fault@@YAX_KPEAX@Z ; no_device_fault
 	mov	ecx, 7
 	call	setvect
 
-; 241  : 	setvect(8, double_fault_abort);
+; 256  : 	setvect(8, double_fault_abort);
 
 	lea	rdx, OFFSET FLAT:?double_fault_abort@@YAX_KPEAX@Z ; double_fault_abort
 	mov	ecx, 8
 	call	setvect
 
-; 242  : 	setvect(10, invalid_tss_fault);
+; 257  : 	setvect(10, invalid_tss_fault);
 
 	lea	rdx, OFFSET FLAT:?invalid_tss_fault@@YAX_KPEAX@Z ; invalid_tss_fault
 	mov	ecx, 10
 	call	setvect
 
-; 243  : 	setvect(11, no_segment_fault);
+; 258  : 	setvect(11, no_segment_fault);
 
 	lea	rdx, OFFSET FLAT:?no_segment_fault@@YAX_KPEAX@Z ; no_segment_fault
 	mov	ecx, 11
 	call	setvect
 
-; 244  : 	setvect(12, stack_fault);
+; 259  : 	setvect(12, stack_fault);
 
 	lea	rdx, OFFSET FLAT:?stack_fault@@YAX_KPEAX@Z ; stack_fault
 	mov	ecx, 12
 	call	setvect
 
-; 245  : 	setvect(13, general_protection_fault);
+; 260  : 	setvect(13, general_protection_fault);
 
 	lea	rdx, OFFSET FLAT:?general_protection_fault@@YAX_KPEAX@Z ; general_protection_fault
 	mov	ecx, 13
 	call	setvect
 
-; 246  : 	setvect(14, page_fault);
+; 261  : 	setvect(14, page_fault);
 
 	lea	rdx, OFFSET FLAT:?page_fault@@YAX_KPEAX@Z ; page_fault
 	mov	ecx, 14
 	call	setvect
 
-; 247  : 	setvect(16, fpu_fault);
+; 262  : 	setvect(16, fpu_fault);
 
 	lea	rdx, OFFSET FLAT:?fpu_fault@@YAX_KPEAX@Z ; fpu_fault
 	mov	ecx, 16
 	call	setvect
 
-; 248  : 	setvect(17, alignment_check_fault);
+; 263  : 	setvect(17, alignment_check_fault);
 
 	lea	rdx, OFFSET FLAT:?alignment_check_fault@@YAX_KPEAX@Z ; alignment_check_fault
 	mov	ecx, 17
 	call	setvect
 
-; 249  : 	setvect(18, machine_check_abort);
+; 264  : 	setvect(18, machine_check_abort);
 
 	lea	rdx, OFFSET FLAT:?machine_check_abort@@YAX_KPEAX@Z ; machine_check_abort
 	mov	ecx, 18
 	call	setvect
 
-; 250  : 	setvect(19, simd_fpu_fault);
+; 265  : 	setvect(19, simd_fpu_fault);
 
 	lea	rdx, OFFSET FLAT:?simd_fpu_fault@@YAX_KPEAX@Z ; simd_fpu_fault
 	mov	ecx, 19
 	call	setvect
 
-; 251  : }
+; 266  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
