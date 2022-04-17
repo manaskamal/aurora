@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <atomic\au_spinlock.h>
 #include <aurora.h>
+#include <arch\x86_64\x86_64_lowlevel.h>
 
 
 /* PIC commands */
@@ -87,4 +88,6 @@ extern bool x86_64_fxsave_supported();
 * x86_64_avx_supported -- returns true if supported
 */
 extern bool x86_64_avx_supported();
+
+extern TSS * x86_64_get_tss();
 #endif

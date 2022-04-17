@@ -59,7 +59,7 @@ void x86_64_ap_init(void *cpu_data) {
 	x86_64_initialize_apic(false);	
 	x86_64_initialize_idle();
 
-	x86_64_sched_start();
+	//x86_64_sched_start();
 	x86_64_ap_started();
 	//x86_64_execute_idle();
 	x64_sti();

@@ -40,12 +40,16 @@
 
 #define THREAD_CPU_AFFINITY_ANY 65
 
+#define THREAD_PRIVL_USER 1
+#define THREAD_PRIVL_KERNEL 2
+
+
 typedef struct _thread_ {
-	uint64_t ss;
-	uint64_t *rsp;
-	uint64_t rflags;
-	uint64_t cs;
-	uint64_t rip;
+	uint64_t ss;  //0x00
+	uint64_t rsp;  //0x08
+	uint64_t rflags;  //0x10
+	uint64_t cs;  //0x18
+	uint64_t rip;  //0x20
 
 	uint64_t rax;
 	uint64_t rbx;
@@ -69,12 +73,11 @@ typedef struct _thread_ {
 	uint64_t cr3;
 	uint64_t kern_esp;
 	uint8_t state;
-	uint8_t cpu_affinity;
+	uint8_t privl;
 	void* fxstate;
 	_thread_ *next;
 	_thread_ *prev;
 }thread_t;
-
 
 /*
 * thread_insert -- insert a thread to thread list
@@ -96,6 +99,14 @@ AU_EXTERN AU_EXPORT void thread_delete(thread_t * thread);
 * @param cr3 -- pml4 of the thread
 */
 AU_EXTERN AU_EXPORT thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr3);
+
+/*
+* x86_64_create_uthread -- creates a user mode thread
+* @param entry -- entry point of the uthread
+* @param stack -- stack address of the uthread
+* @param cr3 -- pml4 of the thread
+*/
+AU_EXTERN AU_EXPORT thread_t * x86_64_create_uthread(void(*entry)(void), uint64_t stack, uint64_t cr3);
 
 /*
 * x86_64_initialize_scheduler -- initialize the scheduler
@@ -124,4 +135,6 @@ extern au_spinlock_t *x86_64_get_scheduler_lock();
 * idle
 */
 extern void x86_64_execute_idle();
+
+extern thread_t *x86_64_get_current_thread();
 #endif

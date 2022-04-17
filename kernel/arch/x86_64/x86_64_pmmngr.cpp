@@ -234,6 +234,7 @@ void x86_64_pmmngr_init(aurora_info_t *info) {
 	memcpy(address, info->apcode, 4096);
 
 	info->auprint("[aurora]: x86_64 pmmngr initialized\n");
+	higher_half_mapped = false;
 }
 
 /*

@@ -10,7 +10,7 @@ _BSS	SEGMENT
 ?boot_cr3@@3PEA_KEA DQ 01H DUP (?)			; boot_cr3
 _BSS	ENDS
 CONST	SEGMENT
-$SG3115	DB	'CR3[I] -> %x ', 0aH, 00H
+$SG3116	DB	'CR3[I] -> %x ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?x86_64_paging_init@@YAHXZ			; x86_64_paging_init
 PUBLIC	?early_map_page@@YA_N_K0E@Z			; early_map_page
@@ -219,7 +219,7 @@ $LN3:
 	call	?pml4_index@@YA_K_K@Z			; pml4_index
 	mov	rcx, QWORD PTR cr3$[rsp]
 	mov	rdx, QWORD PTR [rcx+rax*8]
-	lea	rcx, OFFSET FLAT:$SG3115
+	lea	rcx, OFFSET FLAT:$SG3116
 	call	printf
 
 ; 364  : }
@@ -1465,7 +1465,7 @@ $LN9@x86_64_pag:
 $LN6@x86_64_pag:
 
 ; 133  : 
-; 134  : 		if ((old_cr3[i] & 0x1))
+; 134  : 		if ((old_cr3[i] & 0x1)) {
 
 	movsxd	rax, DWORD PTR i$1[rsp]
 	mov	rcx, QWORD PTR old_cr3$[rsp]
@@ -1483,7 +1483,7 @@ $LN6@x86_64_pag:
 	mov	rax, QWORD PTR [r8+rax*8]
 	mov	QWORD PTR [rdx+rcx*8], rax
 
-; 136  : 		else
+; 136  : 		}else
 
 	jmp	SHORT $LN4@x86_64_pag
 $LN5@x86_64_pag:

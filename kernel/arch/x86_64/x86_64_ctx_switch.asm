@@ -46,7 +46,7 @@ x86_64_save_context:
 
 global x86_64_execute_context
 x86_64_execute_context:
-      mov rbx, [rcx + 0x00]
+      mov rbx, [rcx + 0x30]
 	  mov rsi, [rcx + 0x48]
 	  mov rdi, [rcx + 0x50]
 	  mov rbp, [rcx + 0x58]
@@ -55,6 +55,10 @@ x86_64_execute_context:
 	  mov r14, [rcx + 0x90]
 	  mov r15, [rcx + 0x98]
 
+	  ;mov ds, [rcx + 0xA0]
+	  ;mov es, [rcx + 0xA8]
+	  ;mov fs, [rcx + 0xB0]
+	  ;mov gs, [rcx + 0xB8]
 	  ;; Restore SSE/AVX/AVX-512 registers
 
 	  mov r9,1
@@ -65,9 +69,10 @@ x86_64_execute_context:
 	  mov r10, [rcx + 0xC0]
 	  mov cr3, r10
 
-	  mov rsp, [rcx + 0x08]
 	  mov rdx, [rcx + 0x20]
-	  mov rcx, [rcx + 0x38]
-	  push r9
-	  popfq 
-	  jmp rdx
+	  push qword [rcx + 0x00]  ;;SS
+	  push qword [rcx + 0x08]  ;;RSP
+	  push r9                  ;;RFLAGS
+	  push qword [rcx + 0x18]  ;;CS
+	  push rdx                 ;;RIP
+	  iretq

@@ -58,7 +58,7 @@ EXTRN	?memset@@YAXPEAXEI@Z:PROC			; memset
 EXTRN	memcpy:PROC
 pdata	SEGMENT
 $pdata$?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z DD imagerel $LN16
-	DD	imagerel $LN16+931
+	DD	imagerel $LN16+938
 	DD	imagerel $unwind$?x86_64_pmmngr_init@@YAXPEAU_AURORA_INFO_@@@Z
 $pdata$x86_64_pmmngr_alloc DD imagerel $LN7
 	DD	imagerel $LN7+128
@@ -573,33 +573,33 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_high_mem_bitmap@@YAXXZ PROC		; x86_64_pmmngr_high_mem_bitmap
 
-; 263  : void x86_64_pmmngr_high_mem_bitmap() {
+; 264  : void x86_64_pmmngr_high_mem_bitmap() {
 
 $LN3:
 	sub	rsp, 40					; 00000028H
 
-; 264  : 	au_get_boot_info()->auprint("RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
+; 265  : 	au_get_boot_info()->auprint("RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
 	lea	rcx, OFFSET FLAT:$SG3049
 	call	QWORD PTR [rax+90]
 
-; 265  : 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
+; 266  : 	ram_bitmap.buffer = (uint8_t*)x86_64_phys_to_virt((uint64_t)ram_bitmap.buffer);
 
 	mov	rcx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
 	call	x86_64_phys_to_virt
 	mov	QWORD PTR ?ram_bitmap@@3VBitmap@@A+8, rax
 
-; 266  : 	au_get_boot_info()->auprint("after RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
+; 267  : 	au_get_boot_info()->auprint("after RAM bitmap buffer -> %x \n", ram_bitmap.buffer);
 
 	call	?au_get_boot_info@@YAPEAU_AURORA_INFO_@@XZ ; au_get_boot_info
 	mov	rdx, QWORD PTR ?ram_bitmap@@3VBitmap@@A+8
 	lea	rcx, OFFSET FLAT:$SG3052
 	call	QWORD PTR [rax+90]
 
-; 267  : 	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
-; 268  : }
+; 268  : 	//_au_debug_print_("RAM Bitmap -> %x \r\n", ram_bitmap.buffer);
+; 269  : }
 
 	add	rsp, 40					; 00000028H
 	ret	0
@@ -610,11 +610,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_is_high_mem@@YA_NXZ PROC			; x86_64_pmmngr_is_high_mem
 
-; 274  : 	return higher_half_mapped;
+; 275  : 	return higher_half_mapped;
 
 	movzx	eax, BYTE PTR higher_half_mapped
 
-; 275  : }
+; 276  : }
 
 	ret	0
 ?x86_64_pmmngr_is_high_mem@@YA_NXZ ENDP			; x86_64_pmmngr_is_high_mem
@@ -624,11 +624,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?x86_64_pmmngr_get_bitmap_size@@YA_KXZ PROC		; x86_64_pmmngr_get_bitmap_size
 
-; 251  : 	return ram_bitmap_size;
+; 252  : 	return ram_bitmap_size;
 
 	mov	rax, QWORD PTR ram_bitmap_size
 
-; 252  : }
+; 253  : }
 
 	ret	0
 ?x86_64_pmmngr_get_bitmap_size@@YA_KXZ ENDP		; x86_64_pmmngr_get_bitmap_size
@@ -639,16 +639,16 @@ _TEXT	SEGMENT
 value$ = 8
 ?x86_64_pmmngr_set_high@@YAX_N@Z PROC			; x86_64_pmmngr_set_high
 
-; 259  : void x86_64_pmmngr_set_high(bool value) {
+; 260  : void x86_64_pmmngr_set_high(bool value) {
 
 	mov	BYTE PTR [rsp+8], cl
 
-; 260  : 	higher_half_mapped = value;
+; 261  : 	higher_half_mapped = value;
 
 	movzx	eax, BYTE PTR value$[rsp]
 	mov	BYTE PTR higher_half_mapped, al
 
-; 261  : }
+; 262  : }
 
 	ret	0
 ?x86_64_pmmngr_set_high@@YAX_N@Z ENDP			; x86_64_pmmngr_set_high
@@ -658,11 +658,11 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 x86_64_pmmngr_get_total_mem PROC
 
-; 243  : 	return total_ram;
+; 244  : 	return total_ram;
 
 	mov	rax, QWORD PTR total_ram
 
-; 244  : }
+; 245  : }
 
 	ret	0
 x86_64_pmmngr_get_total_mem ENDP
@@ -1237,7 +1237,11 @@ $LN1@x86_64_pmm:
 	mov	rax, QWORD PTR info$[rsp]
 	call	QWORD PTR [rax+90]
 
-; 237  : }
+; 237  : 	higher_half_mapped = false;
+
+	mov	BYTE PTR higher_half_mapped, 0
+
+; 238  : }
 
 	add	rsp, 152				; 00000098H
 	ret	0

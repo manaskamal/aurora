@@ -84,10 +84,10 @@ void vfs_mount(char* path, vfs_file_t *file, vfs_node_t* node) {
 
 		for (int j = 0; j < ent->childs->pointer; j++) {
 			vfs_file_t *file_ = (vfs_file_t*)list_get_at(ent->childs, j);	
-			entry_found = file_;
-			if (strcmp(file_->filename, pathname) == 0) {
+			if (strcmp(file_->filename, pathname) == 0) {	
+				entry_found = file_;
 				found = true;
-				break;
+				//break;
 			}
 		}
 
@@ -103,7 +103,7 @@ void vfs_mount(char* path, vfs_file_t *file, vfs_node_t* node) {
 			ent = (vfs_node_t*)entry_found->device;
 			vfs_mount(path, file, ent);
 		}
-		printf("Already mounted -> %s\n", path);
+		printf("[vfs]:Already mounted -> %s\n", path);
 		return;
 	}
 	if (!found) {

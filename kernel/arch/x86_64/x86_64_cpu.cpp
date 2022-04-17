@@ -34,6 +34,7 @@
 #include <arch\x86_64\x86_64_per_cpu.h>
 #include <arch\x86_64\x86_64_paging.h>
 #include <arch\x86_64\x86_64_pic.h>
+#include <arch\x86_64\x86_64_apic.h>
 #include <mm\kmalloc.h>
 #include <console.h>
 #include <auinfo.h>
@@ -170,7 +171,7 @@ void default_irq(size_t vect, void* param){
 
 void x86_64_idt_initialize() {
 
-
+	x64_cli();
 	void* m_ist[4];
 	uint32_t tss[28];
 	for (int i = 0; i < 28; i++) tss[i] = 0xffffffff;
@@ -290,17 +291,47 @@ void pit_handler(size_t v, void* p) {
 	printf("Pit handler++\n");
 	
 }
+
+static TSS *tss;
+
+void x86_64_initialize_user_land(size_t bit) {
+	uint16_t data_sel = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	uint16_t code_sel = 0;
+	switch (bit) {
+	case 64:
+		code_sel = SEGVAL(GDT_ENTRY_USER_CODE, 3);
+		break;
+	case 32:
+		code_sel = SEGVAL(GDT_ENTRY_USER_CODE32, 3);
+		break;
+	default:
+		return;
+	}
+
+	gdtr peek_gdt;
+	x64_sgdt(&peek_gdt);
+	gdt_entry& tss_entry = peek_gdt.gdtaddr[GDT_ENTRY_TSS];
+
+	tss = (TSS*)(tss_entry.base_low + (tss_entry.base_mid << 16) + (tss_entry.base_high << 24) + ((uint64_t)*(uint32_t*)&peek_gdt.gdtaddr[GDT_ENTRY_TSS + 1] << 32));
+}
+
+
+void x86_64_initialize_syscall() {
+	uint64_t syscall_sel = SEGVAL(GDT_ENTRY_KERNEL_CODE, 0);
+	uint64_t sysret_sel = SEGVAL(GDT_ENTRY_USER_CODE32, 3);
+}
+
 /*
  * x86_64_cpu_initialize -- initialize the cpu
  */
 void x86_64_cpu_initialize(bool bsp) {
-	
 	x86_64_gdt_initialize();
 	x86_64_idt_initialize();
 	x86_64_exception_init();
 	/* setup BSP cpu data */
 	x86_64_cpu_feature_enable();
 
+	x86_64_initialize_apic(true);
 	/* Enable SYSCALL extension */
 	size_t efer = x64_read_msr(IA32_EFER);
 	efer |= (1 << 11);
@@ -309,9 +340,12 @@ void x86_64_cpu_initialize(bool bsp) {
 	efer |= 1;
 	x64_write_msr(IA32_EFER, efer);
 
-	
+	x86_64_initialize_user_land(64);
+	x86_64_initialize_syscall();
+
 	/* setup BSP cpu data */
 	if (!bsp) {
+		printf("Initializing non bsp \n");
 		gdtr *new_gdtr = (gdtr*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
 		memset(new_gdtr, 0, 4096);
 		gdt_entry* new_gdt = (gdt_entry*)x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc());
@@ -356,4 +390,8 @@ bool x86_64_fxsave_supported() {
  */
 bool x86_64_avx_supported() {
 	return _avx_support;
+}
+
+TSS * x86_64_get_tss() {
+	return tss;
 }

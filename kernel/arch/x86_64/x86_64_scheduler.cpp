@@ -47,6 +47,7 @@ extern "C" void x86_64_execute_context(thread_t *thread);
 
 thread_t *thread_list_head = NULL;
 thread_t *thread_list_last = NULL;
+thread_t *thread_current = NULL;
 thread_t * idle = NULL;
 
 au_spinlock_t *scheduler_lock = NULL;
@@ -61,6 +62,7 @@ void thread_insert(thread_t * new_thread) {
 	if (thread_list_head == NULL) {
 		thread_list_last = new_thread;
 		thread_list_head = new_thread;
+		thread_current = thread_list_last;
 	}
 	else {
 		thread_list_last->next = new_thread;
@@ -102,12 +104,10 @@ void thread_delete(thread_t * thread) {
  */
 thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr3) {
 	
-	au_acquire_spinlock(scheduler_lock);
-	printf("Create kthr lock -> %d, set by cpu -> %d\n", scheduler_lock->value, scheduler_lock->set_by_cpu);
 	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
 	memset(thread, 0, sizeof(thread_t));
 	thread->ss = 0x10;
-	thread->rsp = (uint64_t*)stack;
+	thread->rsp = (uint64_t)stack;
 	thread->rflags = 0x202;
 	thread->cs = 0x08;
 	thread->rip = (uint64_t)entry;
@@ -133,11 +133,57 @@ thread_t * x86_64_create_kthread(void(*entry)(void), uint64_t stack, uint64_t cr
 	thread->cr3 = cr3;
 	thread->kern_esp = stack;
 	thread->state = THREAD_STATE_READY;
-	thread->cpu_affinity = THREAD_CPU_AFFINITY_ANY;
+	thread->privl = THREAD_PRIVL_KERNEL;
+	//thread->cpu_affinity = THREAD_CPU_AFFINITY_ANY;
 	thread->fxstate = kmalloc(512);
 	memset(thread->fxstate, 0, 512);
 	thread_insert(thread);
-	scheduler_lock->value = 0;
+	return thread;
+}
+
+
+/*
+* x86_64_create_uthread -- creates a user mode thread
+* @param entry -- entry point of the uthread
+* @param stack -- stack address of the uthread
+* @param cr3 -- pml4 of the thread
+*/
+thread_t * x86_64_create_uthread(void(*entry)(void), uint64_t stack, uint64_t cr3) {
+
+	thread_t *thread = (thread_t*)kmalloc(sizeof(thread_t));
+	memset(thread, 0, sizeof(thread_t));
+	thread->ss = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	thread->rsp = (uint64_t)stack;
+	thread->rflags = 0x286;
+	thread->cs = SEGVAL(GDT_ENTRY_USER_CODE, 3);
+	thread->rip = (uint64_t)entry;
+	thread->rax = 0;
+	thread->rbx = 0;
+	thread->rcx = 0;
+	thread->rdx = 0;
+	thread->rsi = 0;
+	thread->rdi = 0;
+	thread->rbp = (uint64_t)thread->rsp;
+	thread->r8 = 0;
+	thread->r9 = 0;
+	thread->r10 = 0;
+	thread->r11 = 0;
+	thread->r12 = 0;
+	thread->r13 = 0;
+	thread->r14 = 0;
+	thread->r15 = 0;
+	thread->ds = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	thread->es = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	thread->fs = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	thread->gs = SEGVAL(GDT_ENTRY_USER_DATA, 3);
+	thread->cr3 = cr3;
+	thread->kern_esp = (x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()) + 4096);
+	thread->state = THREAD_STATE_READY;
+	thread->privl = THREAD_PRIVL_USER;
+	//thread->cpu_affinity = THREAD_CPU_AFFINITY_ANY;
+	thread->fxstate = kmalloc(512);
+	memset(thread->fxstate, 0, 512);
+	thread_insert(thread);
 	return thread;
 }
 
@@ -149,7 +195,7 @@ au_spinlock_t *queue_lock;
  */
 void x86_64_next_thread() {
 	//au_acquire_spinlock(scheduler_lock);
-	thread_t *thr = (thread_t*)per_cpu_get_c_thread();
+	thread_t *thr = thread_current;
 	do {
 		thr = thr->next;
 		
@@ -158,7 +204,7 @@ void x86_64_next_thread() {
 	} while (thr->state != THREAD_STATE_READY);
 
 end:
-	per_cpu_set_c_thread(thr);
+	thread_current = thr;
 	//au_free_spinlock(scheduler_lock);
 }
 
@@ -169,45 +215,40 @@ au_spinlock_t *sched_start_lock;
 
 
 static bool start_scheduler = false;
-int count = 0;
 /*
  * the main scheduler, heart of aurora
  */
 void x86_64_sceduler_isr(size_t v, void* p) {
-	if (!start_scheduler) {
-		apic_local_eoi();
-		return;
-	}
-	
 	x64_cli();
-	au_acquire_spinlock(queue_lock);
+	//interrupt_stack_frame *frame = (interrupt_stack_frame*)p;
+#ifdef SMP
 	thread_t * current_thr = (thread_t*)per_cpu_get_c_thread();
-	
-	
+#endif
+	if (x86_64_save_context(thread_current) == 0) {
+		thread_current->cr3 = x64_read_cr3();
 
-	if (x86_64_save_context(current_thr) == 0) {
-		current_thr->cr3 = x64_read_cr3();
-	
-		if (x86_64_fxsave_supported())
-			x64_fxsave(current_thr->fxstate);
+		if (thread_current->privl == THREAD_PRIVL_USER)
+			thread_current->kern_esp = x86_64_get_tss()->rsp[0];
+
+		/*if (x86_64_fxsave_supported())
+			x64_fxsave(thread_current->fxstate);*/
+
 
 		apic_local_eoi();
 		x86_64_next_thread();
 		
-		current_thr = (thread_t*)per_cpu_get_c_thread();
 
-		au_free_spinlock(queue_lock);
+		/*if (x86_64_fxsave_supported())
+			x64_fxrstor(thread_current->fxstate);*/
+		if (thread_current->privl == THREAD_PRIVL_USER)
+			x86_64_get_tss()->rsp[0] = thread_current->kern_esp;
 
-		if (x86_64_fxsave_supported())
-			x64_fxrstor(current_thr->fxstate);
-
-		x86_64_execute_context(current_thr);
+		
+		x86_64_execute_context(thread_current);
 	}
 end:
 	apic_local_eoi();
-	x64_sti();
-	au_free_spinlock(queue_lock);
-	
+	//au_free_spinlock(queue_lock);
 	//x
 	
 	//
@@ -221,8 +262,10 @@ extern "C" uint64_t ap_lock;
  * there is no threads in ready queue except idle thread, cpu's jump
  * to idle thread and thus, processing never stops
  */
-void x86_64_idle_thread() {
+void x86_64_idle_thread() {	
+	printf("Idle \n");
 	while (1) {	
+		//x64_hlt();
 	}
 }
 
@@ -231,13 +274,15 @@ void x86_64_idle_thread() {
  * engine in BSP
  */
 int x86_64_initialize_scheduler() {
-	idle = x86_64_create_kthread(x86_64_idle_thread, (uint64_t)x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()),
+	idle = x86_64_create_kthread(x86_64_idle_thread, (x86_64_phys_to_virt((size_t)x86_64_pmmngr_alloc()) + 4096),
 		x64_read_cr3());
-	printf("idle addr -> %x\n", idle);
+	printf ("Idle thread rsp -> %x \n", idle->rsp);
+#ifdef SMP
 	scheduler_lock = au_create_spinlock();
-	sched_start_lock = au_create_spinlock();
 	queue_lock = au_create_spinlock();
 	per_cpu_set_c_thread((void*)idle);
+#endif
+	thread_current = idle;
 	return 0;
 }
 
@@ -254,15 +299,19 @@ void x86_64_initialize_idle() {
 void x86_64_sched_start() {
 	x64_cli();
 	setvect(0x40, x86_64_sceduler_isr);
+	x86_64_execute_context(idle);
 }
 
+extern "C" void sched_debug(void* rcx) {
+	printf("Sched debug rcx -> %x \n", rcx);
+}
 /*
  * x86_64_execute_idle -- execute the first thread
  * idle
  */
-void x86_64_execute_idle() {
-	x86_64_execute_context(idle);
+void x86_64_execute_idle() {	
 }
+
 thread_t * x86_64_get_idle_thr() {
 	return idle;
 }
@@ -273,4 +322,8 @@ void x86_64_sched_enable(bool value) {
 
 au_spinlock_t *x86_64_get_scheduler_lock() {
 	return scheduler_lock;
+}
+
+thread_t *x86_64_get_current_thread() {
+	return thread_current;
 }

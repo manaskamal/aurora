@@ -10,8 +10,8 @@ _BSS	SEGMENT
 ?root_dir@@3PEAU_vfs_node_@@EA DQ 01H DUP (?)		; root_dir
 _BSS	ENDS
 CONST	SEGMENT
-$SG2827	DB	'Already mounted -> %s', 0aH, 00H
-	ORG $+1
+$SG2827	DB	'[vfs]:Already mounted -> %s', 0aH, 00H
+	ORG $+3
 $SG2904	DB	'File -> %s ', 0aH, 00H
 CONST	ENDS
 PUBLIC	?vfs_initialize@@YAXXZ				; vfs_initialize
@@ -37,7 +37,7 @@ $pdata$?vfs_initialize@@YAXXZ DD imagerel $LN3
 	DD	imagerel $LN3+62
 	DD	imagerel $unwind$?vfs_initialize@@YAXXZ
 $pdata$vfs_mount DD imagerel $LN23
-	DD	imagerel $LN23+609
+	DD	imagerel $LN23+607
 	DD	imagerel $unwind$vfs_mount
 $pdata$vfs_mknode DD imagerel $LN3
 	DD	imagerel $LN3+55
@@ -1415,12 +1415,7 @@ $LN9@vfs_mount:
 	call	list_get_at
 	mov	QWORD PTR file_$4[rsp], rax
 
-; 87   : 			entry_found = file_;
-
-	mov	rax, QWORD PTR file_$4[rsp]
-	mov	QWORD PTR entry_found$[rsp], rax
-
-; 88   : 			if (strcmp(file_->filename, pathname) == 0) {
+; 87   : 			if (strcmp(file_->filename, pathname) == 0) {	
 
 	mov	rax, QWORD PTR file_$4[rsp]
 	lea	rdx, QWORD PTR pathname$5[rsp]
@@ -1429,15 +1424,17 @@ $LN9@vfs_mount:
 	test	eax, eax
 	jne	SHORT $LN6@vfs_mount
 
+; 88   : 				entry_found = file_;
+
+	mov	rax, QWORD PTR file_$4[rsp]
+	mov	QWORD PTR entry_found$[rsp], rax
+
 ; 89   : 				found = true;
 
 	mov	BYTE PTR found$[rsp], 1
-
-; 90   : 				break;
-
-	jmp	SHORT $LN7@vfs_mount
 $LN6@vfs_mount:
 
+; 90   : 				//break;
 ; 91   : 			}
 ; 92   : 		}
 
@@ -1502,7 +1499,7 @@ $LN16@vfs_mount:
 $LN3@vfs_mount:
 
 ; 105  : 		}
-; 106  : 		printf("Already mounted -> %s\n", path);
+; 106  : 		printf("[vfs]:Already mounted -> %s\n", path);
 
 	mov	rdx, QWORD PTR path$[rsp]
 	lea	rcx, OFFSET FLAT:$SG2827

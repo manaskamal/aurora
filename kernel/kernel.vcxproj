@@ -96,6 +96,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>
@@ -180,6 +181,7 @@
     <ClInclude Include="include\string.h" />
     <ClInclude Include="include\utils\list.h" />
     <ClInclude Include="include\va_list.h" />
+    <ClInclude Include="include\xmmintrin.h" />
     <ClInclude Include="include\_null.h" />
   </ItemGroup>
   <ItemGroup>

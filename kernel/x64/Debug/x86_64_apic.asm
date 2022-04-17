@@ -39,7 +39,6 @@ EXTRN	x64_write_msr:PROC
 EXTRN	x64_mfence:PROC
 EXTRN	x64_cpuid:PROC
 EXTRN	x64_pause:PROC
-EXTRN	x64_lock_acquire:PROC
 EXTRN	setvect:PROC
 EXTRN	x86_64_phys_to_virt:PROC
 EXTRN	x86_64_virt_to_phys:PROC
@@ -70,7 +69,7 @@ $pdata$?io_wait@@YAXXZ DD imagerel ?io_wait@@YAXXZ
 	DD	imagerel ?io_wait@@YAXXZ+44
 	DD	imagerel $unwind$?io_wait@@YAXXZ
 $pdata$?apic_timer_interrupt@@YAX_KPEAX@Z DD imagerel $LN3
-	DD	imagerel $LN3+61
+	DD	imagerel $LN3+38
 	DD	imagerel $unwind$?apic_timer_interrupt@@YAX_KPEAX@Z
 $pdata$?timer_sleep@@YAXI@Z DD imagerel $LN5
 	DD	imagerel $LN5+43
@@ -336,11 +335,7 @@ $LN3:
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 40					; 00000028H
 
-; 155  : 	x64_lock_acquire(&apic_timer_lock);
-
-	lea	rcx, OFFSET FLAT:apic_timer_lock
-	call	x64_lock_acquire
-
+; 155  : 	//x64_lock_acquire(&apic_timer_lock);
 ; 156  : 	apic_timer_count++;
 
 	mov	eax, DWORD PTR apic_timer_count
@@ -351,10 +346,7 @@ $LN3:
 
 	call	?apic_local_eoi@@YAXXZ			; apic_local_eoi
 
-; 158  : 	apic_timer_lock = 0;
-
-	mov	QWORD PTR apic_timer_lock, 0
-
+; 158  : 	//apic_timer_lock = 0;
 ; 159  : }
 
 	add	rsp, 40					; 00000028H
@@ -1152,9 +1144,9 @@ $LN2@x86_64_ini:
 
 ; 196  : 
 ; 197  : 	
-; 198  : 	write_apic_register(LAPIC_REGISTER_TMRDIV, 0xa);
+; 198  : 	write_apic_register(LAPIC_REGISTER_TMRDIV, 0x3);
 
-	mov	edx, 10
+	mov	edx, 3
 	mov	cx, 62					; 0000003eH
 	call	?write_apic_register@@YAXG_K@Z		; write_apic_register
 
@@ -1186,9 +1178,9 @@ $LN2@x86_64_ini:
 
 	call	?io_wait@@YAXXZ				; io_wait
 
-; 206  : 	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 16);  //100 , 500
+; 206  : 	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 1000);  //100 , 500
 
-	mov	edx, 16
+	mov	edx, 1000				; 000003e8H
 	mov	cx, 56					; 00000038H
 	call	?write_apic_register@@YAXG_K@Z		; write_apic_register
 

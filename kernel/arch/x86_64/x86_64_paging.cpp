@@ -131,9 +131,9 @@ int x86_64_paging_init() {
 		if (i == 511)
 			continue;
 
-		if ((old_cr3[i] & 0x1))
+		if ((old_cr3[i] & 0x1)) {
 			new_cr3[i] = old_cr3[i];
-		else
+		}else
 			new_cr3[i] = 0;
 	}
 

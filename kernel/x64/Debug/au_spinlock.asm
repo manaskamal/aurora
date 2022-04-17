@@ -11,7 +11,6 @@ PUBLIC	au_acquire_spinlock
 PUBLIC	au_free_spinlock
 EXTRN	kmalloc:PROC
 EXTRN	kfree:PROC
-EXTRN	x64_lock_acquire:PROC
 pdata	SEGMENT
 $pdata$au_create_spinlock DD imagerel $LN3
 	DD	imagerel $LN3+50
@@ -19,16 +18,11 @@ $pdata$au_create_spinlock DD imagerel $LN3
 $pdata$au_remove_spinlock DD imagerel $LN3
 	DD	imagerel $LN3+24
 	DD	imagerel $unwind$au_remove_spinlock
-$pdata$au_acquire_spinlock DD imagerel $LN4
-	DD	imagerel $LN4+59
-	DD	imagerel $unwind$au_acquire_spinlock
 pdata	ENDS
 xdata	SEGMENT
 $unwind$au_create_spinlock DD 010401H
 	DD	06204H
 $unwind$au_remove_spinlock DD 010901H
-	DD	04209H
-$unwind$au_acquire_spinlock DD 010901H
 	DD	04209H
 xdata	ENDS
 ; Function compile flags: /Odtpy
@@ -37,46 +31,24 @@ _TEXT	SEGMENT
 spinlock$ = 8
 au_free_spinlock PROC
 
-; 70   : void au_free_spinlock(au_spinlock_t* spinlock) {
+; 74   : void au_free_spinlock(au_spinlock_t* spinlock) {
 
 	mov	QWORD PTR [rsp+8], rcx
 
-; 71   : 	if (spinlock->value > 1){ //corrupted spinlock
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	cmp	QWORD PTR [rax], 1
-	jbe	SHORT $LN1@au_free_sp
-
-; 72   : 		spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	BYTE PTR [rax+8], 0
-
-; 73   : 		spinlock->value = 0;
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	QWORD PTR [rax], 0
-
-; 74   : 		return;
-
-	jmp	SHORT $LN2@au_free_sp
-$LN1@au_free_sp:
-
-; 75   : 	}
-; 76   : 
-; 77   : 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	BYTE PTR [rax+8], 0
-
-; 78   : 	spinlock->value = 0;
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	QWORD PTR [rax], 0
-$LN2@au_free_sp:
-
-; 79   : 
-; 80   : }
+; 75   : #ifdef SMP
+; 76   : 	if (spinlock->value > 1){ //corrupted spinlock
+; 77   : 		spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
+; 78   : 		spinlock->value = 0;
+; 79   : 		return;
+; 80   : 	}
+; 81   : 
+; 82   : 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
+; 83   : 	spinlock->value = 0;
+; 84   : #else
+; 85   : 	return;
+; 86   : #endif
+; 87   : 
+; 88   : }
 
 	ret	0
 au_free_spinlock ENDP
@@ -84,41 +56,23 @@ _TEXT	ENDS
 ; Function compile flags: /Odtpy
 ; File e:\aurora kernel\kernel\atomic\au_spinlock.cpp
 _TEXT	SEGMENT
-spinlock$ = 48
+spinlock$ = 8
 au_acquire_spinlock PROC
 
 ; 59   : void au_acquire_spinlock(au_spinlock_t *spinlock) {
 
-$LN4:
 	mov	QWORD PTR [rsp+8], rcx
-	sub	rsp, 40					; 00000028H
 
-; 60   : 	if (spinlock->value > 1)
+; 60   : #ifdef SMP
+; 61   : 	if (spinlock->value > 1)
+; 62   : 		spinlock->value = 0;
+; 63   : 	x64_lock_acquire(&spinlock->value);
+; 64   : 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
+; 65   : #else
+; 66   : 	return;
+; 67   : #endif
+; 68   : }
 
-	mov	rax, QWORD PTR spinlock$[rsp]
-	cmp	QWORD PTR [rax], 1
-	jbe	SHORT $LN1@au_acquire
-
-; 61   : 		spinlock->value = 0;
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	QWORD PTR [rax], 0
-$LN1@au_acquire:
-
-; 62   : 	x64_lock_acquire(&spinlock->value);
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	rcx, rax
-	call	x64_lock_acquire
-
-; 63   : 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
-
-	mov	rax, QWORD PTR spinlock$[rsp]
-	mov	BYTE PTR [rax+8], 0
-
-; 64   : }
-
-	add	rsp, 40					; 00000028H
 	ret	0
 au_acquire_spinlock ENDP
 _TEXT	ENDS

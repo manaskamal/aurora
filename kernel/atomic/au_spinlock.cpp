@@ -57,10 +57,14 @@ void au_remove_spinlock(au_spinlock_t* spinlock) {
  * @param spinlock -- spinlock to acquire
  */
 void au_acquire_spinlock(au_spinlock_t *spinlock) {
+#ifdef SMP
 	if (spinlock->value > 1)
 		spinlock->value = 0;
 	x64_lock_acquire(&spinlock->value);
 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
+#else
+	return;
+#endif
 }
 
 /*
@@ -68,6 +72,7 @@ void au_acquire_spinlock(au_spinlock_t *spinlock) {
  * @param spinlock -- spinlock to free
  */
 void au_free_spinlock(au_spinlock_t* spinlock) {
+#ifdef SMP
 	if (spinlock->value > 1){ //corrupted spinlock
 		spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
 		spinlock->value = 0;
@@ -76,5 +81,8 @@ void au_free_spinlock(au_spinlock_t* spinlock) {
 
 	spinlock->set_by_cpu = 0; // per_cpu_get_cpu_id();
 	spinlock->value = 0;
+#else
+	return;
+#endif
 
 }

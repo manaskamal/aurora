@@ -152,10 +152,10 @@ static int apic_timer_count = 0;
 static uint64_t apic_timer_lock = 0;
 //! Interrupt Vector Functions for APIC
 void  apic_timer_interrupt(size_t p, void* param) {
-	x64_lock_acquire(&apic_timer_lock);
+	//x64_lock_acquire(&apic_timer_lock);
 	apic_timer_count++;
 	apic_local_eoi();
-	apic_timer_lock = 0;
+	//apic_timer_lock = 0;
 }
 
 
@@ -195,7 +195,7 @@ int x86_64_initialize_apic(bool bsp) {
 		IA32_APIC_SVR_ENABLE | 0xFF);
 
 	
-	write_apic_register(LAPIC_REGISTER_TMRDIV, 0xa);
+	write_apic_register(LAPIC_REGISTER_TMRDIV, 0x3);
 	/*! timer initialized*/
 	size_t timer_vector = 0x40;
 	setvect(timer_vector, apic_timer_interrupt);
@@ -203,7 +203,7 @@ int x86_64_initialize_apic(bool bsp) {
 	size_t timer_reg = (1 << 17) | timer_vector;
 	write_apic_register(LAPIC_REGISTER_LVT_TIMER, timer_reg);
 	io_wait();
-	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 16);  //100 , 500
+	write_apic_register(LAPIC_REGISTER_TMRINITCNT, 1000);  //100 , 500
 
 
 	x64_outportb(PIC1_DATA, 0xFF);

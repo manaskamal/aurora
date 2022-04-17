@@ -31,7 +31,7 @@ $pdata$?x86_64_kmalloc_initialize@@YAHXZ DD imagerel $LN3
 	DD	imagerel $LN3+149
 	DD	imagerel $unwind$?x86_64_kmalloc_initialize@@YAHXZ
 $pdata$?au_request_page@@YAPEA_KH@Z DD imagerel $LN6
-	DD	imagerel $LN6+115
+	DD	imagerel $LN6+122
 	DD	imagerel $unwind$?au_request_page@@YAPEA_KH@Z
 $pdata$?au_free_page@@YAXPEAXH@Z DD imagerel $LN6
 	DD	imagerel $LN6+79
@@ -682,14 +682,14 @@ ptr$ = 64
 pages$ = 72
 ?au_free_page@@YAXPEAXH@Z PROC				; au_free_page
 
-; 218  : void au_free_page(void* ptr, int pages) {
+; 219  : void au_free_page(void* ptr, int pages) {
 
 $LN6:
 	mov	DWORD PTR [rsp+16], edx
 	mov	QWORD PTR [rsp+8], rcx
 	sub	rsp, 56					; 00000038H
 
-; 219  : 	for (int i = 0; i < pages; i++)
+; 220  : 	for (int i = 0; i < pages; i++)
 
 	mov	DWORD PTR i$1[rsp], 0
 	jmp	SHORT $LN3@au_free_pa
@@ -702,7 +702,7 @@ $LN3@au_free_pa:
 	cmp	DWORD PTR i$1[rsp], eax
 	jge	SHORT $LN1@au_free_pa
 
-; 220  : 		x86_64_paging_free((uint64_t)ptr + i * 4096);
+; 221  : 		x86_64_paging_free((uint64_t)ptr + i * 4096);
 
 	imul	eax, DWORD PTR i$1[rsp], 4096		; 00001000H
 	cdqe
@@ -714,7 +714,7 @@ $LN3@au_free_pa:
 	jmp	SHORT $LN2@au_free_pa
 $LN1@au_free_pa:
 
-; 221  : }
+; 222  : }
 
 	add	rsp, 56					; 00000038H
 	ret	0
@@ -724,8 +724,9 @@ _TEXT	ENDS
 ; File e:\aurora kernel\kernel\mm\kmalloc.cpp
 _TEXT	SEGMENT
 i$1 = 32
-page$ = 40
-tv73 = 48
+page_$ = 40
+page$ = 48
+tv72 = 56
 pages$ = 80
 ?au_request_page@@YAPEA_KH@Z PROC			; au_request_page
 
@@ -741,7 +742,12 @@ $LN6:
 	call	x86_64_get_free_page
 	mov	QWORD PTR page$[rsp], rax
 
-; 206  : 	for (int i = 0; i < pages; i++)
+; 206  : 	uint64_t page_ = (uint64_t)page;
+
+	mov	rax, QWORD PTR page$[rsp]
+	mov	QWORD PTR page_$[rsp], rax
+
+; 207  : 	for (int i = 0; i < pages; i++)
 
 	mov	DWORD PTR i$1[rsp], 0
 	jmp	SHORT $LN3@au_request
@@ -754,28 +760,29 @@ $LN3@au_request:
 	cmp	DWORD PTR i$1[rsp], eax
 	jge	SHORT $LN1@au_request
 
-; 207  : 		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), (uint64_t)(page + i * 4096), 0);
+; 208  : 		x86_64_map_page((uint64_t)x86_64_pmmngr_alloc(), (uint64_t)(page_ + i * 4096), 0);
 
 	imul	eax, DWORD PTR i$1[rsp], 4096		; 00001000H
 	cdqe
-	mov	rcx, QWORD PTR page$[rsp]
-	lea	rax, QWORD PTR [rcx+rax*8]
-	mov	QWORD PTR tv73[rsp], rax
+	mov	rcx, QWORD PTR page_$[rsp]
+	add	rcx, rax
+	mov	rax, rcx
+	mov	QWORD PTR tv72[rsp], rax
 	call	x86_64_pmmngr_alloc
 	xor	r8d, r8d
-	mov	rcx, QWORD PTR tv73[rsp]
+	mov	rcx, QWORD PTR tv72[rsp]
 	mov	rdx, rcx
 	mov	rcx, rax
 	call	x86_64_map_page
 	jmp	SHORT $LN2@au_request
 $LN1@au_request:
 
-; 208  : 
-; 209  : 	return (uint64_t*)0xFFFFE00000000000;
+; 209  : 
+; 210  : 	return (uint64_t*)page_;
 
-	mov	rax, -35184372088832			; ffffe00000000000H
+	mov	rax, QWORD PTR page_$[rsp]
 
-; 210  : }
+; 211  : }
 
 	add	rsp, 72					; 00000048H
 	ret	0
@@ -794,9 +801,9 @@ page$ = 48
 $LN3:
 	sub	rsp, 72					; 00000048H
 
-; 46   : 	uint64_t* page = au_request_page(1);
+; 46   : 	uint64_t* page = au_request_page(4);
 
-	mov	ecx, 1
+	mov	ecx, 4
 	call	?au_request_page@@YAPEA_KH@Z		; au_request_page
 	mov	QWORD PTR page$[rsp], rax
 
@@ -839,10 +846,10 @@ $LN3:
 	mov	QWORD PTR [rcx+24], rax
 
 ; 55   : 	/* meta->size holds only the usable area size for user */
-; 56   : 	meta->size = (1*4096) - sizeof(meta_data_t);
+; 56   : 	meta->size = (4*4096) - sizeof(meta_data_t);
 
 	mov	rax, QWORD PTR meta$[rsp]
-	mov	QWORD PTR [rax+8], 4048			; 00000fd0H
+	mov	QWORD PTR [rax+8], 16336		; 00003fd0H
 
 ; 57   : 	first_block = meta;
 

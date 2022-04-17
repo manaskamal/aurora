@@ -62,36 +62,20 @@ extern "C" int _fltused = 1;
 static uint64_t thr_lock = 0;
 static uint64_t t_lock = 0;
 
-int j_ = 100;
+
 void thread_test() {
-	x64_lock_acquire(&t_lock);
-	printf("Thread test started \n");
-	t_lock = 0;
-	for (;;){
+	//x64_lock_acquire(&t_lock);
+	//t_lock = 0;
+	//printf("Thr test cleared \n");
+	while (1){
 	}
 }
 
 static size_t i_ = 0; 
 
 void thread_test2() {
-
 	while (1) {
-		x64_lock_acquire(&thr_lock);
-		
-		if (per_cpu_get_cpu_id() == 0) {
-			for (int i = 0; i < 10; i++)
-			for (int j = 0; j < 10; j++)
-				au_video_get_fb()[i_ + i * au_video_get_x_res() + i_ + j] = 0xffffffff;
-		}
-		else if (per_cpu_get_cpu_id() != 0) {
-			for (int i = 0; i <20; i++) 
-			for (int j = 0; j < 20; j++)
-				au_video_get_fb()[i * au_video_get_x_res() + j] = 0xff0000ff;
-		}
-
-		i_ += 10;
-
-		thr_lock = 0;
+		printf("Thr2\n");
 	}
 
 }
@@ -100,30 +84,26 @@ void thread_test2() {
 int _kmain(aurora_info_t *bootinfo) {
 	bootinfo->auprint("Aurora Kernel \n");
 	memcpy(&info, bootinfo, sizeof(aurora_info_t));
-
+	x64_cli();
 	int au_status = 0;
 
-
 	x86_64_pmmngr_init(bootinfo);
-	x86_64_cpu_initialize(true);
-	/* initialize early drivers*/
-	au_status = au_fb_initialize();
 	au_status = x86_64_paging_init();
 	au_status = x86_64_kmalloc_initialize();
-	au_status = au_initialize_serial();
-	au_status = x86_64_initialize_apic(true);
-	au_status = au_initialize_acpi();
-	x86_64_pit_initialize();
+	x86_64_cpu_initialize(true);
 
+	/* initialize early drivers*/
+	au_status = au_fb_initialize();
+	au_status = au_initialize_serial();
+	au_status = au_initialize_acpi();
 	/* initialize the kernel subsystems */
 	vfs_initialize();
 	devfs_initialize();
 
-	x86_64_setup_cpu_data(0);
+	//x86_64_setup_cpu_data(0);
 	//x86_64_boot_free();
     x86_64_initialize_scheduler();
 	
-
 #ifdef SMP
 	/* initialize all the AP's*/
 	initialize_cpu(au_acpi_get_num_core());
@@ -135,14 +115,12 @@ int _kmain(aurora_info_t *bootinfo) {
 	 * that scheduler has started and they can
 	 * start their jobs
 	 */
-	
-	thread_t *thr = x86_64_create_kthread(thread_test, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
-	printf("Thr addr -> %x \n", thr);
-	thread_t *thr2 = x86_64_create_kthread(thread_test2, x86_64_phys_to_virt((uint64_t)x86_64_pmmngr_alloc()), x64_read_cr3());
-	printf("Thread2-> %x\n", thr2);
-	x86_64_sched_enable(true);
+
+	thread_t *thr = x86_64_create_kthread(thread_test, ((uint64_t)x86_64_pmmngr_alloc() + 4096), x64_read_cr3());
+	printf("Thr addr -> %x , rsp -> %x\n", thr, thr->rsp);
+	thread_t *thr2 = x86_64_create_kthread(thread_test2,((uint64_t)x86_64_pmmngr_alloc() + 4096), x64_read_cr3());
+	printf("Thread2-> %x, rsp ->%x\n", thr2, thr2->rsp);
 	x86_64_sched_start();
-	x86_64_execute_idle();
 	for (;;);
 	return 0;
 }

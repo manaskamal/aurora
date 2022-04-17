@@ -150,6 +150,9 @@
     <ClInclude Include="include\arch\x86_64\x86_64_pic.h">
       <Filter>include\arch\x86_64</Filter>
     </ClInclude>
+    <ClInclude Include="include\xmmintrin.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
